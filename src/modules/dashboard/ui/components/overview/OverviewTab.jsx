@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Activity, Calendar, Target, Users, Clock, CheckCircle, TrendingUp, Award, Briefcase } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -21,9 +21,11 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
       const payload = {
         logged_in_user_id: user.user_id,
         device_id: device_id || 'web_default',
-        device_type: device_type || 'web'
+        device_type: device_type || 'web',
+        date_from: dateRange.start,
+        date_to: dateRange.end
       };
-      console.log('[OverviewTab] 📤 Sending request to /dashboard/filter');
+      console.log('[OverviewTab] 📤 Sending request to /dashboard/filter with dates:', dateRange);
       
       const response = await fetchDashboardData(payload);
       
@@ -39,7 +41,7 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
     } finally {
       setLoading(false);
     }
-  }, [user.user_id, device_id, device_type]);
+  }, [user.user_id, device_id, device_type, dateRange]);
 
   useEffect(() => {
     if (isAgent && user?.user_id) {
@@ -58,6 +60,35 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
 
   // Extract agent projects from API response
   const agentProjects = dashboardData?.projects || [];
+
+  const agentHourlyChartData = useMemo(() => {
+    if (!isAgent) return hourlyChartData;
+    
+    const SHIFT_START_HOUR = 10;
+    const SHIFT_HOURS_COUNT = 9;
+    
+    const data = Array.from({ length: SHIFT_HOURS_COUNT }, (_, i) => ({
+      hour: SHIFT_START_HOUR + i,
+      label: (SHIFT_START_HOUR + i) > 12 ?
+        `${(SHIFT_START_HOUR + i) - 12} PM` :
+        `${SHIFT_START_HOUR + i} AM`,
+      production: 0,
+      target: 0
+    }));
+
+    const tracker = dashboardData?.tracker || [];
+    
+    tracker.forEach(log => {
+      const hour = log.date_time ? new Date(log.date_time).getHours() : 0;
+      const hourIdx = hour - SHIFT_START_HOUR;
+      if (hourIdx >= 0 && hourIdx < SHIFT_HOURS_COUNT) {
+        data[hourIdx].production += Number(log.production || 0);
+        data[hourIdx].target += Number(log.tenure_target || 0);
+      }
+    });
+
+    return data;
+  }, [isAgent, dashboardData, hourlyChartData]);
 
   return (
     <div className="space-y-4 md:space-y-6 animate-fade-in">
@@ -150,7 +181,7 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
       {isAgent ? (
         /* Agent Project Billable Hours Section */
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+          <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-4">
             <div className="flex items-center gap-3">
               <Briefcase className="w-5 h-5 text-white" />
               <h3 className="text-lg font-semibold text-white">Project Billable Hours</h3>
@@ -204,7 +235,7 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
       ) : (
         /* Admin Chart Section */
         <div className="w-full overflow-hidden">
-          <HourlyChart data={hourlyChartData} />
+          <HourlyChart data={agentHourlyChartData} />
         </div>
       )}
     </div>

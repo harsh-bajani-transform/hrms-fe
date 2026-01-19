@@ -51,13 +51,13 @@ const TabsNavigation = ({
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`
-                flex-grow lg:flex-grow-0
+                grow lg:grow-0
                 px-4 sm:px-4 py-3 sm:py-3 rounded-lg text-sm font-semibold 
                 flex items-center justify-center gap-1.5 sm:gap-2 
                 transition-all whitespace-nowrap snap-start cursor-pointer
                 bg-white shadow border border-slate-200
                 ${isActive 
-                  ? 'text-blue-600 border-blue-600 shadow-md' 
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
                   : 'text-slate-600 hover:text-blue-600 hover:border-slate-300'
                 }
               `}
@@ -76,7 +76,7 @@ const TabsNavigation = ({
         <select
           value={activeTab}
           onChange={(e) => setActiveTab(e.target.value)}
-          className="w-full p-2 border border-slate-300 rounded-lg bg-white text-slate-700 text-sm font-medium"
+          className="w-full p-2 border border-slate-300 rounded-lg bg-white text-slate-700 text-sm font-medium cursor-pointer"
         >
           {visibleTabs.map(tab => (
             <option key={tab.id} value={tab.id}>
