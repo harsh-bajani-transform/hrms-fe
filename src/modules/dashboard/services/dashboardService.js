@@ -10,3 +10,13 @@ export const fetchDashboardData = async (payload) => {
   // Return the inner data object
   return response.data;
 };
+
+/**
+ * Fetch dropdown data (projects with tasks, etc.)
+ * Endpoint: /dropdown/get
+ * @param {Object} payload - { dropdown_type, logged_in_user_id }
+ */
+export const fetchDropdownData = async (payload) => {
+  const response = await api.post("/dropdown/get", payload);
+  return response.data;
+};

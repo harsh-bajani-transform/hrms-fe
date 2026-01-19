@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as EntryRouteImport } from './routes/entry'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AgentRouteImport } from './routes/agent'
 import { Route as AboutRouteImport } from './routes/about'
@@ -18,6 +19,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntryRoute = EntryRouteImport.update({
+  id: '/entry',
+  path: '/entry',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/agent': typeof AgentRoute
   '/dashboard': typeof DashboardRoute
+  '/entry': typeof EntryRoute
   '/login': typeof LoginRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/agent': typeof AgentRoute
   '/dashboard': typeof DashboardRoute
+  '/entry': typeof EntryRoute
   '/login': typeof LoginRoute
 }
 export interface FileRoutesById {
@@ -61,14 +69,22 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/agent': typeof AgentRoute
   '/dashboard': typeof DashboardRoute
+  '/entry': typeof EntryRoute
   '/login': typeof LoginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/agent' | '/dashboard' | '/login'
+  fullPaths: '/' | '/about' | '/agent' | '/dashboard' | '/entry' | '/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/agent' | '/dashboard' | '/login'
-  id: '__root__' | '/' | '/about' | '/agent' | '/dashboard' | '/login'
+  to: '/' | '/about' | '/agent' | '/dashboard' | '/entry' | '/login'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/agent'
+    | '/dashboard'
+    | '/entry'
+    | '/login'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +92,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AgentRoute: typeof AgentRoute
   DashboardRoute: typeof DashboardRoute
+  EntryRoute: typeof EntryRoute
   LoginRoute: typeof LoginRoute
 }
 
@@ -86,6 +103,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entry': {
+      id: '/entry'
+      path: '/entry'
+      fullPath: '/entry'
+      preLoaderRoute: typeof EntryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -124,6 +148,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AgentRoute: AgentRoute,
   DashboardRoute: DashboardRoute,
+  EntryRoute: EntryRoute,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport

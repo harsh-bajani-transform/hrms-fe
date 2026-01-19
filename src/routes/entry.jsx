@@ -1,11 +1,11 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import TrackerView from '../modules/tracker/ui/views/TrackerView'
+import UserTrackingView from '../modules/user-tracking/ui/views/UserTrackingView'
 import AppLayout from '../components/layout/AppLayout'
 
-export const Route = createFileRoute('/agent')({
+export const Route = createFileRoute('/entry')({
   component: () => (
     <AppLayout>
-      <TrackerView />
+      <UserTrackingView />
     </AppLayout>
   ),
   beforeLoad: () => {
