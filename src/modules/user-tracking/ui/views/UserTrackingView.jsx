@@ -163,7 +163,7 @@ const UserTrackingView = () => {
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-blue-600 to-blue-700">
+              <thead className="bg-linear-to-r from-blue-600 to-blue-700">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     #

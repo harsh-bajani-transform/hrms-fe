@@ -5,7 +5,8 @@ import {
   Users,
   FileWarning,
   DollarSign,
-  Gem
+  Gem,
+  ClipboardCheck
 } from 'lucide-react';
 
 const TabsNavigation = ({

@@ -56,8 +56,7 @@ const Header = ({
        ADMIN_PANEL: "/admin",
        ENTRY: "/entry",
        GUIDELINES: "/guidelines",
-       SCHEDULER: "/scheduler",
-       QUALITY: "/quality"
+       SCHEDULER: "/scheduler"
      };
 
   // Helper for Navigation with role-based routing
@@ -74,8 +73,14 @@ const Header = ({
     let targetPath = "/dashboard"; // default
     let search = {};
 
-    // Handle QA-specific views
-    if (view === 'TRACKER_REPORT') {
+    // Handle Quality related views - all point to dashboard with search params
+    if (view === ViewState.QUALITY || view === 'QUALITY') {
+      console.log('🚀 [Header goTo] Navigating to Quality (Dashboard Overview)');
+      targetPath = '/dashboard';
+      // In DashboardView, overview tab handles QA view automatically if isQA is true
+      search = { tab: 'overview' };
+    }
+    else if (view === 'TRACKER_REPORT') {
       console.log('🚀 [Header goTo] Navigating to Tracker Report');
       targetPath = '/dashboard';
       search = { view: 'tracker-report' };

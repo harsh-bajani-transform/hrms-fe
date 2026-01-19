@@ -434,7 +434,7 @@ const TrackerTable = ({ userId, projects, onClose }) => {
 
       {/* Totals Summary Card */}
       {!loading && trackers.length > 0 && (
-        <div className="mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+        <div className="mt-4 bg-linear-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
           <h3 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
             <span className="inline-block w-2 h-2 bg-blue-600 rounded-full"></span>
             Summary Totals

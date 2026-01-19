@@ -11,9 +11,10 @@ import { useDeviceInfo } from '../../../../hooks/useDeviceInfo';
 import FilterBar from '../components/FilterBar';
 import TabsNavigation from '../components/TabsNavigation';
 import OverviewTab from '../components/overview/OverviewTab';
-// import { fetchUsersList } from '../../auth/services/authService'; // Will need if Admin
+import QualityView from '../../../qa/ui/views/QualityView';
 import { fetchProjectsList } from '../../services/projectService';
 import { toast } from 'react-hot-toast';
+import ManageView from '../../../manage/ui/views/ManageView';
 import AppLayout from '../../../../components/layout/AppLayout';
 
 const DashboardView = () => {
@@ -197,7 +198,6 @@ const DashboardView = () => {
             setActiveTab={setActiveTab}
             isAgent={isAgent}
             isQA={isQA}
-            isAdmin={isAdmin}
             canViewIncentivesTab={canViewIncentivesTab}
             canViewAdherence={canViewAdherence}
             canAccessManage={canAccessManage}
@@ -206,16 +206,24 @@ const DashboardView = () => {
 
         {/* Content Area */}
         {activeTab === 'overview' && (
+          (isQA || isAssistantManager) ? (
+            <QualityView />
+          ) : (
              <OverviewTab
                analytics={analytics}
                hourlyChartData={hourlyChartData}
                isAgent={isAgent}
                dateRange={dateRange}
              />
+          )
+        )}
+        
+        {activeTab === 'manage' && (
+          <ManageView />
         )}
         
         {/* Todo: Implement other tabs */}
-        {activeTab !== 'overview' && (
+        {activeTab !== 'overview' && activeTab !== 'manage' && (
              <div className="bg-white p-12 rounded-lg shadow-sm border border-dashed border-slate-300 text-center">
                   <h3 className="text-lg font-medium text-slate-500">
                        {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Module Coming Soon
