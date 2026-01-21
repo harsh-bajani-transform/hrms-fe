@@ -27,12 +27,23 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
   const getDashboardData = React.useCallback(async () => {
     try {
       setLoading(true);
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const isDefaultOrToday = (
+        (processedDateRange.start === '' && processedDateRange.end === '') ||
+        (processedDateRange.start === todayStr && processedDateRange.end === todayStr)
+      );
+
       const payload = {
         logged_in_user_id: user.user_id,
         device_id: device_id || 'web_default',
         device_type: device_type || 'web',
-        date_from: processedDateRange.start,
-        date_to: processedDateRange.end
+        ...(isDefaultOrToday
+          ? { date: todayStr }
+          : { 
+              date_from: processedDateRange.start,
+              date_to: processedDateRange.end
+            }
+        )
       };
       console.log('[OverviewTab] 📤 Sending request to /dashboard/filter with dates:', processedDateRange);
       

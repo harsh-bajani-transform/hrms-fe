@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpRight, ArrowDownRight, Minus, HelpCircle } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus, Info } from 'lucide-react';
 
 const StatCard = ({
   title,
@@ -8,71 +8,55 @@ const StatCard = ({
   icon,
   trend = 'neutral', // 'up' | 'down' | 'neutral'
   className = '',
-  tooltip = ''
+  tooltip = '',
+  alert = false
 }) => {
   const CardIcon = icon;
   return (
     <div 
       className={`
-        relative overflow-hidden bg-white p-5 rounded-2xl shadow-sm border border-slate-100 
-        transition-all duration-300 hover:shadow-md hover:border-blue-100 group
-        ${className}
+        bg-white p-4 md:p-5 lg:p-6 rounded-xl shadow-sm border min-w-0 
+        ${alert ? 'border-red-200 bg-red-50' : 'border-slate-100'} 
+        flex flex-row items-center justify-between gap-4 relative group ${className}
       `}
     >
-      {/* Background decoration */}
-      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
-        <CardIcon className="w-20 h-20 text-blue-600" />
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 mb-1 md:mb-1.5">
+          <p className={`text-xs sm:text-sm font-medium truncate ${alert ? 'text-red-600' : 'text-slate-500'}`}>
+            {title}
+          </p>
+          
+          {tooltip && (
+            <div className="relative group/tooltip shrink-0">
+              <Info className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-300 hover:text-blue-500 cursor-help transition-colors" />
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 sm:w-52 p-2 sm:p-2.5 bg-slate-800 text-white text-xs leading-relaxed rounded-lg shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 pointer-events-none">
+                {tooltip}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800"></div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <h3 className={`text-xl sm:text-2xl font-bold truncate ${alert ? 'text-red-700' : 'text-slate-800'}`}>
+          {value}
+        </h3>
+        
+        {subtext && (
+          <p className={`text-xs mt-1.5 md:mt-2 truncate 
+            ${trend === 'up' ? 'text-green-600' :
+              trend === 'down' ? 'text-red-500' :
+                'text-slate-400'}`}>
+            {subtext}
+          </p>
+        )}
       </div>
 
-      <div className="relative z-10">
-        <div className="flex justify-between items-start mb-4">
-          <div className="p-2.5 bg-blue-50 rounded-xl group-hover:bg-blue-100 transition-colors">
-            <CardIcon className="w-5 h-5 text-blue-600" />
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {trend !== 'neutral' && subtext && (
-              <div className={`
-                flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full
-                ${trend === 'up' 
-                  ? 'bg-green-100 text-green-700' 
-                  : 'bg-red-100 text-red-700'
-                }
-              `}>
-                {trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                <span>{subtext.replace(/[^0-9.%+-]/g, '')}</span>
-              </div>
-            )}
-            
-            {tooltip && (
-              <div className="relative group/tooltip shrink-0">
-                <HelpCircle className="w-3.5 h-3.5 text-slate-300 hover:text-blue-500 cursor-help transition-colors" />
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] leading-relaxed rounded-lg shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 pointer-events-none">
-                  {tooltip}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800"></div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div>
-          <p className="text-xs font-medium text-slate-500 mb-1">{title}</p>
-          <h3 className="text-xl font-bold text-slate-800 tracking-tight">{value}</h3>
-          
-          {trend === 'neutral' && subtext && (
-            <p className="text-[10px] text-slate-400 mt-2 font-medium flex items-center gap-1.5">
-              <Minus className="w-3 h-3" />
-              {subtext}
-            </p>
-          )}
-
-          {trend !== 'neutral' && (
-             <p className="text-[10px] text-slate-400 mt-2 font-medium">
-               vs previous period
-             </p>
-          )}
-        </div>
+      <div className={`p-2 sm:p-2.5 md:p-3 rounded-lg shrink-0 self-center
+                ${alert ? 'bg-red-100 text-red-600' :
+                trend === 'up' ? 'bg-green-50 text-green-600' :
+                     'bg-blue-50 text-blue-600'}`}>
+        <CardIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-5 md:h-5" />
       </div>
     </div>
   );

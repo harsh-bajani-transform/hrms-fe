@@ -67,6 +67,13 @@ const DashboardView = () => {
     navigate({ search: (prev) => ({ ...prev, tab: newTab }) });
   }, [navigate]);
 
+  // RBAC Redirection: Admin/PM roles should default to 'manage' tab
+  useEffect(() => {
+    if (!isAgent && !isQA && !isAssistantManager && activeTab === 'overview') {
+       navigate({ search: (prev) => ({ ...prev, tab: 'manage' }), replace: true });
+    }
+  }, [isAgent, isQA, isAssistantManager, activeTab, navigate]);
+
   // Load projects if needed
   useEffect(() => {
     const loadProjects = async () => {
@@ -102,12 +109,23 @@ const DashboardView = () => {
     const loadAdminDashboard = async () => {
       if (!currentUser?.user_id) return;
       try {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const isDefaultOrToday = (
+          (dateRange.start === '' && dateRange.end === '') ||
+          (dateRange.start === todayStr && dateRange.end === todayStr)
+        );
+
         const payload = {
           logged_in_user_id: currentUser.user_id,
           device_id: device_id || 'web',
           device_type: device_type || 'web',
-          date_from: dateRange.start,
-          date_to: dateRange.end
+          ...(isDefaultOrToday 
+            ? { date: todayStr } 
+            : { 
+                date_from: dateRange.start ? dateRange.start.slice(0, 10) : undefined,
+                date_to: dateRange.end ? dateRange.end.slice(0, 10) : undefined 
+              }
+          )
         };
         console.log('[DashboardView] 📤 Fetching admin data with dates:', dateRange);
         const res = await fetchDashboardData(payload);
@@ -197,7 +215,7 @@ const DashboardView = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-7xl mx-auto pb-10 px-4 sm:px-6 lg:px-8 pt-6">
+      <div className="space-y-6 max-w-6xl mx-auto pb-10 px-4 sm:px-6 lg:px-8 pt-6">
         
         {/* Special Views override anything else */}
         {viewParam ? (
