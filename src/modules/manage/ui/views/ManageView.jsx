@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Settings, Users, Briefcase, Lock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../../context/AuthContext';
@@ -23,12 +23,34 @@ const ManageView = () => {
   const canManageProjects = user?.permissions?.includes('manage_projects') || user?.role === 'admin' || user?.role_id === 1;
   const isAssistantManager = user?.role_id === 4;
 
+  const enrichUsers = useCallback((rawUsers, meta) => {
+    if (!rawUsers || !meta) return rawUsers;
+    return rawUsers.map(u => {
+      const role = meta.roles?.find(r => r.role_id === u.role_id || r.id === u.role_id);
+      const designation = meta.designations?.find(d => d.designation_id === u.designation_id || d.id === u.designation_id);
+      
+      return {
+        ...u,
+        role_name: role?.label || u.role_name,
+        designation_name: designation?.label || u.designation_name,
+        // Ensure standard keys for Form Modal population
+        role_id: u.role_id?.toString(),
+        designation_id: u.designation_id?.toString(),
+        project_manager_id: (u.project_manager_id || u.project_manager)?.toString(),
+        assistant_manager_id: (u.assistant_manager_id || u.assistant_manager)?.toString(),
+        qa_id: (u.qa_id || u.qa)?.toString(),
+        team_id: (u.team_id || u.team)?.toString()
+      };
+    });
+  }, []);
+
   const loadUsersData = useCallback(async () => {
     if (!user?.user_id) return;
     try {
       setLoadingUsers(true);
       const data = await fetchUsersList(user.user_id, 'web', 'Laptop');
       if (data.status === 200) {
+        // We'll enrich them later in a useMemo or after dropdowns load
         setUsers(data.data || []);
       }
     } catch (error) {
@@ -38,6 +60,10 @@ const ManageView = () => {
       setLoadingUsers(false);
     }
   }, [user?.user_id]);
+
+  const enrichedUsers = useMemo(() => {
+    return enrichUsers(users, dropdowns);
+  }, [users, dropdowns, enrichUsers]);
 
   const loadProjectsData = useCallback(async () => {
     try {
@@ -127,7 +153,7 @@ const ManageView = () => {
         <div className="mt-8">
           {activeTab === 'users' ? (
             <UsersManagement 
-              users={users} 
+              users={enrichedUsers} 
               loading={loadingUsers} 
               onRefresh={loadUsersData}
               dropdowns={dropdowns}

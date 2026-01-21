@@ -250,7 +250,7 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                     <CustomSelect
                       value={formData.roleId}
                       onChange={(val) => setFormData({ ...formData, roleId: val })}
-                      options={dropdowns.roles.map(r => ({ value: r.role_id?.toString(), label: r.label }))}
+                      options={dropdowns.roles.map(r => ({ value: (r.role_id || r.id)?.toString(), label: r.label }))}
                       placeholder="Select Role"
                       className={errors.roleId ? 'border-rose-400' : ''}
                     />
@@ -261,7 +261,7 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                     <CustomSelect
                       value={formData.designationId}
                       onChange={(val) => setFormData({ ...formData, designationId: val })}
-                      options={dropdowns.designations.map(d => ({ value: d.designation_id?.toString(), label: d.label }))}
+                      options={dropdowns.designations.map(d => ({ value: (d.designation_id || d.id)?.toString(), label: d.label }))}
                       placeholder="Select Designation"
                       className={errors.designationId ? 'border-rose-400' : ''}
                     />
@@ -275,7 +275,7 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                     <CustomSelect
                       value={formData.teamId}
                       onChange={(val) => setFormData({ ...formData, teamId: val })}
-                      options={dropdowns.teams.map(t => ({ value: t.team_id?.toString(), label: t.label }))}
+                      options={dropdowns.teams.map(t => ({ value: (t.team_id || t.id)?.toString(), label: t.label }))}
                       placeholder="Select Team"
                       className={errors.teamId ? 'border-rose-400' : ''}
                     />
@@ -302,7 +302,7 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                       <CustomSelect
                         value={formData.projectManagerId}
                         onChange={(val) => setFormData({ ...formData, projectManagerId: val })}
-                        options={dropdowns.projectManagers.map(m => ({ value: m.user_id?.toString(), label: m.label }))}
+                        options={dropdowns.projectManagers.map(m => ({ value: (m.user_id || m.id)?.toString(), label: m.label }))}
                         placeholder="Select PM"
                       />
                     </div>
@@ -314,7 +314,7 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                       <CustomSelect
                         value={formData.assistantManagerId}
                         onChange={(val) => setFormData({ ...formData, assistantManagerId: val })}
-                        options={dropdowns.assistantManagers.map(m => ({ value: m.user_id?.toString(), label: m.label }))}
+                        options={dropdowns.assistantManagers.map(m => ({ value: (m.user_id || m.id)?.toString(), label: m.label }))}
                         placeholder="Select AM"
                       />
                     </div>
@@ -326,7 +326,7 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                       <CustomSelect
                         value={formData.qaId}
                         onChange={(val) => setFormData({ ...formData, qaId: val })}
-                        options={dropdowns.qas.map(q => ({ value: q.user_id?.toString(), label: q.label }))}
+                        options={dropdowns.qas.map(q => ({ value: (q.user_id || q.id)?.toString(), label: q.label }))}
                         placeholder="Select QA"
                       />
                     </div>
