@@ -185,6 +185,13 @@ const Header = ({ currentUser, handleLogout }) => {
         // Project Manager tabs (role_id 3)
         if (roleId === 3)
           return [
+            {
+              view: ViewState.DASHBOARD,
+              label: "Analytics",
+              icon: LayoutDashboard,
+            },
+            { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
+            { view: "AGENT_LIST", label: "Agent File Report", icon: Users },
             { view: ViewState.ADMIN_PANEL, label: "Manage", icon: Settings },
             { view: ViewState.ENTRY, label: "User Permission", icon: PenTool },
           ];
@@ -250,6 +257,13 @@ const Header = ({ currentUser, handleLogout }) => {
     // Project Manager tabs (by role string)
     if (role.includes("PROJECT_MANAGER")) {
       return [
+        {
+          view: ViewState.DASHBOARD,
+          label: "Analytics",
+          icon: LayoutDashboard,
+        },
+        { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
+        { view: "AGENT_LIST", label: "Agent File Report", icon: Users },
         { view: ViewState.ADMIN_PANEL, label: "Manage", icon: Settings },
         { view: ViewState.ENTRY, label: "User Permission", icon: PenTool },
       ];

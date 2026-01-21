@@ -13,6 +13,15 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
   const { device_id, device_type } = useDeviceInfo();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
+  
+  // If no dateRange is provided, default to today
+  const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const processedDateRange = useMemo(() => {
+    if (!dateRange || (!dateRange.start && !dateRange.end)) {
+      return { start: todayStr, end: todayStr };
+    }
+    return dateRange;
+  }, [dateRange, todayStr]);
 
   // Fetch dashboard data for agents
   const getDashboardData = React.useCallback(async () => {
@@ -22,10 +31,10 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
         logged_in_user_id: user.user_id,
         device_id: device_id || 'web_default',
         device_type: device_type || 'web',
-        date_from: dateRange.start,
-        date_to: dateRange.end
+        date_from: processedDateRange.start,
+        date_to: processedDateRange.end
       };
-      console.log('[OverviewTab] 📤 Sending request to /dashboard/filter with dates:', dateRange);
+      console.log('[OverviewTab] 📤 Sending request to /dashboard/filter with dates:', processedDateRange);
       
       const response = await fetchDashboardData(payload);
       
@@ -41,18 +50,18 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
     } finally {
       setLoading(false);
     }
-  }, [user.user_id, device_id, device_type, dateRange]);
+  }, [user.user_id, device_id, device_type, processedDateRange]);
 
   useEffect(() => {
     if (isAgent && user?.user_id) {
       getDashboardData();
     }
-  }, [isAgent, user?.user_id, device_id, device_type, dateRange, getDashboardData]);
+  }, [isAgent, user?.user_id, device_id, device_type, processedDateRange, getDashboardData]);
 
   // Extract agent stats from API response
   // Note: API returns only the logged-in agent's data based on logged_in_user_id
   const agentStats = {
-    totalBillableHours: parseFloat(dashboardData?.summary?.total_production || 0),
+    totalBillableHours: parseFloat(dashboardData?.summary?.total_billable_hours ?? dashboardData?.summary?.total_production ?? 0),
     qcScore: parseFloat(dashboardData?.summary?.qc_score || 0),
     taskCount: parseInt(dashboardData?.summary?.task_count || 0),
     projectCount: parseInt(dashboardData?.summary?.project_count || 0),

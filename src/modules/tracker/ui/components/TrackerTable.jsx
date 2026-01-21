@@ -34,12 +34,14 @@ const TrackerTable = ({ userId, projects, onClose }) => {
   }, [selectedProject, projects]);
 
   // Lookup helpers
-  const getProjectName = (id) => {
+  const getProjectName = (id, tracker) => {
+    if (tracker?.project_name) return tracker.project_name;
     const project = projects.find(p => String(p.project_id) === String(id));
     return project?.project_name || "-";
   };
   
-  const getTaskName = (task_id, project_id) => {
+  const getTaskName = (task_id, project_id, tracker) => {
+    if (tracker?.task_name) return tracker.task_name;
     const project = projects.find(p => String(p.project_id) === String(project_id));
     const task = project?.tasks?.find(t => String(t.task_id) === String(task_id));
     return task?.label || task?.task_name || "-";
@@ -116,7 +118,7 @@ const TrackerTable = ({ userId, projects, onClose }) => {
               const taskInfo = taskMap[tracker.task_id] || {};
               return {
                 ...tracker,
-                task_name: taskInfo.task_name || '-'
+                task_name: tracker.task_name || taskInfo.task_name || '-'
               };
             });
           
@@ -194,8 +196,8 @@ const TrackerTable = ({ userId, projects, onClose }) => {
         'Date/Time': tracker.date_time
           ? format(new Date(tracker.date_time), "M/d/yyyy h:mm a")
           : "-",
-        'Project': tracker.project_name || getProjectName(tracker.project_id),
-        'Task': tracker.task_name || '-',
+        'Project': getProjectName(tracker.project_id, tracker),
+        'Task': getTaskName(tracker.task_id, tracker.project_id, tracker),
         'Per Hour Target': tracker.tenure_target || 0,
         'Production': tracker.production || 0,
         'Billable Hours': tracker.billable_hours !== null && tracker.billable_hours !== undefined
@@ -384,8 +386,8 @@ const TrackerTable = ({ userId, projects, onClose }) => {
                     ? format(new Date(tracker.date_time), "M/d/yyyy h:mma")
                     : "-"}
                 </td>
-                <td className="px-4 py-2 align-middle">{tracker.project_name || getProjectName(tracker.project_id)}</td>
-                <td className="px-4 py-2 align-middle">{tracker.task_name || getTaskName(tracker.task_id, tracker.project_id) || '-'}</td>
+                <td className="px-4 py-2 align-middle">{getProjectName(tracker.project_id, tracker)}</td>
+                <td className="px-4 py-2 align-middle">{getTaskName(tracker.task_id, tracker.project_id, tracker)}</td>
                 <td className="px-4 py-2 align-middle">{tracker.tenure_target || '-'}</td>
                 <td className="px-4 py-2 align-middle">{tracker.production}</td>
                 <td className="px-4 py-2 align-middle">

@@ -41,13 +41,7 @@ const LoginView = () => {
   // Redirect logged-in users away from login page
   useEffect(() => {
     if (user) {
-      const roleId = Number(user.role_id);
-      // Only redirect if not already on the correct page
-      if (roleId === 6) {
-         navigate({ to: "/agent", replace: true });
-      } else {
-         navigate({ to: "/dashboard", replace: true });
-      }
+      navigate({ to: "/dashboard", replace: true });
     }
   }, [user, navigate]);
 
@@ -116,12 +110,7 @@ const LoginView = () => {
       login(userData);
       toast.success("You are now logged in!", { duration: 4000 });
 
-      const roleId = Number(userData.role_id);
-      if (roleId === 6) {
-         navigate({ to: "/agent", replace: true });
-      } else {
-         navigate({ to: "/dashboard", replace: true });
-      }
+      navigate({ to: "/dashboard", replace: true });
 
     } catch (err) {
       logError('[LoginPage] Login failed:', err);

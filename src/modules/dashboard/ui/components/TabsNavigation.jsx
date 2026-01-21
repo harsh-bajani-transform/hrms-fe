@@ -21,7 +21,7 @@ const TabsNavigation = ({
     
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutGrid, alwaysVisible: true },
-    { id: 'bookings', label: 'Project Bookings', icon: Briefcase, visible: !isAgent && !isQA },
+    { id: 'bookings', label: 'User Monthly Target', icon: Briefcase, visible: !isAgent && !isQA },
     { id: 'agents', label: 'Agent Performance', icon: Users, visible: !isQA },
     { id: 'adherence', label: 'Reporting Adherence', icon: FileWarning, visible: canViewAdherence && !isQA },
     { id: 'incentives', label: 'Agent Incentives', icon: DollarSign, visible: canViewIncentivesTab && !isQA },
@@ -57,7 +57,7 @@ const TabsNavigation = ({
                 transition-all whitespace-nowrap snap-start cursor-pointer
                 bg-white shadow border border-slate-200
                 ${isActive 
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
+                  ? 'bg-blue-600! text-white border-blue-600! shadow-md' 
                   : 'text-slate-600 hover:text-blue-600 hover:border-slate-300'
                 }
               `}

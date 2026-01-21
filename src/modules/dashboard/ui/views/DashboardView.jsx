@@ -36,8 +36,7 @@ const DashboardView = () => {
   const tabParam = searchParams.tab;
 
   // State
-  const todayStr = new Date().toISOString().split('T')[0];
-  const [dateRange, setDateRange] = useState({ start: todayStr, end: todayStr });
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [selectedTask, setSelectedTask] = useState('All');
   const [comparisonMode, setComparisonMode] = useState('previous_period');
 
