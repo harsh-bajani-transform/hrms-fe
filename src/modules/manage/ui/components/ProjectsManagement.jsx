@@ -14,8 +14,9 @@ import {
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../../context/AuthContext';
 import CustomSelect from '../../../../components/common/CustomSelect';
-import { deleteProject } from '../../services/manageService';
+import { deleteProject, deleteTask } from '../../services/manageService';
 import ProjectFormModal from './ProjectFormModal';
+import TaskFormModal from './TaskFormModal';
 
 const ProjectsManagement = ({ projects, loading, onRefresh, dropdowns }) => {
   const { canManageProjects } = useAuth();
@@ -23,6 +24,13 @@ const ProjectsManagement = ({ projects, loading, onRefresh, dropdowns }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [expandedProjectId, setExpandedProjectId] = useState(null);
+  
+  // Task Management State
+  const [taskModalState, setTaskModalState] = useState({
+    isOpen: false,
+    project: null,
+    task: null
+  });
 
   const filteredProjects = projects.filter(p => 
     p.project_name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -37,6 +45,33 @@ const ProjectsManagement = ({ projects, loading, onRefresh, dropdowns }) => {
     } catch (error) {
       toast.error(error.message);
     }
+  };
+
+  const handleDeleteTask = async (projectId, task) => {
+    if (!window.confirm(`Are you sure you want to delete task: ${task.task_name}?`)) return;
+    try {
+      await deleteTask({ project_id: projectId, task_id: task.task_id });
+      toast.success('Task deleted successfully');
+      onRefresh();
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const openTaskModal = (project, task = null) => {
+    setTaskModalState({
+      isOpen: true,
+      project,
+      task
+    });
+  };
+
+  const closeTaskModal = () => {
+    setTaskModalState({
+      isOpen: false,
+      project: null,
+      task: null
+    });
   };
 
   return (
@@ -161,17 +196,32 @@ const ProjectsManagement = ({ projects, loading, onRefresh, dropdowns }) => {
                           <Layers className="w-4 h-4 text-indigo-500" /> Project Tasks
                         </h4>
                         {canManageProjects && (
-                          <button className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider hover:underline flex items-center gap-1">
+                          <button 
+                            onClick={() => openTaskModal(p)}
+                            className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider hover:underline flex items-center gap-1"
+                          >
                             <Plus className="w-3 h-3" /> Add Task
                           </button>
                         )}
                      </div>
                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {p.tasks?.length > 0 ? p.tasks.map(t => (
-                          <div key={t.task_id} className="bg-white px-4 py-3 rounded-lg border border-slate-100 flex items-center justify-between group">
-                            <span className="text-sm text-slate-600 font-medium">{t.task_name}</span>
+                          <div 
+                            key={t.task_id} 
+                            className="bg-white px-4 py-3 rounded-lg border border-slate-100 flex items-center justify-between group hover:border-indigo-200 transition-colors"
+                          >
+                            <div className="flex-1 mr-2 cursor-pointer" onClick={() => canManageProjects && openTaskModal(p, t)}>
+                              <span className="text-sm text-slate-600 font-medium group-hover:text-indigo-600 transition-colors">{t.task_name}</span>
+                              <div className="text-[10px] text-slate-400 mt-0.5">Target: {t.task_target} hrs</div>
+                            </div>
                             {canManageProjects && (
-                              <button className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-slate-400 hover:text-rose-500">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteTask(p.project_id, t);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-slate-400 hover:text-rose-500"
+                              >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             )}
@@ -202,6 +252,19 @@ const ProjectsManagement = ({ projects, loading, onRefresh, dropdowns }) => {
             onRefresh();
           }}
           dropdowns={dropdowns}
+        />
+      )}
+
+      {/* Task Modal */}
+      {taskModalState.isOpen && (
+        <TaskFormModal
+          project={taskModalState.project}
+          task={taskModalState.task}
+          onClose={closeTaskModal}
+          onSuccess={() => {
+            closeTaskModal();
+            onRefresh();
+          }}
         />
       )}
     </div>

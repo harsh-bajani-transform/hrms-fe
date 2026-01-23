@@ -1,13 +1,8 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import TrackerView from '../modules/tracker/ui/views/TrackerView'
-import AppLayout from '../components/layout/AppLayout'
+import AgentDashboardView from '../modules/agent/ui/views/AgentDashboardView'
 
 export const Route = createFileRoute('/agent')({
-  component: () => (
-    <AppLayout>
-      <TrackerView />
-    </AppLayout>
-  ),
+  component: AgentDashboardView,
   beforeLoad: () => {
     if (!sessionStorage.getItem('user')) {
       throw redirect({ to: '/login' });

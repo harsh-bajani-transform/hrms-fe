@@ -130,6 +130,9 @@ const Header = ({ currentUser, handleLogout }) => {
     } else {
       // For admins and other roles
       targetPath = ROUTES[view] || "/dashboard";
+      if (view === ViewState.DASHBOARD || view === "DASHBOARD") {
+        search = { tab: 'overview' };
+      }
       console.log("🚀 [Header goTo] Navigating non-agent to:", targetPath);
     }
 
@@ -185,6 +188,11 @@ const Header = ({ currentUser, handleLogout }) => {
         // Project Manager tabs (role_id 3)
         if (roleId === 3)
           return [
+            {
+              view: ViewState.DASHBOARD,
+              label: "Analytics",
+              icon: LayoutDashboard,
+            },
             { view: ViewState.ADMIN_PANEL, label: "Manage", icon: Settings },
             { view: ViewState.ENTRY, label: "User Permission", icon: PenTool },
           ];
@@ -205,6 +213,11 @@ const Header = ({ currentUser, handleLogout }) => {
 
         // All other role_ids (Admin/Super Admin)
         return [
+          {
+            view: ViewState.DASHBOARD,
+            label: "Analytics",
+            icon: LayoutDashboard,
+          },
           { view: ViewState.ADMIN_PANEL, label: "Manage", icon: Settings },
           { view: ViewState.ENTRY, label: "User Permission", icon: PenTool },
         ];
@@ -243,6 +256,11 @@ const Header = ({ currentUser, handleLogout }) => {
     // Project Manager tabs (by role string)
     if (role.includes("PROJECT_MANAGER")) {
       return [
+        {
+          view: ViewState.DASHBOARD,
+          label: "Analytics",
+          icon: LayoutDashboard,
+        },
         { view: ViewState.ADMIN_PANEL, label: "Manage", icon: Settings },
         { view: ViewState.ENTRY, label: "User Permission", icon: PenTool },
       ];
@@ -251,6 +269,11 @@ const Header = ({ currentUser, handleLogout }) => {
     // Admin tabs
     if (role.includes("ADMIN")) {
       return [
+        {
+          view: ViewState.DASHBOARD,
+          label: "Analytics",
+          icon: LayoutDashboard,
+        },
         { view: ViewState.ADMIN_PANEL, label: "Manage", icon: Settings },
         { view: ViewState.ENTRY, label: "User Permission", icon: PenTool },
       ];

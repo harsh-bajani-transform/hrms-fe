@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Activity, Calendar, Target, Users, Clock, CheckCircle, TrendingUp, Award, Briefcase } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -7,6 +7,7 @@ import HourlyChart from './HourlyChart';
 import { useAuth } from '../../../../../context/AuthContext';
 import { useDeviceInfo } from '../../../../../hooks/useDeviceInfo';
 import { fetchDashboardData } from '../../../services/dashboardService';
+import TabsNavigation from '../TabsNavigation';
 
 const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
   const { user } = useAuth();
@@ -14,17 +15,22 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
   
-  // If no dateRange is provided, default to today
-  const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  // Sync date range logic with legacy: default to current month for agents
   const processedDateRange = useMemo(() => {
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const firstDayStr = firstDayOfMonth.toISOString().slice(0, 10);
+    const lastDayStr = lastDayOfMonth.toISOString().slice(0, 10);
+
     if (!dateRange || (!dateRange.start && !dateRange.end)) {
-      return { start: todayStr, end: todayStr };
+      return { start: firstDayStr, end: lastDayStr };
     }
     return dateRange;
-  }, [dateRange, todayStr]);
+  }, [dateRange]);
 
   // Fetch dashboard data for agents
-  const getDashboardData = React.useCallback(async () => {
+  const getDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       const todayStr = new Date().toISOString().slice(0, 10);
@@ -45,7 +51,6 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
             }
         )
       };
-      console.log('[OverviewTab] 📤 Sending request to /dashboard/filter with dates:', processedDateRange);
       
       const response = await fetchDashboardData(payload);
       
@@ -61,7 +66,7 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
     } finally {
       setLoading(false);
     }
-  }, [user.user_id, device_id, device_type, processedDateRange]);
+  }, [user.user_id, device_id, device_type, processedDateRange, fetchDashboardData]);
 
   useEffect(() => {
     if (isAgent && user?.user_id) {
@@ -258,7 +263,7 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, dateRange }) => {
           <HourlyChart data={agentHourlyChartData} />
         </div>
       )}
-    </div>
+</div>
   );
 };
 

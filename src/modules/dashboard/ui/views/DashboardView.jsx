@@ -11,6 +11,7 @@ import { useDeviceInfo } from '../../../../hooks/useDeviceInfo';
 import FilterBar from '../components/FilterBar';
 import TabsNavigation from '../components/TabsNavigation';
 import OverviewTab from '../components/overview/OverviewTab';
+import BillableReport from '../components/BillableReport';
 import QATrackerReport from '../components/QATrackerReport';
 import QAAgentList from '../components/QAAgentList';
 import AssistantManagerDashboard from '../components/AssistantManagerDashboard';
@@ -69,10 +70,10 @@ const DashboardView = () => {
 
   // RBAC Redirection: Admin/PM roles should default to 'manage' tab
   useEffect(() => {
-    if (!isAgent && !isQA && !isAssistantManager && activeTab === 'overview') {
+    if (!tabParam && !isAgent && !isQA && !isAssistantManager) {
        navigate({ search: (prev) => ({ ...prev, tab: 'manage' }), replace: true });
     }
-  }, [isAgent, isQA, isAssistantManager, activeTab, navigate]);
+  }, [isAgent, isQA, isAssistantManager, tabParam, navigate]);
 
   // Load projects if needed
   useEffect(() => {
@@ -238,7 +239,7 @@ const DashboardView = () => {
             )}
 
             {/* Tabs */}
-            {!isAgent && !isQA && !isAssistantManager && activeTab !== 'manage' && (
+            {activeTab !== 'manage' && (
               <TabsNavigation
                 activeTab={activeTab}
                 setActiveTab={handleTabChange}
@@ -264,6 +265,10 @@ const DashboardView = () => {
                   dateRange={dateRange}
                 />
               )
+            )}
+
+            {activeTab === 'billable_report' && (
+              <BillableReport />
             )}
             
             {activeTab === 'manage' && (

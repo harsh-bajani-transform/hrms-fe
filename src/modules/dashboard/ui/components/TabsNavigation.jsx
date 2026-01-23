@@ -6,7 +6,8 @@ import {
   FileWarning,
   DollarSign,
   Gem,
-  ClipboardCheck
+  ClipboardCheck,
+  FileText
 } from 'lucide-react';
 
 const TabsNavigation = ({
@@ -22,9 +23,10 @@ const TabsNavigation = ({
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutGrid, alwaysVisible: true },
     { id: 'bookings', label: 'User Monthly Target', icon: Briefcase, visible: !isAgent && !isQA },
+    { id: 'billable_report', label: 'Billable Reports', icon: FileText, visible: true },
     { id: 'agents', label: 'Agent Performance', icon: Users, visible: !isQA },
-    { id: 'adherence', label: 'Reporting Adherence', icon: FileWarning, visible: canViewAdherence && !isQA },
-    { id: 'incentives', label: 'Agent Incentives', icon: DollarSign, visible: canViewIncentivesTab && !isQA },
+    { id: 'adherence', label: 'Reporting Adherence', icon: FileWarning, visible: (canViewAdherence && !isQA) || isAgent },
+    { id: 'incentives', label: 'Agent Incentives', icon: DollarSign, visible: (canViewIncentivesTab && !isQA) || isAgent },
     { id: 'mgmt_incentives', label: 'Management Incentives', icon: Gem, visible: !isAgent && !isQA }
   ];
 
