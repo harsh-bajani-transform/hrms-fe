@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { format } from "date-fns";
 import { Download, Trash2, Filter, FileDown } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -34,18 +34,18 @@ const TrackerTable = ({ userId, projects, onClose }) => {
   }, [selectedProject, projects]);
 
   // Lookup helpers
-  const getProjectName = (id, tracker) => {
+  const getProjectName = useCallback((id, tracker) => {
     if (tracker?.project_name) return tracker.project_name;
     const project = projects.find(p => String(p.project_id) === String(id));
     return project?.project_name || "-";
-  };
+  }, [projects]);
   
-  const getTaskName = (task_id, project_id, tracker) => {
+  const getTaskName = useCallback((task_id, project_id, tracker) => {
     if (tracker?.task_name) return tracker.task_name;
     const project = projects.find(p => String(p.project_id) === String(project_id));
     const task = project?.tasks?.find(t => String(t.task_id) === String(task_id));
     return task?.label || task?.task_name || "-";
-  };
+  }, [projects]);
 
   // Check if tracker entry is from today
   const isToday = (dateTime) => {
@@ -139,7 +139,7 @@ const TrackerTable = ({ userId, projects, onClose }) => {
     };
 
     loadTrackers();
-  }, [userId, user, startDate, endDate, selectedProject, selectedTask]);
+  }, [userId, user?.user_id, user?.device_id, user?.device_type, startDate, endDate, selectedProject, selectedTask]);
 
   const handleDelete = (tracker_id) => setDeleteConfirm(tracker_id);
   

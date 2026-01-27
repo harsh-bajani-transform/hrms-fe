@@ -4,6 +4,61 @@ import { toast } from 'react-hot-toast';
 import CustomSelect from '../../../../components/common/CustomSelect';
 import { createProject, updateProject } from '../../services/manageService';
 
+const MultiSelectField = ({ label, field, options, isOpen, onToggle, formData, onToggleItem }) => (
+  <div className="relative space-y-1">
+    <label className="text-xs font-bold text-slate-700 ml-1">{label}</label>
+    <div className="relative">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center justify-between pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm hover:bg-slate-100 transition-all font-bold"
+      >
+        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <span className="truncate text-slate-600">
+          {formData[field].length > 0 
+            ? `${formData[field].length} selected` 
+            : 'Select...'}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl max-h-48 overflow-y-auto p-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-150">
+          {options.map(opt => (
+            <label 
+              key={opt.value} 
+              className="flex items-center gap-3 px-3 py-2 hover:bg-indigo-50 rounded-lg cursor-pointer transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleItem(field, opt.value);
+              }}
+            >
+              <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                formData[field].includes(opt.value) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'
+              }`}>
+                {formData[field].includes(opt.value) && <Check className="w-3 h-3 text-white" />}
+              </div>
+              <span className="text-xs font-bold text-slate-700">{opt.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+    {/* Selected Tags */}
+    <div className="flex flex-wrap gap-1.5 mt-2">
+      {formData[field].map(id => {
+        const opt = options.find(o => o.value === id);
+        return opt ? (
+          <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-bold border border-indigo-100">
+            {opt.label}
+            <X className="w-2.5 h-2.5 cursor-pointer hover:text-indigo-900" onClick={() => onToggleItem(field, id)} />
+          </span>
+        ) : null;
+      })}
+    </div>
+  </div>
+);
+
 const ProjectFormModal = ({ project, onClose, onSuccess, dropdowns }) => {
   const isEditMode = !!project;
   
@@ -62,60 +117,6 @@ const ProjectFormModal = ({ project, onClose, onSuccess, dropdowns }) => {
     });
   };
 
-  const MultiSelectField = ({ label, field, options, isOpen, onToggle, icon: IconComponent }) => (
-    <div className="relative space-y-1">
-      <label className="text-xs font-bold text-slate-700 ml-1">{label}</label>
-      <div className="relative">
-        <button
-          type="button"
-          onClick={onToggle}
-          className="w-full flex items-center justify-between pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm hover:bg-slate-100 transition-all"
-        >
-          <IconComponent className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <span className="truncate text-slate-600">
-            {formData[field].length > 0 
-              ? `${formData[field].length} selected` 
-              : 'Select...'}
-          </span>
-          <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </button>
-
-        {isOpen && (
-          <div className="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl max-h-48 overflow-y-auto p-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-150">
-            {options.map(opt => (
-              <label 
-                key={opt.value} 
-                className="flex items-center gap-3 px-3 py-2 hover:bg-indigo-50 rounded-lg cursor-pointer transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleMultiSelect(field, opt.value);
-                }}
-              >
-                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                  formData[field].includes(opt.value) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'
-                }`}>
-                  {formData[field].includes(opt.value) && <Check className="w-3 h-3 text-white" />}
-                </div>
-                <span className="text-xs font-bold text-slate-700">{opt.label}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
-      {/* Selected Tags */}
-      <div className="flex flex-wrap gap-1.5 mt-2">
-        {formData[field].map(id => {
-          const opt = options.find(o => o.value === id);
-          return opt ? (
-            <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-bold border border-indigo-100">
-              {opt.label}
-              <X className="w-2.5 h-2.5 cursor-pointer hover:text-indigo-900" onClick={() => toggleMultiSelect(field, id)} />
-            </span>
-          ) : null;
-        })}
-      </div>
-    </div>
-  );
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-100 p-4" onClick={() => setDropdownOpen({ am: false, qa: false, teams: false })}>
@@ -193,6 +194,8 @@ const ProjectFormModal = ({ project, onClose, onSuccess, dropdowns }) => {
                   label="Assistant Manager(s)" 
                   field="assistantManagerIds"
                   options={dropdowns.assistantManagers.map(m => ({ value: m.user_id?.toString(), label: m.label }))}
+                  formData={formData}
+                  onToggleItem={toggleMultiSelect}
                   isOpen={dropdownOpen.am}
                   onToggle={() => setDropdownOpen({ am: !dropdownOpen.am, qa: false, teams: false })}
                   icon={User}
@@ -202,6 +205,8 @@ const ProjectFormModal = ({ project, onClose, onSuccess, dropdowns }) => {
                   label="QA Analyst(s)" 
                   field="qaIds"
                   options={dropdowns.qas.map(q => ({ value: q.user_id?.toString(), label: q.label }))}
+                  formData={formData}
+                  onToggleItem={toggleMultiSelect}
                   isOpen={dropdownOpen.qa}
                   onToggle={() => setDropdownOpen({ am: false, qa: !dropdownOpen.qa, teams: false })}
                   icon={Shield}
@@ -211,6 +216,8 @@ const ProjectFormModal = ({ project, onClose, onSuccess, dropdowns }) => {
                   label="Teams / Agents" 
                   field="teamIds"
                   options={dropdowns.teams.map(t => ({ value: t.team_id?.toString(), label: t.label }))}
+                  formData={formData}
+                  onToggleItem={toggleMultiSelect}
                   isOpen={dropdownOpen.teams}
                   onToggle={() => setDropdownOpen({ am: false, qa: false, teams: !dropdownOpen.teams })}
                   icon={Users}

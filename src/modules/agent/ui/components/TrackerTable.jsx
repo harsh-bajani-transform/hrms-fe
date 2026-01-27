@@ -3,7 +3,7 @@
  * Author: Naitik Maisuriya
  * Description: Displays all tracker entries in a table, resolves project/task names, supports file download and delete actions.
  */
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { format } from "date-fns";
 import { Download, Trash2, Filter, FileDown } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -32,8 +32,8 @@ const TrackerTable = ({ userId, projects, onClose }) => {
   const [startDate, setStartDate] = useState(getTodayDate());
   const [endDate, setEndDate] = useState(getTodayDate());
 
-  const log = console.log;
-  const logError = console.error;
+  const log = useMemo(() => console.log, []);
+  const logError = useMemo(() => console.error, []);
 
   // Get tasks for selected project
   const availableTasks = useMemo(() => {
@@ -43,16 +43,16 @@ const TrackerTable = ({ userId, projects, onClose }) => {
   }, [selectedProject, projects]);
 
   // Lookup helpers (use new projects-with-tasks structure)
-  const getProjectName = (id) => {
+  const getProjectName = useCallback((id) => {
     const project = projects.find(p => String(p.project_id) === String(id));
     return project?.project_name || "-";
-  };
+  }, [projects]);
   
-  const getTaskName = (task_id, project_id) => {
+  const getTaskName = useCallback((task_id, project_id) => {
     // Basic lookup if we have the project and task available in the passed props
     const project = projects.find(p => String(p.project_id) === String(project_id));
     return project?.tasks?.find(t => String(t.task_id) === String(task_id))?.label || "-";
-  };
+  }, [projects]);
 
   // Check if tracker entry is from today
   const isToday = (dateTime) => {
@@ -125,7 +125,7 @@ const TrackerTable = ({ userId, projects, onClose }) => {
     };
 
     loadTrackers();
-  }, [userId, user, startDate, endDate, selectedProject, selectedTask, projects]);
+  }, [userId, startDate, endDate, selectedProject, selectedTask, projects, getProjectName, getTaskName, log, logError]);
 
   // Debug: Log tracker data for different roles
   useEffect(() => {

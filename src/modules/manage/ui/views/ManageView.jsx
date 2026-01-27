@@ -4,6 +4,8 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../../context/AuthContext';
 import UsersManagement from '../components/UsersManagement';
 import ProjectsManagement from '../components/ProjectsManagement';
+import UserTrackingView from '../components/UserTrackingView';
+import UserMonthlyTargetCard from '../components/UserMonthlyTargetCard';
 import { fetchUsersList, fetchProjectsList } from '../../services/manageService';
 import { useUserDropdowns } from '../../../../hooks/useUserDropdowns';
 
@@ -147,6 +149,34 @@ const ManageView = () => {
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full" />
             )}
           </button>
+          <button
+            onClick={() => setActiveTab('permissions')}
+            className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-all relative ${
+              activeTab === 'permissions'
+                ? 'text-indigo-600'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Lock className="w-4 h-4" />
+            Permissions
+            {activeTab === 'permissions' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full" />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('targets')}
+            className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-all relative ${
+              activeTab === 'targets'
+                ? 'text-indigo-600'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Target className="w-4 h-4" />
+            Monthly Targets
+            {activeTab === 'targets' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full" />
+            )}
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -158,13 +188,17 @@ const ManageView = () => {
               onRefresh={loadUsersData}
               dropdowns={dropdowns}
             />
-          ) : (
+          ) : activeTab === 'projects' ? (
             <ProjectsManagement 
               projects={projects} 
               loading={loadingProjects} 
               onRefresh={loadProjectsData}
               dropdowns={dropdowns}
             />
+          ) : activeTab === 'permissions' ? (
+            <UserTrackingView />
+          ) : (
+            <UserMonthlyTargetCard />
           )}
         </div>
       </div>
