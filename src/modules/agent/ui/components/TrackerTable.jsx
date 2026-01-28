@@ -264,61 +264,61 @@ const TrackerTable = ({ userId, projects, onClose }) => {
 
   return (
     <div className="w-full max-w-5xl mx-auto p-5">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-blue-700">All Trackers</h2>
+      <div className="mb-8 flex items-center gap-3 justify-between">
+        <h2 className="text-3xl font-extrabold text-blue-800 tracking-tight drop-shadow-sm">All Trackers</h2>
         <div className="flex gap-2">
           <button
             onClick={handleExportToExcel}
             disabled={loading || trackers.length === 0}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+            className="bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 shadow disabled:bg-gray-400 disabled:cursor-not-allowed transition-all"
             title="Export filtered data to Excel"
           >
             <FileDown className="w-4 h-4" />
             Export to Excel
           </button>
-          <button onClick={onClose} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-sm">
+          <button onClick={onClose} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-xs shadow transition-all">
             Back to Form
           </button>
         </div>
       </div>
 
       {/* Filter Section */}
-      <div className="bg-blue-50 rounded-lg p-3 mb-4">
-        <div className="flex items-center gap-1.5 mb-2">
-          <Filter className="w-4 h-4 text-blue-700" />
-          <h3 className="text-base font-semibold text-blue-700">Filters</h3>
+      <div className="bg-linear-to-br from-blue-50 via-white to-indigo-50 rounded-2xl p-6 mb-6 shadow border border-blue-100">
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="w-5 h-5 text-blue-700" />
+          <h3 className="text-base font-bold text-blue-700 tracking-wide">Filters</h3>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Start Date */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-blue-900 mb-1">
               Start Date
             </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm transition-all"
             />
           </div>
 
           {/* End Date */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-blue-900 mb-1">
               End Date
             </label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm transition-all"
             />
           </div>
 
           {/* Project Dropdown */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-blue-900 mb-1">
               Project
             </label>
             <select
@@ -327,7 +327,7 @@ const TrackerTable = ({ userId, projects, onClose }) => {
                 setSelectedProject(e.target.value);
                 setSelectedTask(""); // Clear task when project changes
               }}
-              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm transition-all"
             >
               <option value="">All Projects</option>
               {projects.map((project) => (
@@ -340,14 +340,14 @@ const TrackerTable = ({ userId, projects, onClose }) => {
 
           {/* Task Dropdown */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-blue-900 mb-1">
               Task
             </label>
             <select
               value={selectedTask}
               onChange={(e) => setSelectedTask(e.target.value)}
               disabled={!selectedProject}
-              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
             >
               <option value="">All Tasks</option>
               {availableTasks.map((task) => (
@@ -363,7 +363,7 @@ const TrackerTable = ({ userId, projects, onClose }) => {
         <div className="mt-2.5 flex justify-end">
           <button
             onClick={handleClearFilters}
-            className="px-3 py-1.5 text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium transition"
+            className="px-4 py-2 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-bold shadow transition-all"
           >
             Clear Filters
           </button>
@@ -373,39 +373,39 @@ const TrackerTable = ({ userId, projects, onClose }) => {
       {error && <div className="text-red-600 mb-2">{error}</div>}
       
       {/* Scrollable table container with max height for 10 rows */}
-      <div className="overflow-x-auto max-h-[600px] overflow-y-auto border border-slate-200 rounded-lg">
-        <table className="min-w-full text-sm text-slate-700 table-fixed">
+      <div className="overflow-x-auto max-h-[600px] overflow-y-auto border border-slate-200 rounded-2xl shadow-lg bg-white">
+        <table className="min-w-full text-sm text-slate-700 table-fixed rounded-xl overflow-hidden">
           <colgroup><col style={{ width: '16%' }}/><col style={{ width: '16%' }}/><col style={{ width: '16%' }}/><col style={{ width: '12%' }}/><col style={{ width: '12%' }}/><col style={{ width: '12%' }}/><col style={{ width: '9%' }}/><col style={{ width: '7%' }}/></colgroup>
-          <thead className="bg-blue-50 sticky top-0 z-10">
+          <thead className="bg-linear-to-r from-blue-100 to-blue-50 sticky top-0 z-10">
             <tr>
-              <th className="px-4 py-3 font-semibold text-left">Date/Time</th>
-              <th className="px-4 py-3 font-semibold text-left">Project</th>
-              <th className="px-4 py-3 font-semibold text-left">Task</th>
-              <th className="px-4 py-3 font-semibold text-left">Per Hour Target</th>
-              <th className="px-4 py-3 font-semibold text-left">Production</th>
-              <th className="px-4 py-3 font-semibold text-left">Billable Hours</th>
-              <th className="px-4 py-3 font-semibold text-left">Task File</th>
-              <th className="px-4 py-3 font-semibold text-center">Action</th>
+              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">Date/Time</th>
+              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">Project</th>
+              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">Task</th>
+              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">Per Hour Target</th>
+              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">Production</th>
+              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">Billable Hours</th>
+              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">Task File</th>
+              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-center">Action</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={8} className="text-center py-8">Loading...</td></tr>
+              <tr><td colSpan={8} className="text-center py-16 font-semibold text-blue-600 animate-pulse">Loading...</td></tr>
             ) : trackers.length === 0 ? (
-              <tr><td colSpan={8} className="text-center py-8">No tracker data found.</td></tr>
+              <tr><td colSpan={8} className="text-center py-16 text-slate-400 font-medium">No tracker data found.</td></tr>
             ) : trackers.map(tracker => (
-              <tr key={tracker.tracker_id} className="border-b border-slate-100 hover:bg-blue-50 transition">
-                <td className="px-4 py-2 align-middle">
+              <tr key={tracker.tracker_id} className="border-b border-slate-100 hover:bg-blue-50/60 transition-colors group">
+                <td className="px-5 py-3 align-middle whitespace-nowrap">
                   {tracker.date_time
                     ? format(new Date(tracker.date_time), "dd/MM/yyyy")
                     : "-"}
                 </td>
-                <td className="px-4 py-2 align-middle">{tracker.project_name || getProjectName(tracker.project_id)}</td>
-                <td className="px-4 py-2 align-middle">{tracker.task_name || getTaskName(tracker.task_id, tracker.project_id) || '-'}</td>
+                <td className="px-5 py-3 align-middle whitespace-nowrap">{tracker.project_name || getProjectName(tracker.project_id)}</td>
+                <td className="px-5 py-3 align-middle whitespace-nowrap">{tracker.task_name || getTaskName(tracker.task_id, tracker.project_id) || '-'}</td>
                 {/* Always show tenure_target from tracker/view for all roles */}
-                <td className="px-4 py-2 align-middle">{tracker.tenure_target ?? '-'}</td>
-                <td className="px-4 py-2 align-middle">{tracker.production}</td>
-                <td className="px-4 py-2 align-middle">
+                <td className="px-5 py-3 align-middle whitespace-nowrap">{tracker.tenure_target ?? '-'}</td>
+                <td className="px-5 py-3 align-middle whitespace-nowrap">{tracker.production}</td>
+                <td className="px-5 py-3 align-middle whitespace-nowrap">
                   {tracker.billable_hours !== null && tracker.billable_hours !== undefined
                     ? Number(tracker.billable_hours).toFixed(2)
                     : "0.00"}
@@ -417,13 +417,13 @@ const TrackerTable = ({ userId, projects, onClose }) => {
                       download
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center text-blue-600 hover:text-blue-800"
+                      className="inline-flex items-center justify-center text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 group-hover:bg-blue-100 rounded-full p-2 shadow-sm"
                       title="Download file"
                     >
                       <Download className="w-5 h-5" />
                     </a>
                   ) : (
-                    <span className="text-slate-400">—</span>
+                    <span className="text-slate-300">—</span>
                   )}
                 </td>
                 <td className="px-4 py-2 align-middle text-center">
@@ -440,7 +440,7 @@ const TrackerTable = ({ userId, projects, onClose }) => {
                       />
                     </button>
                   ) : (
-                    <span className="text-slate-400" title="Can only delete today's entries">—</span>
+                    <span className="text-slate-300" title="Can only delete today's entries">—</span>
                   )}
                 </td>
               </tr>
@@ -451,28 +451,28 @@ const TrackerTable = ({ userId, projects, onClose }) => {
 
       {/* Totals Summary Card */}
       {!loading && trackers.length > 0 && (
-        <div className="mt-4 bg-linear-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-          <h3 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
+        <div className="mt-6 bg-linear-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 shadow-lg">
+          <h3 className="text-lg font-bold text-blue-900 mb-6 flex items-center gap-2">
             <span className="inline-block w-2 h-2 bg-blue-600 rounded-full"></span>
             Summary Totals
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Total Per Hour Target */}
-            <div className="bg-white rounded-lg p-3 shadow-sm border border-blue-100">
-              <p className="text-xs text-gray-600 mb-1">Total Per Hour Target</p>
-              <p className="text-2xl font-bold text-blue-700">{totals.tenureTarget.toFixed(2)}</p>
+            <div className="bg-white rounded-xl p-6 shadow border border-blue-100 flex flex-col items-center">
+              <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">Total Per Hour Target</p>
+              <p className="text-3xl font-extrabold text-blue-700">{totals.tenureTarget.toFixed(2)}</p>
             </div>
 
             {/* Total Production */}
-            <div className="bg-white rounded-lg p-3 shadow-sm border border-blue-100">
-              <p className="text-xs text-gray-600 mb-1">Total Production</p>
-              <p className="text-2xl font-bold text-green-700">{totals.production.toFixed(2)}</p>
+            <div className="bg-white rounded-xl p-6 shadow border border-green-100 flex flex-col items-center">
+              <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">Total Production</p>
+              <p className="text-3xl font-extrabold text-green-700">{totals.production.toFixed(2)}</p>
             </div>
 
             {/* Total Billable Hours */}
-            <div className="bg-white rounded-lg p-3 shadow-sm border border-blue-100">
-              <p className="text-xs text-gray-600 mb-1">Total Billable Hours</p>
-              <p className="text-2xl font-bold text-purple-700">{totals.billableHours.toFixed(2)}</p>
+            <div className="bg-white rounded-xl p-6 shadow border border-purple-100 flex flex-col items-center">
+              <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">Total Billable Hours</p>
+              <p className="text-3xl font-extrabold text-purple-700">{totals.billableHours.toFixed(2)}</p>
             </div>
           </div>
         </div>

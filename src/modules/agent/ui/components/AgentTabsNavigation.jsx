@@ -33,7 +33,7 @@ const AgentTabsNavigation = ({ activeTab, setActiveTab }) => {
               className={
                 `grow lg:grow-0 px-4 sm:px-4 py-3 sm:py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-all whitespace-nowrap snap-start ` +
                 (isActive
-                  ? 'bg-white border  text-blue-600 border-blue-600 shadow-md'
+                  ? 'bg-white shadow-md border border-blue-600 text-blue-600'
                   : 'bg-white shadow border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-slate-300')
               }
               title={tab.label}

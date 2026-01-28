@@ -1,6 +1,8 @@
 import * as XLSX from 'xlsx';
 import { toast } from "react-hot-toast";
 import React, { useState, useEffect } from "react";
+import { getFriendlyErrorMessage } from '../../../../utils/errorMessages';
+import ErrorMessage from '../../../../components/common/ErrorMessage';
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 dayjs.extend(customParseFormat);
@@ -51,8 +53,9 @@ const AgentBillableReport = () => {
       const filename = `Monthly_Report.xlsx`;
       XLSX.writeFile(workbook, filename);
       toast.success('Monthly report exported!');
-    } catch {
-      toast.error('Failed to export monthly report');
+    } catch (err) {
+      const msg = getFriendlyErrorMessage(err);
+      toast.error(msg);
     }
   };
 
@@ -103,8 +106,9 @@ const AgentBillableReport = () => {
       const filename = `Month_Daily_Report_${monthYear}.xlsx`;
       XLSX.writeFile(workbook, filename);
       toast.success('Month daily report exported!');
-    } catch {
-      toast.error('Failed to export month daily report');
+    } catch (err) {
+      const msg = getFriendlyErrorMessage(err);
+      toast.error(msg);
     }
   };
 
@@ -154,8 +158,8 @@ const AgentBillableReport = () => {
         }
         const res = await fetchDailyBillableReport(payload);
         setDailyData(Array.isArray(res.data?.trackers) ? res.data.trackers : []);
-      } catch {
-        setErrorDaily("Failed to fetch daily report data");
+      } catch (err) {
+        setErrorDaily(getFriendlyErrorMessage(err));
       } finally {
         setLoadingDaily(false);
       }
@@ -190,8 +194,8 @@ const AgentBillableReport = () => {
         }
         const res = await fetchMonthlyBillableReport(payload);
         setMonthlySummaryData(Array.isArray(res.data) ? res.data : []);
-      } catch {
-        setErrorMonthly("Failed to fetch monthly report data");
+      } catch (err) {
+        setErrorMonthly(getFriendlyErrorMessage(err));
       } finally {
         setLoadingMonthly(false);
       }
@@ -321,7 +325,11 @@ const AgentBillableReport = () => {
             {loadingDaily ? (
               <div className="py-8 text-center text-blue-700 font-semibold">Loading daily report...</div>
             ) : errorDaily ? (
-              <div className="py-8 text-center text-red-600 font-semibold">{errorDaily}</div>
+              <ErrorMessage message={errorDaily} onRetry={() => {
+                setStartDate('');
+                setEndDate('');
+                setMonthFilter('');
+              }} />
             ) : (
               <table className="min-w-full divide-y divide-blue-100 text-sm">
                 <thead>
@@ -390,7 +398,7 @@ const AgentBillableReport = () => {
             {loadingMonthly ? (
               <div className="py-8 text-center text-blue-700 font-semibold">Loading monthly report...</div>
             ) : errorMonthly ? (
-              <div className="py-8 text-center text-red-600 font-semibold">{errorMonthly}</div>
+              <ErrorMessage message={errorMonthly} onRetry={() => setMonthlyMonth("")} />
             ) : (
               <table className="min-w-full divide-y divide-blue-100 text-sm">
                 <thead>

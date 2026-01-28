@@ -3,6 +3,8 @@ import { format } from "date-fns";
 import { FileText, Users, Clock, TrendingUp, Download, Filter } from "lucide-react";
 
 import api from "../../../../services/api";
+import { getFriendlyErrorMessage } from '../../../../utils/errorMessages';
+import ErrorMessage from '../../../../components/common/ErrorMessage';
 import { useAuth } from "../../../../context/AuthContext";
 import { useDeviceInfo } from '../../../../hooks/useDeviceInfo';
 
@@ -21,6 +23,7 @@ const AssistantManagerDashboard = () => {
     latestQc: [],
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Fetch dashboard data
   useEffect(() => {
@@ -64,6 +67,7 @@ const AssistantManagerDashboard = () => {
         }
       } catch (err) {
         console.error('[AssistantManagerDashboard] Error fetching dashboard:', err);
+        setError(getFriendlyErrorMessage(err));
       } finally {
         setLoading(false);
       }
@@ -76,6 +80,21 @@ const AssistantManagerDashboard = () => {
   const handleDateRangeChange = (field, value) => {
     setDateRange((prev) => ({ ...prev, [field]: value }));
   };
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <ErrorMessage message={error} onRetry={() => {
+           setError(null);
+           // This will trigger the effect again because of how dependencies work, 
+           // but technically we might need to increment a dependency if we want to force it.
+           // However, if dateRange or user hasn't changed, it might not re-run.
+           // Let's just set a refresh state if needed.
+           setDateRange({...dateRange}); 
+        }} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-10">
