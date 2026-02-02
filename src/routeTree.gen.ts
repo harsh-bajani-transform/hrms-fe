@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as EntryRouteImport } from './routes/entry'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AgentProjectsRouteImport } from './routes/agent-projects'
 import { Route as AgentRouteImport } from './routes/agent'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
@@ -30,6 +31,11 @@ const EntryRoute = EntryRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentProjectsRoute = AgentProjectsRouteImport.update({
+  id: '/agent-projects',
+  path: '/agent-projects',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgentRoute = AgentRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/agent': typeof AgentRoute
+  '/agent-projects': typeof AgentProjectsRoute
   '/dashboard': typeof DashboardRoute
   '/entry': typeof EntryRoute
   '/login': typeof LoginRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/agent': typeof AgentRoute
+  '/agent-projects': typeof AgentProjectsRoute
   '/dashboard': typeof DashboardRoute
   '/entry': typeof EntryRoute
   '/login': typeof LoginRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/agent': typeof AgentRoute
+  '/agent-projects': typeof AgentProjectsRoute
   '/dashboard': typeof DashboardRoute
   '/entry': typeof EntryRoute
   '/login': typeof LoginRoute
@@ -88,17 +97,27 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/agent'
+    | '/agent-projects'
     | '/dashboard'
     | '/entry'
     | '/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/admin' | '/agent' | '/dashboard' | '/entry' | '/login'
+  to:
+    | '/'
+    | '/about'
+    | '/admin'
+    | '/agent'
+    | '/agent-projects'
+    | '/dashboard'
+    | '/entry'
+    | '/login'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/admin'
     | '/agent'
+    | '/agent-projects'
     | '/dashboard'
     | '/entry'
     | '/login'
@@ -109,6 +128,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
   AgentRoute: typeof AgentRoute
+  AgentProjectsRoute: typeof AgentProjectsRoute
   DashboardRoute: typeof DashboardRoute
   EntryRoute: typeof EntryRoute
   LoginRoute: typeof LoginRoute
@@ -135,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agent-projects': {
+      id: '/agent-projects'
+      path: '/agent-projects'
+      fullPath: '/agent-projects'
+      preLoaderRoute: typeof AgentProjectsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agent': {
@@ -173,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
   AgentRoute: AgentRoute,
+  AgentProjectsRoute: AgentProjectsRoute,
   DashboardRoute: DashboardRoute,
   EntryRoute: EntryRoute,
   LoginRoute: LoginRoute,
