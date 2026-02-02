@@ -8,190 +8,210 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as LoginRouteImport } from "./routes/login";
-import { Route as EntryRouteImport } from "./routes/entry";
-import { Route as DashboardRouteImport } from "./routes/dashboard";
-import { Route as AgentProjectsRouteImport } from "./routes/agent-projects";
-import { Route as AgentRouteImport } from "./routes/agent";
-import { Route as AdminRouteImport } from "./routes/admin";
-import { Route as AboutRouteImport } from "./routes/about";
-import { Route as IndexRouteImport } from "./routes/index";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as EntryRouteImport } from './routes/entry'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AgentProjectsRouteImport } from './routes/agent-projects'
+import { Route as AgentBillableReportRouteImport } from './routes/agent-billable-report'
+import { Route as AgentRouteImport } from './routes/agent'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as IndexRouteImport } from './routes/index'
 
 const LoginRoute = LoginRouteImport.update({
-  id: "/login",
-  path: "/login",
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const EntryRoute = EntryRouteImport.update({
-  id: "/entry",
-  path: "/entry",
+  id: '/entry',
+  path: '/entry',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
-  id: "/dashboard",
-  path: "/dashboard",
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AgentProjectsRoute = AgentProjectsRouteImport.update({
-  id: "/agent-projects",
-  path: "/agent-projects",
+  id: '/agent-projects',
+  path: '/agent-projects',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
+const AgentBillableReportRoute = AgentBillableReportRouteImport.update({
+  id: '/agent-billable-report',
+  path: '/agent-billable-report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgentRoute = AgentRouteImport.update({
-  id: "/agent",
-  path: "/agent",
+  id: '/agent',
+  path: '/agent',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AdminRoute = AdminRouteImport.update({
-  id: "/admin",
-  path: "/admin",
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AboutRoute = AboutRouteImport.update({
-  id: "/about",
-  path: "/about",
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/about": typeof AboutRoute;
-  "/admin": typeof AdminRoute;
-  "/agent": typeof AgentRoute;
-  "/agent-projects": typeof AgentProjectsRoute;
-  "/dashboard": typeof DashboardRoute;
-  "/entry": typeof EntryRoute;
-  "/login": typeof LoginRoute;
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
+  '/agent': typeof AgentRoute
+  '/agent-billable-report': typeof AgentBillableReportRoute
+  '/agent-projects': typeof AgentProjectsRoute
+  '/dashboard': typeof DashboardRoute
+  '/entry': typeof EntryRoute
+  '/login': typeof LoginRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/about": typeof AboutRoute;
-  "/admin": typeof AdminRoute;
-  "/agent": typeof AgentRoute;
-  "/agent-projects": typeof AgentProjectsRoute;
-  "/dashboard": typeof DashboardRoute;
-  "/entry": typeof EntryRoute;
-  "/login": typeof LoginRoute;
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
+  '/agent': typeof AgentRoute
+  '/agent-billable-report': typeof AgentBillableReportRoute
+  '/agent-projects': typeof AgentProjectsRoute
+  '/dashboard': typeof DashboardRoute
+  '/entry': typeof EntryRoute
+  '/login': typeof LoginRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/about": typeof AboutRoute;
-  "/admin": typeof AdminRoute;
-  "/agent": typeof AgentRoute;
-  "/agent-projects": typeof AgentProjectsRoute;
-  "/dashboard": typeof DashboardRoute;
-  "/entry": typeof EntryRoute;
-  "/login": typeof LoginRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
+  '/agent': typeof AgentRoute
+  '/agent-billable-report': typeof AgentBillableReportRoute
+  '/agent-projects': typeof AgentProjectsRoute
+  '/dashboard': typeof DashboardRoute
+  '/entry': typeof EntryRoute
+  '/login': typeof LoginRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/about"
-    | "/admin"
-    | "/agent"
-    | "/agent-projects"
-    | "/dashboard"
-    | "/entry"
-    | "/login";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/about'
+    | '/admin'
+    | '/agent'
+    | '/agent-billable-report'
+    | '/agent-projects'
+    | '/dashboard'
+    | '/entry'
+    | '/login'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/about"
-    | "/admin"
-    | "/agent"
-    | "/agent-projects"
-    | "/dashboard"
-    | "/entry"
-    | "/login";
+    | '/'
+    | '/about'
+    | '/admin'
+    | '/agent'
+    | '/agent-billable-report'
+    | '/agent-projects'
+    | '/dashboard'
+    | '/entry'
+    | '/login'
   id:
-    | "__root__"
-    | "/"
-    | "/about"
-    | "/admin"
-    | "/agent"
-    | "/agent-projects"
-    | "/dashboard"
-    | "/entry"
-    | "/login";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/admin'
+    | '/agent'
+    | '/agent-billable-report'
+    | '/agent-projects'
+    | '/dashboard'
+    | '/entry'
+    | '/login'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AboutRoute: typeof AboutRoute;
-  AdminRoute: typeof AdminRoute;
-  AgentRoute: typeof AgentRoute;
-  AgentProjectsRoute: typeof AgentProjectsRoute;
-  DashboardRoute: typeof DashboardRoute;
-  EntryRoute: typeof EntryRoute;
-  LoginRoute: typeof LoginRoute;
+  IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRoute
+  AgentRoute: typeof AgentRoute
+  AgentBillableReportRoute: typeof AgentBillableReportRoute
+  AgentProjectsRoute: typeof AgentProjectsRoute
+  DashboardRoute: typeof DashboardRoute
+  EntryRoute: typeof EntryRoute
+  LoginRoute: typeof LoginRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/login": {
-      id: "/login";
-      path: "/login";
-      fullPath: "/login";
-      preLoaderRoute: typeof LoginRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/entry": {
-      id: "/entry";
-      path: "/entry";
-      fullPath: "/entry";
-      preLoaderRoute: typeof EntryRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/dashboard": {
-      id: "/dashboard";
-      path: "/dashboard";
-      fullPath: "/dashboard";
-      preLoaderRoute: typeof DashboardRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/agent-projects": {
-      id: "/agent-projects";
-      path: "/agent-projects";
-      fullPath: "/agent-projects";
-      preLoaderRoute: typeof AgentProjectsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/agent": {
-      id: "/agent";
-      path: "/agent";
-      fullPath: "/agent";
-      preLoaderRoute: typeof AgentRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/admin": {
-      id: "/admin";
-      path: "/admin";
-      fullPath: "/admin";
-      preLoaderRoute: typeof AdminRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/about": {
-      id: "/about";
-      path: "/about";
-      fullPath: "/about";
-      preLoaderRoute: typeof AboutRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entry': {
+      id: '/entry'
+      path: '/entry'
+      fullPath: '/entry'
+      preLoaderRoute: typeof EntryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agent-projects': {
+      id: '/agent-projects'
+      path: '/agent-projects'
+      fullPath: '/agent-projects'
+      preLoaderRoute: typeof AgentProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agent-billable-report': {
+      id: '/agent-billable-report'
+      path: '/agent-billable-report'
+      fullPath: '/agent-billable-report'
+      preLoaderRoute: typeof AgentBillableReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agent': {
+      id: '/agent'
+      path: '/agent'
+      fullPath: '/agent'
+      preLoaderRoute: typeof AgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -200,11 +220,12 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
   AgentRoute: AgentRoute,
+  AgentBillableReportRoute: AgentBillableReportRoute,
   AgentProjectsRoute: AgentProjectsRoute,
   DashboardRoute: DashboardRoute,
   EntryRoute: EntryRoute,
   LoginRoute: LoginRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
