@@ -9,7 +9,8 @@ import {
   User, 
   ChevronDown, 
   ChevronUp,
-  Layers
+  Layers,
+  Download
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../../context/AuthContext';
@@ -134,14 +135,39 @@ const ProjectsManagement = ({ projects, loading, onRefresh, dropdowns }) => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <button 
-                    onClick={() => setExpandedProjectId(expandedProjectId === p.project_id ? null : p.project_id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                  >
-                    {expandedProjectId === p.project_id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    {expandedProjectId === p.project_id ? 'Hide Details' : 'View Details'}
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const filePath = p.project_file;
+                          if (!filePath || filePath === 'null') {
+                            toast.error('No file available for this project.');
+                            return;
+                          }
+                          const fileName = filePath.split(/[\\/]/).filter(Boolean).pop() || 'project-file';
+                          const link = document.createElement('a');
+                          link.href = filePath;
+                          link.setAttribute('download', fileName);
+                          document.body.appendChild(link);
+                          link.click();
+                          link.parentNode.removeChild(link);
+                        } catch (err) {
+                          console.error('Download error:', err);
+                          toast.error('Failed to download file.');
+                        }
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-all"
+                      title="Download Project File"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => setExpandedProjectId(expandedProjectId === p.project_id ? null : p.project_id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                    >
+                      {expandedProjectId === p.project_id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      {expandedProjectId === p.project_id ? 'Hide Details' : 'View Details'}
+                    </button>
                   {canManageProjects && (
                     <div className="flex items-center gap-2 border-l border-slate-100 pl-3">
                       <button 

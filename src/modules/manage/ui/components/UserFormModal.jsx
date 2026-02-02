@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Upload, User, UserPlus, Eye, EyeOff, Shield, Briefcase, Users, Phone, Mail, MapPin } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import CustomSelect from '../../../../components/common/CustomSelect';
@@ -6,7 +6,18 @@ import { fileToBase64 } from '../../../../lib/fileToBase64';
 import { addUser, updateUser } from '../../services/manageService';
 import { useDeviceInfo } from '../../../../hooks/useDeviceInfo';
 
-const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
+const UserFormModal = ({ 
+  user, 
+  onClose, 
+  onSuccess, 
+  roles = [], 
+  designations = [], 
+  projectManagers = [], 
+  assistantManagers = [], 
+  qas = [], 
+  teams = [],
+  isDropdownLoading = false
+}) => {
   const isEditMode = !!user;
   const { device_id, device_type } = useDeviceInfo();
   const fileInputRef = useRef(null);
@@ -31,6 +42,25 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Reset/Map state when mode changes or dropdowns load
+  useEffect(() => {
+    if (isEditMode && user) {
+      setFormData(prev => {
+        const mapped = {
+          ...prev,
+          roleId: roles.find(r => String(r.id) === String(user.role_id) || r.label === user.role_name)?.id?.toString() || prev.roleId,
+          designationId: designations.find(d => String(d.id) === String(user.designation_id) || d.label === user.designation_name)?.id?.toString() || prev.designationId,
+          projectManagerId: projectManagers.find(m => String(m.id || m.user_id) === String(user.project_manager_id) || m.label === user.project_manager_name)?.id?.toString() || prev.projectManagerId,
+          assistantManagerId: assistantManagers.find(m => String(m.id || m.user_id) === String(user.assistant_manager_id) || m.label === user.assistant_manager_name)?.id?.toString() || prev.assistantManagerId,
+          qaId: qas.find(q => String(q.id || q.user_id) === String(user.qa_id) || q.label === user.qa_name)?.id?.toString() || prev.qaId,
+          teamId: teams.find(t => String(t.id || t.team_id) === String(user.team_id) || t.label === user.team_name)?.id?.toString() || prev.teamId,
+        };
+        const isSame = Object.keys(mapped).every(key => mapped[key] === prev[key]);
+        return isSame ? prev : mapped;
+      });
+    }
+  }, [isEditMode, user, roles, designations, projectManagers, assistantManagers, qas, teams]);
 
   // Field visibility logic based on Role
   const getFieldVisibility = (selectedRoleId) => {
@@ -159,7 +189,7 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                   accept="image/*"
                 />
               </div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profile Picture (Max 2MB)</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Profile Picture (Max 2MB)</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -250,9 +280,10 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                     <CustomSelect
                       value={formData.roleId}
                       onChange={(val) => setFormData({ ...formData, roleId: val })}
-                      options={dropdowns.roles.map(r => ({ value: (r.role_id || r.id)?.toString(), label: r.label }))}
+                      options={roles.map(r => ({ value: (r.role_id || r.id || r.value)?.toString(), label: r.label || r.name }))}
                       placeholder="Select Role"
                       className={errors.roleId ? 'border-rose-400' : ''}
+                      isLoading={isDropdownLoading}
                     />
                     {errors.roleId && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.roleId}</p>}
                   </div>
@@ -261,9 +292,10 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                     <CustomSelect
                       value={formData.designationId}
                       onChange={(val) => setFormData({ ...formData, designationId: val })}
-                      options={dropdowns.designations.map(d => ({ value: (d.designation_id || d.id)?.toString(), label: d.label }))}
+                      options={designations.map(d => ({ value: (d.designation_id || d.id || d.value)?.toString(), label: d.label || d.name }))}
                       placeholder="Select Designation"
                       className={errors.designationId ? 'border-rose-400' : ''}
+                      isLoading={isDropdownLoading}
                     />
                     {errors.designationId && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.designationId}</p>}
                   </div>
@@ -275,14 +307,15 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                     <CustomSelect
                       value={formData.teamId}
                       onChange={(val) => setFormData({ ...formData, teamId: val })}
-                      options={dropdowns.teams.map(t => ({ value: (t.team_id || t.id)?.toString(), label: t.label }))}
+                      options={teams.map(t => ({ value: (t.team_id || t.id || t.value)?.toString(), label: t.label || t.name }))}
                       placeholder="Select Team"
                       className={errors.teamId ? 'border-rose-400' : ''}
+                      isLoading={isDropdownLoading}
                     />
                     {errors.teamId && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.teamId}</p>}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 ml-1">Tenure (Years)</label>
+                    <label className="text-xs font-bold text-slate-700 ml-1">Tenure</label>
                     <input
                       type="number"
                       step="0.1"
@@ -302,8 +335,9 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                       <CustomSelect
                         value={formData.projectManagerId}
                         onChange={(val) => setFormData({ ...formData, projectManagerId: val })}
-                        options={dropdowns.projectManagers.map(m => ({ value: (m.user_id || m.id)?.toString(), label: m.label }))}
+                        options={projectManagers.map(m => ({ value: (m.user_id || m.id || m.value)?.toString(), label: m.label || m.name }))}
                         placeholder="Select PM"
+                        isLoading={isDropdownLoading}
                       />
                     </div>
                   )}
@@ -314,8 +348,9 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                       <CustomSelect
                         value={formData.assistantManagerId}
                         onChange={(val) => setFormData({ ...formData, assistantManagerId: val })}
-                        options={dropdowns.assistantManagers.map(m => ({ value: (m.user_id || m.id)?.toString(), label: m.label }))}
+                        options={assistantManagers.map(m => ({ value: (m.user_id || m.id || m.value)?.toString(), label: m.label || m.name }))}
                         placeholder="Select AM"
+                        isLoading={isDropdownLoading}
                       />
                     </div>
                   )}
@@ -326,8 +361,9 @@ const UserFormModal = ({ user, onClose, onSuccess, dropdowns }) => {
                       <CustomSelect
                         value={formData.qaId}
                         onChange={(val) => setFormData({ ...formData, qaId: val })}
-                        options={dropdowns.qas.map(q => ({ value: (q.user_id || q.id)?.toString(), label: q.label }))}
+                        options={qas.map(q => ({ value: (q.user_id || q.id || q.value)?.toString(), label: q.label || q.name }))}
                         placeholder="Select QA"
+                        isLoading={isDropdownLoading}
                       />
                     </div>
                   )}

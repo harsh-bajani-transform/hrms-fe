@@ -3,7 +3,6 @@
  * Description: QA Agent List - Shows assigned agents with their tracker data (files only)
  */
 import React, { useEffect, useState } from "react";
-import { format } from "date-fns";
 import { ChevronDown, ChevronUp, Download, FileText, Users as UsersIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
 import api from "../../../../services/api";
@@ -20,7 +19,7 @@ const QAAgentList = () => {
   // Store task names from dropdown API
   const [dropdownTaskNameMap, setDropdownTaskNameMap] = useState({});
 
-  // Fetch agents, trackers, and task names from dropdown/get and dashboard/filter
+  // Fetch agents, trackers, and task names from dropdown/get and tracker/view
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -31,81 +30,65 @@ const QAAgentList = () => {
           logged_in_user_id: user?.user_id
         });
         const projectsWithTasks = dropdownRes.data?.data || [];
-        const taskNameMap = {};
+        const taskNameMap = {}; // Map task_id -> task_name map
+        const pMap = {}; // Map project_id -> project_name
+        
         projectsWithTasks.forEach(project => {
+          pMap[String(project.project_id)] = project.project_name;
           (project.tasks || []).forEach(task => {
-            taskNameMap[task.task_id] = task.task_name || task.label;
+             // Use task_name or label, consistent with source
+             const tName = task.task_name || task.label;
+             taskNameMap[String(task.task_id)] = tName;
           });
         });
         setDropdownTaskNameMap(taskNameMap);
 
-        log('[QAAgentList] Fetching dashboard/filter data');
+        log('[QAAgentList] Fetching tracker/view data');
         const payload = {
           logged_in_user_id: user?.user_id,
-          device_id: user?.device_id || 'web123',
-          device_type: user?.device_type || 'web',
         };
-        const res = await api.post("/dashboard/filter", payload);
-        const data = res.data?.data || {};
-        
-        let filteredAgents = [];
-        let trackersByAgent = {};
-        const role = String(user?.role_name || user?.user_role || '').toLowerCase();
-        const allUsers = data.users || [];
-        const allTrackers = data.tracker || [];
+        // Source uses /tracker/view
+        const trackerRes = await api.post("/tracker/view", payload);
+        const trackerData = trackerRes.data?.data || {};
+        let myTrackers = trackerData.trackers || [];
 
-        if (role === 'assistant manager' || role.includes('assistant')) {
-          let myTeamIds = [];
-          if (data.projects) {
-            data.projects.forEach(p => {
-              if (p.asst_project_manager_id && p.asst_project_manager_id.includes(String(user.user_id))) {
-                if (p.project_team_id) {
-                  const ids = p.project_team_id.replace(/\[|\]/g, '').split(',').map(x => x.trim()).filter(Boolean);
-                  myTeamIds.push(...ids);
-                }
-              }
-            });
-          }
-          filteredAgents = allUsers.filter(agent => myTeamIds.includes(String(agent.user_id)));
-        } else if (role === 'project manager') {
-          let myProjectIds = [];
-          if (data.projects) {
-            data.projects.forEach(p => {
-              if (String(p.project_manager_id) === String(user.user_id)) {
-                if (p.project_team_id) {
-                  const ids = p.project_team_id.replace(/\[|\]/g, '').split(',').map(x => x.trim()).filter(Boolean);
-                  myProjectIds.push(...ids);
-                }
-              }
-            });
-          }
-          filteredAgents = allUsers.filter(agent => myProjectIds.includes(String(agent.user_id)));
-        } else if (role === 'qa' || role === 'qa agent' || role === 'quality analyst') {
-          let myQAIds = [];
-          if (data.projects) {
-            data.projects.forEach(p => {
-              if (p.project_qa_id && p.project_qa_id.includes(String(user.user_id))) {
-                if (p.project_team_id) {
-                  const ids = p.project_team_id.replace(/\[|\]/g, '').split(',').map(x => x.trim()).filter(Boolean);
-                  myQAIds.push(...ids);
-                }
-              }
-            });
-          }
-          filteredAgents = allUsers.filter(agent => myQAIds.includes(String(agent.user_id)));
-        } else {
-          filteredAgents = allUsers;
+        // Source logic for filtering by qa_agent_id if present
+        if (myTrackers.some(t => t.qa_agent_id !== undefined)) {
+          myTrackers = myTrackers.filter(t => String(t.qa_agent_id) === String(user?.user_id));
         }
 
+        // Build agents map from trackers
+        const agentsMap = {};
+        myTrackers.forEach(tracker => {
+          // Verify we have a valid user_id
+           if (tracker.user_id && !agentsMap[String(tracker.user_id)]) {
+             agentsMap[String(tracker.user_id)] = {
+               user_id: tracker.user_id,
+               user_name: tracker.user_name || '-',
+             };
+           }
+        });
+        const filteredAgents = Object.values(agentsMap);
+
+        // Build trackersByAgent map
+        const trackersByAgent = {};
         filteredAgents.forEach(agent => {
-          trackersByAgent[agent.user_id] = allTrackers.filter(t => String(t.user_id) === String(agent.user_id) && t.tracker_file);
+          trackersByAgent[agent.user_id] = myTrackers
+            .filter(t => String(t.user_id) === String(agent.user_id) && t.tracker_file)
+            .map(tracker => ({
+              ...tracker,
+              // Ensure we have names, falling back to maps
+              project_name: tracker.project_name || pMap[String(tracker.project_id)] || '-',
+              task_name: tracker.task_name || taskNameMap[String(tracker.task_id)] || '-',
+              user_name: tracker.user_name || agent.user_name || '-'
+            }));
         });
 
         setAgents(filteredAgents);
         setAgentTrackers(trackersByAgent);
         log('[QAAgentList] Agents loaded:', filteredAgents.length);
       } catch (err) {
-        logError('[QAAgentList] Error fetching dashboard/filter:', err);
+        logError('[QAAgentList] Error fetching data:', err);
         toast.error("Failed to load agent data");
         setAgents([]);
         setAgentTrackers({});
@@ -116,7 +99,7 @@ const QAAgentList = () => {
     if (user?.user_id) {
       fetchDashboardData();
     }
-  }, [user?.user_id, user?.device_id, user?.device_type, user?.role_name, user?.user_role]);
+  }, [user?.user_id]);
 
   // Toggle agent card expansion
   const toggleAgent = (agentId) => {
@@ -210,7 +193,11 @@ const QAAgentList = () => {
                                   >
                                     <td className="px-5 py-3 text-slate-700 whitespace-nowrap">
                                       {tracker.date_time
-                                        ? format(new Date(tracker.date_time), "M/d/yyyy h:mma")
+                                        ? (() => {
+                                            const d = new Date(tracker.date_time);
+                                            const pad = (n) => n.toString().padStart(2, '0');
+                                            return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+                                          })()
                                         : "-"}
                                     </td>
                                     <td className="px-5 py-3 text-slate-700 font-bold whitespace-nowrap">

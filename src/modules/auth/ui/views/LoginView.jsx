@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User, Lock, LogIn, Loader2 } from "lucide-react";
+import { User, Lock, LogIn, Loader2, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "react-hot-toast";
 import { loginUser } from "../../services/authService";
@@ -23,6 +23,29 @@ const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const LoginView = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Block Ctrl+Shift+C and F12 to prevent opening dev tools/console
+  useEffect(() => {
+    const blockConsoleShortcuts = (e) => {
+      // Block Ctrl+Shift+C
+      if (e.ctrlKey && e.shiftKey && e.code === 'KeyC') {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+      // Block F12
+      if (e.key === 'F12' || e.code === 'F12') {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    };
+    window.addEventListener('keydown', blockConsoleShortcuts, true);
+    return () => {
+      window.removeEventListener('keydown', blockConsoleShortcuts, true);
+    };
+  }, []);
 
   // Frontend validation errors
   const [usernameError, setUsernameError] = useState("");
@@ -159,12 +182,23 @@ const LoginView = () => {
               <div className="relative">
                 <Lock className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
                   placeholder="••••••••"
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 bg-gray-50 tracking-widest ${passwordError || backendPasswordError ? "border-red-500 focus:ring-red-500" : "border-gray-200 focus:ring-blue-500"}`}
+                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg appearance-none focus:outline-none focus:ring-2 bg-gray-50 tracking-widest ${passwordError || backendPasswordError ? "border-red-500 focus:ring-red-500" : "border-gray-200 focus:ring-blue-500"}`}
+                  style={{ WebkitTextSecurity: showPassword ? 'none' : 'disc' }}
+                  autoComplete="current-password"
                 />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors p-1 rounded hover:bg-gray-200"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
               {passwordError && <p className="text-red-600 text-sm mt-1">{passwordError}</p>}
               {!passwordError && backendPasswordError && <p className="text-red-600 text-sm mt-1">{backendPasswordError}</p>}

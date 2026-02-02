@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import CustomSelect from '../../../../components/common/CustomSelect';
 import { createProject, updateProject } from '../../services/manageService';
 
-const MultiSelectField = ({ label, field, options, isOpen, onToggle, formData, onToggleItem }) => (
+const MultiSelectField = ({ label, field, options, isOpen, onToggle, formData, onToggleItem, icon: IconComponent }) => (
   <div className="relative space-y-1">
     <label className="text-xs font-bold text-slate-700 ml-1">{label}</label>
     <div className="relative">
@@ -13,7 +13,7 @@ const MultiSelectField = ({ label, field, options, isOpen, onToggle, formData, o
         onClick={onToggle}
         className="w-full flex items-center justify-between pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm hover:bg-slate-100 transition-all font-bold"
       >
-        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      <IconComponent className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <span className="truncate text-slate-600">
           {formData[field].length > 0 
             ? `${formData[field].length} selected` 
@@ -100,6 +100,7 @@ const ProjectFormModal = ({ project, onClose, onSuccess, dropdowns }) => {
       }
       onSuccess();
     } catch (error) {
+      console.error('Project form error:', error);
       toast.error(error.message);
     } finally {
       setIsSubmitting(false);

@@ -262,6 +262,7 @@ const DashboardView = () => {
                   analytics={analytics}
                   hourlyChartData={hourlyChartData}
                   isAgent={isAgent}
+                  isQA={isQA}
                   dateRange={dateRange}
                 />
               )

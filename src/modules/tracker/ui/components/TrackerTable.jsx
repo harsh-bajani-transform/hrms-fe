@@ -23,8 +23,8 @@ const TrackerTable = ({ userId, projects, onClose }) => {
   // Filter states
   const [selectedProject, setSelectedProject] = useState("");
   const [selectedTask, setSelectedTask] = useState("");
-  const [startDate, setStartDate] = useState(getTodayDate());
-  const [endDate, setEndDate] = useState(getTodayDate());
+  const [startDate, setStartDate] = useState(""); // empty by default
+  const [endDate, setEndDate] = useState(""); // empty by default
 
   // Get tasks for selected project
   const availableTasks = useMemo(() => {
@@ -70,23 +70,25 @@ const TrackerTable = ({ userId, projects, onClose }) => {
         setLoading(true);
         setError("");
         
-        const device_id = user?.device_id || sessionStorage.getItem('device_id') || 'adjisjd09734';
-        const device_type = user?.device_type || sessionStorage.getItem('device_type') || 'LAPTOP';
-        
-        // Build payload with filters
+        // Build payload with filters and device info
         const payload = { 
           logged_in_user_id: user?.user_id,
           user_id: userId, 
-          device_id, 
-          device_type,
+          device_id: user?.device_id || sessionStorage.getItem('device_id') || 'web', 
+          device_type: user?.device_type || sessionStorage.getItem('device_type') || 'web',
         };
 
-        // Add optional filters
-        if (selectedProject) {
-          payload.project_id = Number(selectedProject);
-        }
-        if (selectedTask) {
-          payload.task_id = Number(selectedTask);
+        // If any filter is set, add to payload
+        if (selectedProject) payload.project_id = Number(selectedProject);
+        if (selectedTask) payload.task_id = Number(selectedTask);
+        if (startDate) payload.date_from = startDate;
+        if (endDate) payload.date_to = endDate;
+
+        // If no date filter, use today's date for both from/to
+        if (!startDate && !endDate) {
+          const today = getTodayDate();
+          payload.date_from = today;
+          payload.date_to = today;
         }
         
         const res = await fetchTrackers(payload);
@@ -169,8 +171,8 @@ const TrackerTable = ({ userId, projects, onClose }) => {
   const handleClearFilters = () => {
     setSelectedProject("");
     setSelectedTask("");
-    setStartDate(getTodayDate());
-    setEndDate(getTodayDate());
+    setStartDate("");
+    setEndDate("");
   };
 
   // Calculate totals from filtered trackers
@@ -194,7 +196,7 @@ const TrackerTable = ({ userId, projects, onClose }) => {
       // Prepare data for export
       const exportData = trackers.map((tracker) => ({
         'Date/Time': tracker.date_time
-          ? format(new Date(tracker.date_time), "M/d/yyyy h:mm a")
+          ? format(new Date(tracker.date_time), "dd/MM/yyyy HH:mm")
           : "-",
         'Project': getProjectName(tracker.project_id, tracker),
         'Task': getTaskName(tracker.task_id, tracker.project_id, tracker),
@@ -383,7 +385,11 @@ const TrackerTable = ({ userId, projects, onClose }) => {
               <tr key={tracker.tracker_id} className="border-b border-slate-100 hover:bg-blue-50 transition">
                 <td className="px-4 py-2 align-middle">
                   {tracker.date_time
-                    ? format(new Date(tracker.date_time), "M/d/yyyy h:mma")
+                    ? (() => {
+                        const d = new Date(tracker.date_time);
+                        const pad = (n) => n.toString().padStart(2, '0');
+                        return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+                      })()
                     : "-"}
                 </td>
                 <td className="px-4 py-2 align-middle">{getProjectName(tracker.project_id, tracker)}</td>

@@ -3,7 +3,6 @@
  * Description: QA Tracker Report - Shows tracker entries for assigned agents with filters
  */
 import React, { useEffect, useState, useMemo } from "react";
-import { format } from "date-fns";
 import { Download, Filter, FileDown, Users as UsersIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
 import * as XLSX from 'xlsx';
@@ -32,13 +31,14 @@ const QATrackerReport = () => {
   // Store per-hour targets from dropdown API
   const [dropdownTaskMap, setDropdownTaskMap] = useState({});
 
-  // Fetch agents, trackers, and per-hour targets from dropdown/get and dashboard/filter
+  // Fetch trackers and summary from tracker/view API with date range and agent filter
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchData = async () => {
       try {
-        setLoadingAgents(true);
         setLoading(true);
-        // Fetch per-hour targets from dropdown/get
+        setLoadingAgents(true);
+        
+        // Fetch per-hour targets from dropdown/get (keep this as it enriches the view)
         const dropdownRes = await api.post("/dropdown/get", {
           dropdown_type: "projects with tasks",
           logged_in_user_id: user?.user_id
@@ -52,115 +52,63 @@ const QATrackerReport = () => {
         });
         setDropdownTaskMap(taskMap);
 
-        log('[QATrackerReport] Fetching dashboard/filter data');
-        const payload = {
+        let payload = {
           logged_in_user_id: user?.user_id,
-          device_id: user?.device_id || 'web123',
-          device_type: user?.device_type || 'web',
         };
-        const res = await api.post("/dashboard/filter", payload);
+        if (selectedAgent) payload.user_id = selectedAgent;
+        if (startDate) payload.date_from = startDate;
+        if (endDate) payload.date_to = endDate;
+        
+        log('[QATrackerReport] Fetching tracker/view data', payload);
+        const res = await api.post("/tracker/view", payload);
         const data = res.data?.data || {};
         
-        let filteredAgents = [];
-        let filteredTrackers = [];
-        const role = String(user?.role_name || user?.user_role || '').toLowerCase();
-        const allUsers = data.users || [];
-        const allTrackers = data.tracker || [];
-        const allTasks = data.tasks || [];
-        const taskNameMap = {};
-        allTasks.forEach(task => {
-          if (task.task_id != null) taskNameMap[task.task_id] = task.task_name;
-        });
-
-        if (role === 'assistant manager' || role.includes('assistant')) {
-          // Assistant manager: show only users in their team (team_id match)
-          let myTeamIds = [];
-          if (data.projects) {
-            data.projects.forEach(p => {
-              if (p.asst_project_manager_id && p.asst_project_manager_id.includes(String(user.user_id))) {
-                if (p.project_team_id) {
-                  const ids = p.project_team_id.replace(/\[|\]/g, '').split(',').map(x => x.trim()).filter(Boolean);
-                  myTeamIds.push(...ids);
-                }
-              }
-            });
-          }
-          filteredAgents = allUsers.filter(u => myTeamIds.includes(String(u.user_id)));
-          filteredTrackers = allTrackers.filter(t => myTeamIds.includes(String(t.user_id)));
-        } else if (role === 'project manager') {
-          // Project manager: show only users in their project (project_manager_id match)
-          let myProjectIds = [];
-          if (data.projects) {
-            data.projects.forEach(p => {
-              if (String(p.project_manager_id) === String(user.user_id)) {
-                if (p.project_team_id) {
-                  const ids = p.project_team_id.replace(/\[|\]/g, '').split(',').map(x => x.trim()).filter(Boolean);
-                  myProjectIds.push(...ids);
-                }
-              }
-            });
-          }
-          filteredAgents = allUsers.filter(u => myProjectIds.includes(String(u.user_id)));
-          filteredTrackers = allTrackers.filter(t => myProjectIds.includes(String(t.user_id)));
-        } else if (role === 'qa' || role === 'qa agent' || role === 'quality analyst') {
-          // QA: show only users under QA (project_qa_id match)
-          let myQAIds = [];
-          if (data.projects) {
-            data.projects.forEach(p => {
-              if (p.project_qa_id && p.project_qa_id.includes(String(user.user_id))) {
-                if (p.project_team_id) {
-                  const ids = p.project_team_id.replace(/\[|\]/g, '').split(',').map(x => x.trim()).filter(Boolean);
-                  myQAIds.push(...ids);
-                }
-              }
-            });
-          }
-          filteredAgents = allUsers.filter(u => myQAIds.includes(String(u.user_id)));
-          filteredTrackers = allTrackers.filter(t => myQAIds.includes(String(t.user_id)));
-        } else {
-          // Default: show all users and trackers
-          filteredAgents = allUsers;
-          filteredTrackers = allTrackers;
+        const fetchedTrackers = Array.isArray(data.trackers) ? data.trackers : [];
+        setTrackers(fetchedTrackers);
+        
+        // Use backend summary if available
+        // Note: Source QATrackerReport uses fetching logic to setAssignedAgents from month_summary
+        // We will preserve that logic for compatibility
+        const monthSummary = Array.isArray(data.month_summary) ? data.month_summary : [];
+        
+        // If we are showing "All Agents", Update the assigned agents dropdown based on the summary response
+        if (!selectedAgent && monthSummary.length > 0) {
+           const uniqueAgents = [];
+           const seen = new Set();
+           monthSummary.forEach(s => {
+             if (!seen.has(s.user_id)) {
+               seen.add(s.user_id);
+               uniqueAgents.push({ user_id: s.user_id, user_name: s.user_name });
+             }
+           });
+           setAssignedAgents(uniqueAgents);
+        } else if (!selectedAgent && assignedAgents.length === 0) {
+          // Fallback if summary is empty (initial load might be empty if no date range?)
+          // actually source sets assignedAgents from summary.
         }
 
-        // Enrich trackers with task_name from taskNameMap
-        filteredTrackers = filteredTrackers.map(tracker => ({
-          ...tracker,
-          task_name: tracker.task_name || taskNameMap[tracker.task_id] || "-"
-        }));
-
-        setAssignedAgents(filteredAgents);
-        setTrackers(filteredTrackers);
-        log('[QATrackerReport] Agents loaded:', filteredAgents.length, 'Trackers loaded:', filteredTrackers.length);
+        log('[QATrackerReport] Trackers loaded:', fetchedTrackers.length);
       } catch (err) {
-        logError('[QATrackerReport] Error fetching dashboard/filter:', err);
-        toast.error("Failed to load agent/tracker data");
-        setAssignedAgents([]);
+        logError('[QATrackerReport] Error fetching tracker/view:', err);
+        toast.error("Failed to load tracker data");
         setTrackers([]);
+        setAssignedAgents([]);
       } finally {
-        setLoadingAgents(false);
         setLoading(false);
+        setLoadingAgents(false);
       }
     };
     if (user?.user_id) {
-      fetchDashboardData();
+      fetchData();
     }
-  }, [user?.user_id, user?.device_id, user?.device_type, user?.role_name, user?.user_role]);
+  }, [user?.user_id, startDate, endDate, selectedAgent, assignedAgents.length]);
 
-  // Filter trackers by selected agent and date range
+  // Filter trackers by date range (API handles this, but we keep this for safety if API returns extra)
+  // Actually, API /tracker/view returns exactly what we asked for.
   const filteredTrackers = useMemo(() => {
-    let filtered = trackers;
-    if (selectedAgent) {
-      filtered = filtered.filter(t => String(t.user_id) === String(selectedAgent));
-    }
-    if (startDate) {
-      filtered = filtered.filter(t => t.date_time && t.date_time >= startDate);
-    }
-    if (endDate) {
-      filtered = filtered.filter(t => t.date_time && t.date_time <= endDate + ' 23:59:59');
-    }
-    return filtered;
-  }, [trackers, selectedAgent, startDate, endDate]);
+     // The API already filters by date and user. We just return trackers.
+     return trackers;
+  }, [trackers]);
 
   // Clear filters
   const handleClearFilters = () => {
@@ -190,7 +138,11 @@ const QATrackerReport = () => {
       // Prepare data for export
       const exportData = filteredTrackers.map((tracker) => ({
         'Date/Time': tracker.date_time
-          ? format(new Date(tracker.date_time), "M/d/yyyy h:mm a")
+          ? (() => {
+              const d = new Date(tracker.date_time);
+              const pad = (n) => n.toString().padStart(2, '0');
+              return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+            })()
           : "-",
         'Agent': tracker.user_name || "-",
         'Project': tracker.project_name || "-",
@@ -370,7 +322,11 @@ const QATrackerReport = () => {
               >
                 <td className="px-5 py-3 align-middle whitespace-nowrap">
                   {tracker.date_time
-                    ? format(new Date(tracker.date_time), "M/d/yyyy h:mma")
+                    ? (() => {
+                        const d = new Date(tracker.date_time);
+                        const pad = (n) => n.toString().padStart(2, '0');
+                        return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+                      })()
                     : "-"}
                 </td>
                 <td className="px-5 py-3 align-middle font-semibold text-blue-700 whitespace-nowrap">

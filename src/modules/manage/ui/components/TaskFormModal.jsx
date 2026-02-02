@@ -92,11 +92,13 @@ const TaskFormModal = ({ project, task, onClose, onSuccess }) => {
     setIsSubmitting(true);
     try {
       const payload = {
-        project_id: project.project_id,
+        project_id: project.id || project.project_id,
         task_name: formData.name,
         task_description: formData.description,
         task_target: formData.target,
         task_team_id: formData.teamIds,
+        device_id: 'web',
+        device_type: 'Laptop',
         // For update
         ...(isEditMode && { task_id: task.task_id })
       };

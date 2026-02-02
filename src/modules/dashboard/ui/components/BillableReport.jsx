@@ -163,8 +163,9 @@ const BillableReport = () => {
       const exportData = trackers.map(row => {
         let formattedDateTime = '';
         if (row.date_time) {
-          const d = dayjs(row.date_time);
-          formattedDateTime = d.isValid() ? d.format('DD-MM-YYYY hh:mm A') : row.date_time;
+          const d = new Date(row.date_time);
+          const pad = (n) => n.toString().padStart(2, '0');
+          formattedDateTime = `${pad(d.getUTCDate())}-${pad(d.getUTCMonth() + 1)}-${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
         }
         return {
           'Date-Time': formattedDateTime,

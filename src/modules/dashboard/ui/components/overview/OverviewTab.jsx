@@ -7,18 +7,24 @@ import HourlyChart from './HourlyChart';
 import { useAuth } from '../../../../../context/AuthContext';
 import { useDeviceInfo } from '../../../../../hooks/useDeviceInfo';
 import { fetchDashboardData } from '../../../services/dashboardService';
-import TabsNavigation from '../TabsNavigation';
 import AgentBillableReport from '../../../../agent/ui/components/AgentBillableReport';
 import AgentTabsNavigation from '../../../../agent/ui/components/AgentTabsNavigation';
+import AgentFilterBar from './AgentFilterBar';
 import api from '../../../../../services/api';
 import { logError } from '../../../../../config/environment';
 
-const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) => {
+const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange: externalDateRange }) => {
   const { user } = useAuth();
   const { device_id, device_type } = useDeviceInfo();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  
+  // Local filter state for agent date range
+  const [agentFilter, setAgentFilter] = useState({
+    start: externalDateRange?.start || '',
+    end: externalDateRange?.end || '',
+  });
 
   // QA dashboard filter states
   const getTodayDate = () => {
@@ -31,7 +37,7 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) =
   const [qaTrackers, setQaTrackers] = useState([]);
   const [qaLoading, setQaLoading] = useState(false);
   
-  // Sync date range logic with legacy: default to current month for agents
+  // Sync date range logic: default to current month for agents if no filter
   const processedDateRange = useMemo(() => {
     const today = new Date();
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -39,14 +45,21 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) =
     const firstDayStr = firstDayOfMonth.toISOString().slice(0, 10);
     const lastDayStr = lastDayOfMonth.toISOString().slice(0, 10);
 
-    if (!dateRange || (!dateRange.start && !dateRange.end)) {
+    if (!agentFilter || (agentFilter.start === '' && agentFilter.end === '')) {
       return { start: firstDayStr, end: lastDayStr };
     }
-    return dateRange;
-  }, [dateRange]);
+    if (agentFilter.start && agentFilter.end && agentFilter.start === agentFilter.end) {
+      return { start: agentFilter.start, end: agentFilter.end };
+    }
+    if ((agentFilter.start && !agentFilter.end) || (!agentFilter.start && agentFilter.end)) {
+      return { start: firstDayStr, end: lastDayStr };
+    }
+    return agentFilter;
+  }, [agentFilter]);
 
   // Fetch dashboard data for agents
   const getDashboardData = useCallback(async () => {
+    if (!user?.user_id) return;
     try {
       setLoading(true);
       const todayStr = new Date().toISOString().slice(0, 10);
@@ -82,10 +95,11 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) =
     } finally {
       setLoading(false);
     }
-  }, [user.user_id, device_id, device_type, processedDateRange, fetchDashboardData]);
+  }, [user?.user_id, device_id, device_type, processedDateRange]);
 
   // Fetch QA dashboard data (trackers + summary) with date range filter
   const fetchQADashboardData = useCallback(async () => {
+    if (!user?.user_id) return;
     try {
       setQaLoading(true);
       const payload = {
@@ -110,13 +124,13 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) =
     } finally {
       setQaLoading(false);
     }
-  }, [user.user_id, qaStartDate, qaEndDate]);
+  }, [user?.user_id, qaStartDate, qaEndDate]);
 
   useEffect(() => {
     if (isAgent && user?.user_id) {
       getDashboardData();
     }
-  }, [isAgent, user?.user_id, device_id, device_type, processedDateRange, getDashboardData]);
+  }, [isAgent, user?.user_id, processedDateRange, getDashboardData]);
 
   useEffect(() => {
     if (isQA && user?.user_id) {
@@ -125,7 +139,6 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) =
   }, [isQA, user?.user_id, qaStartDate, qaEndDate, fetchQADashboardData]);
 
   // Extract agent stats from API response
-  // Note: API returns only the logged-in agent's data based on logged_in_user_id
   const agentStats = {
     totalBillableHours: parseFloat(dashboardData?.summary?.total_billable_hours ?? dashboardData?.summary?.total_production ?? 0),
     qcScore: parseFloat(dashboardData?.summary?.qc_score || 0),
@@ -167,14 +180,17 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) =
 
   return (
     <div className="space-y-4 md:space-y-6 animate-fade-in">
-      {/* Agent tab navigation above counting cards */}
+      {/* Agent tab navigation and filter */}
       {isAgent && (
-        <AgentTabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+        <div className="max-w-6xl mx-auto w-full">
+          <AgentFilterBar dateRange={agentFilter} setDateRange={setAgentFilter} />
+          <AgentTabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+        </div>
       )}
 
       {/* QA DASHBOARD FILTERS & ANALYTICS */}
       {isQA && (
-        <div className="mb-6">
+        <div className="mb-6 max-w-6xl mx-auto w-full">
           <div className="flex flex-col md:flex-row md:items-end gap-4 mb-4">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
@@ -227,16 +243,14 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) =
         </div>
       )}
 
-      {/* Show Billable Report tab content for agents */}
+      {/* Show content based on active tab for agents */}
       {isAgent && activeTab === 'billable_report' ? (
-        <AgentBillableReport />
-      ) : (
-        <>
-          {/* Grid container with responsive columns */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {isAgent ? (
-          <>
-            {/* Agent-specific cards */}
+        <div className="max-w-6xl mx-auto w-full">
+          <AgentBillableReport />
+        </div>
+      ) : isAgent && activeTab === 'overview' ? (
+        <div className="max-w-6xl mx-auto w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 h-full min-h-[120px]">
             <StatCard
               title="Total Billable Hours"
               value={agentStats.totalBillableHours.toFixed(2)}
@@ -244,7 +258,7 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) =
               icon={Clock}
               trend="neutral"
               tooltip="Total billable hours tracked."
-              className="min-w-0"
+              className="min-w-0 h-32 flex flex-col justify-center"
             />
             <StatCard
               title="QC Score"
@@ -253,7 +267,7 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) =
               icon={CheckCircle}
               trend="neutral"
               tooltip="Quality control score."
-              className="min-w-0"
+              className="min-w-0 h-32 flex flex-col justify-center"
             />
             <StatCard
               title="Performance"
@@ -262,7 +276,7 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) =
               icon={TrendingUp}
               trend="neutral"
               tooltip="Total tasks assigned to you."
-              className="min-w-0"
+              className="min-w-0 h-32 flex flex-col justify-center"
             />
             <StatCard
               title="Projects"
@@ -271,12 +285,67 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) =
               icon={Award}
               trend="neutral"
               tooltip="Number of projects you're working on."
-              className="min-w-0"
+              className="min-w-0 h-32 flex flex-col justify-center"
             />
-          </>
-        ) : (
-          <>
-            {/* Admin cards - Requires 'analytics' prop to be fully populated by parent */}
+          </div>
+
+          <div className="mt-8 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <Briefcase className="w-5 h-5 text-white" />
+                <h3 className="text-lg font-semibold text-white">Project Billable Hours</h3>
+              </div>
+              <p className="text-blue-100 text-sm mt-1">Hours logged per project in selected date range</p>
+            </div>
+
+            <div className="p-6">
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="text-slate-500 mt-3">Loading project data...</p>
+                </div>
+              ) : agentProjects.length === 0 ? (
+                <div className="text-center py-12">
+                  <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-500 font-medium">No project data available</p>
+                  <p className="text-slate-400 text-sm mt-1">You haven't worked on any projects yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {agentProjects.map((project, index) => {
+                    const billableHours = parseFloat(project.billable_hours || project.total_billable_hours || 0);
+                    return (
+                      <div
+                        key={project.project_id || index}
+                        className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <Briefcase className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-slate-800">{project.project_name}</h4>
+                            <p className="text-xs text-slate-500">{project.project_code || 'Project'}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-blue-600">
+                            {billableHours.toFixed(2)}
+                          </div>
+                          <p className="text-xs text-slate-500">Hours</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Admin View */
+        <div className="w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
             <StatCard
               title="Production (Selected)"
               value={analytics?.prodCurrent?.toLocaleString() || '0'}
@@ -313,74 +382,11 @@ const OverviewTab = ({ analytics, hourlyChartData, isAgent, isQA, dateRange }) =
               tooltip="Agent Activity count."
               className="min-w-0"
             />
-          </>
-        )}
-      </div>
-
-      {/* Conditional content based on user role */}
-      {isAgent ? (
-        /* Agent Project Billable Hours Section */
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-4">
-            <div className="flex items-center gap-3">
-              <Briefcase className="w-5 h-5 text-white" />
-              <h3 className="text-lg font-semibold text-white">Project Billable Hours</h3>
-            </div>
-            <p className="text-blue-100 text-sm mt-1">Hours logged per project in selected date range</p>
           </div>
-
-          <div className="p-6">
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="text-slate-500 mt-3">Loading project data...</p>
-              </div>
-            ) : agentProjects.length === 0 ? (
-              <div className="text-center py-12">
-                <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-500 font-medium">No project data available</p>
-                <p className="text-slate-400 text-sm mt-1">You haven't worked on any projects yet</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {agentProjects.map((project, index) => {
-                  const billableHours = parseFloat(project.billable_hours || project.total_billable_hours || 0);
-                  return (
-                    <div
-                      key={project.project_id || index}
-                      className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                          <Briefcase className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-slate-800">{project.project_name}</h4>
-                          <p className="text-xs text-slate-500">{project.project_code || 'Project'}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-blue-600">
-                          {billableHours.toFixed(2)}
-                        </div>
-                        <p className="text-xs text-slate-500">Hours</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        /* Admin Chart Section */
-        <div className="w-full overflow-hidden">
           <HourlyChart data={agentHourlyChartData} />
         </div>
       )}
-    </>
-  )}
-</div>
+    </div>
   );
 };
 

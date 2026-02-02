@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Search, 
   UserPlus, 
@@ -14,13 +14,51 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../../context/AuthContext';
 import { deleteUser, updateUser } from '../../services/manageService';
 import UserFormModal from './UserFormModal';
+import { fetchDropdownOptions } from '../../../../services/dropdownApi';
 
-const UsersManagement = ({ users, loading, onRefresh, dropdowns }) => {
+const UsersManagement = ({ users, loading, onRefresh }) => {
   const { canManageUsers } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [isDeleting, setIsDeleting] = useState(null);
+
+  // Dropdown state
+  const [roleOptions, setRoleOptions] = useState([]);
+  const [asstManagerOptions, setAsstManagerOptions] = useState([]);
+  const [designationOptions, setDesignationOptions] = useState([]);
+  const [projectManagerOptions, setProjectManagerOptions] = useState([]);
+  const [qaOptions, setQaOptions] = useState([]);
+  const [teamOptions, setTeamOptions] = useState([]);
+  const [dropdownLoading, setDropdownLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchDropdowns = async () => {
+      setDropdownLoading(true);
+      try {
+        const [rolesRes, asstMgrRes, projectMgrRes, qaRes, teamRes, designationRes] = await Promise.all([
+          fetchDropdownOptions("user roles"),
+          fetchDropdownOptions("assistant manager"),
+          fetchDropdownOptions("project manager"),
+          fetchDropdownOptions("qa"),
+          fetchDropdownOptions("teams"),
+          fetchDropdownOptions("designations")
+        ]);
+        setRoleOptions(rolesRes?.data || []);
+        setAsstManagerOptions(asstMgrRes?.data || []);
+        setProjectManagerOptions(projectMgrRes?.data || []);
+        setQaOptions(qaRes?.data || []);
+        setTeamOptions(teamRes?.data || []);
+        setDesignationOptions(designationRes?.data || []);
+      } catch (err) {
+        console.error("Failed to load dropdowns:", err);
+        toast.error("Failed to load dropdowns");
+      } finally {
+        setDropdownLoading(false);
+      }
+    };
+    fetchDropdowns();
+  }, []);
 
   const filteredUsers = useMemo(() => {
     return users.filter(u => 
@@ -199,7 +237,13 @@ const UsersManagement = ({ users, loading, onRefresh, dropdowns }) => {
             setEditingUser(null);
             onRefresh();
           }}
-          dropdowns={dropdowns}
+          roles={roleOptions}
+          projectManagers={projectManagerOptions}
+          assistantManagers={asstManagerOptions}
+          qas={qaOptions}
+          teams={teamOptions}
+          designations={designationOptions}
+          isDropdownLoading={dropdownLoading}
         />
       )}
     </div>
