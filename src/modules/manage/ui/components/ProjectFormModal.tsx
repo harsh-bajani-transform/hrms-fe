@@ -1,7 +1,22 @@
 import React, { useState } from "react";
-import { X, Briefcase, User, Users, Target, Layers } from "lucide-react";
+import { Briefcase, Layers, X, Target, Users, Shield } from "lucide-react";
 import { toast } from "react-hot-toast";
-import CustomSelect from "../../../../components/common/CustomSelect";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { createProject, updateProject } from "../../services/manageService";
 import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 import { UserDropdowns } from "../../../../hooks/useUserDropdowns";
@@ -88,178 +103,205 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-100 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
-        {/* Header */}
-        <div className="px-6 py-4 bg-indigo-600 text-white flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Briefcase className="w-5 h-5" />
-              {isEditMode ? "Edit Project" : "Create New Project"}
-            </h2>
-            <p className="text-indigo-100 text-xs mt-0.5">
-              {isEditMode
-                ? `Updating ${project?.project_name}`
-                : "Fill in the information to create a new project"}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        {/* Form Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
-          <form id="project-form" onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <Layers className="w-3.5 h-3.5" /> Project Details
-              </h3>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 ml-1">
-                  Project Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. HRMS Redesign"
-                  className={`w-full pr-4 py-2.5 bg-slate-50 border ${errors.name ? "border-rose-400" : "border-slate-200"} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                />
-                {errors.name && (
-                  <p className="text-[10px] text-rose-500 font-bold ml-1">
-                    {errors.name}
-                  </p>
-                )}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700 ml-1">
-                    Owner
-                  </label>
-                  <CustomSelect
-                    value={formData.ownerId}
-                    onChange={(val: string) =>
-                      setFormData({ ...formData, ownerId: val })
-                    }
-                    options={dropdowns.projectManagers.map((m) => ({
-                      value: (m.user_id || m.id)?.toString() || "",
-                      label:
-                        typeof m.label === "string"
-                          ? m.label
-                          : String(m.label ?? ""),
-                    }))}
-                    placeholder="Select Owner"
-                    className={errors.ownerId ? "border-rose-400" : ""}
-                  />
-                  {errors.ownerId && (
-                    <p className="text-[10px] text-rose-500 font-bold ml-1">
-                      {errors.ownerId}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700 ml-1">
-                    Assistant Manager
-                  </label>
-                  <CustomSelect
-                    value={formData.apmId}
-                    onChange={(val: string) =>
-                      setFormData({ ...formData, apmId: val })
-                    }
-                    options={dropdowns.assistantManagers.map((m) => ({
-                      value: (m.user_id || m.id)?.toString() || "",
-                      label:
-                        typeof m.label === "string"
-                          ? m.label
-                          : String(m.label ?? ""),
-                    }))}
-                    placeholder="Select AM"
-                    className={errors.apmId ? "border-rose-400" : ""}
-                  />
-                  {errors.apmId && (
-                    <p className="text-[10px] text-rose-500 font-bold ml-1">
-                      {errors.apmId}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 ml-1">
-                  QA Owner
-                </label>
-                <CustomSelect
-                  value={formData.qaId}
-                  onChange={(val: string) =>
-                    setFormData({ ...formData, qaId: val })
-                  }
-                  options={dropdowns.qas.map((q) => ({
-                    value: (q.user_id || q.id)?.toString() || "",
-                    label:
-                      typeof q.label === "string"
-                        ? q.label
-                        : String(q.label ?? ""),
-                  }))}
-                  placeholder="Select QA"
-                  className={errors.qaId ? "border-rose-400" : ""}
-                />
-                {errors.qaId && (
-                  <p className="text-[10px] text-rose-500 font-bold ml-1">
-                    {errors.qaId}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 ml-1">
-                  Monthly Hours Target
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  placeholder="e.g. 160"
-                  className={`w-full pr-4 py-2.5 bg-slate-50 border ${errors.monthlyTarget ? "border-rose-400" : "border-slate-200"} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
-                  value={formData.monthlyTarget}
-                  onChange={(e) =>
-                    setFormData({ ...formData, monthlyTarget: e.target.value })
-                  }
-                />
-                {errors.monthlyTarget && (
-                  <p className="text-[10px] text-rose-500 font-bold ml-1">
-                    {errors.monthlyTarget}
-                  </p>
-                )}
-              </div>
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-2xl border-none shadow-2xl bg-white">
+        {/* Banner Header */}
+        <div className="bg-linear-to-r from-blue-600 to-blue-700 px-8 py-8 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-400/20 rounded-full -ml-12 -mb-12 blur-xl" />
+
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30 shadow-inner">
+              <Briefcase className="w-6 h-6 text-white" />
             </div>
-          </form>
-        </div>
-        {/* Footer */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+            <div>
+              <DialogTitle className="text-2xl font-bold tracking-tight text-white leading-none">
+                {isEditMode ? "Edit Project" : "New Project"}
+              </DialogTitle>
+              <p className="text-blue-100/80 text-sm font-medium mt-1.5">
+                {isEditMode
+                  ? `Optimizing ${project?.project_name}`
+                  : "Launch a new operational initiative"}
+              </p>
+            </div>
+          </div>
+
           <button
-            type="button"
             onClick={onClose}
-            className="px-6 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all"
+            className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
           >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            form="project-form"
-            disabled={isSubmitting}
-            className="px-8 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50 disabled:scale-95 flex items-center gap-2"
-          >
-            {isSubmitting ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : null}
-            {isEditMode ? "Update Project" : "Create Project"}
+            <X className="w-5 h-5 text-white/70" />
           </button>
         </div>
-      </div>
-    </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="p-8 space-y-8 bg-white max-h-[70vh] overflow-y-auto scrollbar-hide"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            {/* PROJECT NAME */}
+            <div className="md:col-span-2 space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
+                <Layers className="w-3 h-3" />
+                Project Title
+              </label>
+              <Input
+                name="name"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                placeholder="e.g. HRMS Migration"
+                className={`h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+              />
+              {errors.name && (
+                <p className="text-[10px] text-red-500 font-bold mt-1 px-1">
+                  {errors.name}
+                </p>
+              )}
+            </div>
+
+            {/* OWNER */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
+                <Shield className="w-3 h-3" />
+                Project Owner (PM)
+              </label>
+              <Select
+                value={formData.ownerId}
+                onValueChange={(val) =>
+                  setFormData({ ...formData, ownerId: val })
+                }
+              >
+                <SelectTrigger
+                  className={`h-11 w-full bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.ownerId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                >
+                  <SelectValue placeholder="Select PM" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dropdowns.projectManagers.map((m) => (
+                    <SelectItem
+                      key={(m.user_id || m.id)?.toString()}
+                      value={(m.user_id || m.id)?.toString() || ""}
+                    >
+                      {typeof m.label === "string"
+                        ? m.label
+                        : String(m.label ?? "")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* ASSISTANT MANAGER */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
+                <Users className="w-3 h-3" />
+                Assistant Manager
+              </label>
+              <Select
+                value={formData.apmId}
+                onValueChange={(val) =>
+                  setFormData({ ...formData, apmId: val })
+                }
+              >
+                <SelectTrigger
+                  className={`h-11 w-full bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.apmId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                >
+                  <SelectValue placeholder="Select AM" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dropdowns.assistantManagers.map((m) => (
+                    <SelectItem
+                      key={(m.user_id || m.id)?.toString()}
+                      value={(m.user_id || m.id)?.toString() || ""}
+                    >
+                      {typeof m.label === "string"
+                        ? m.label
+                        : String(m.label ?? "")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* QA OWNER */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
+                <Target className="w-3 h-3" />
+                Quality Assurance
+              </label>
+              <Select
+                value={formData.qaId}
+                onValueChange={(val) => setFormData({ ...formData, qaId: val })}
+              >
+                <SelectTrigger
+                  className={`h-11 w-full bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.qaId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                >
+                  <SelectValue placeholder="Select QA" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dropdowns.qas.map((q) => (
+                    <SelectItem
+                      key={(q.user_id || q.id)?.toString()}
+                      value={(q.user_id || q.id)?.toString() || ""}
+                    >
+                      {typeof q.label === "string"
+                        ? q.label
+                        : String(q.label ?? "")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* MONTHLY TARGET */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
+                <Briefcase className="w-3 h-3" />
+                Monthly Hours Target
+              </label>
+              <Input
+                name="monthlyTarget"
+                type="number"
+                min="0"
+                step="1"
+                value={formData.monthlyTarget}
+                onChange={(e) =>
+                  setFormData({ ...formData, monthlyTarget: e.target.value })
+                }
+                placeholder="e.g. 160"
+                className={`h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.monthlyTarget ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="pt-4 border-t border-slate-100 flex-row gap-4">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onClose}
+              className="flex-1 h-12 font-bold text-slate-500 hover:text-slate-900 transition-colors"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 rounded-xl transition-all border-none"
+            >
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : isEditMode ? (
+                "Save Changes"
+              ) : (
+                "Create Project"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

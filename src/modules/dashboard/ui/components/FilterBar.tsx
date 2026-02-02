@@ -1,21 +1,29 @@
-import { Filter, Clock, Activity } from 'lucide-react'
-import CustomSelect from '../../../../components/common/CustomSelect'
-import type { DateRange } from '../../types'
+import { Filter, Clock, Activity } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import type { DateRange } from "../../types";
 
 export interface FilterBarProps {
-  isAgent: boolean
-  isQA?: boolean
+  isAgent: boolean;
+  isQA?: boolean;
 
-  selectedTask: string
-  setSelectedTask: (value: string) => void
+  selectedTask: string;
+  setSelectedTask: (value: string) => void;
 
-  comparisonMode: string
-  setComparisonMode: (value: string) => void
+  comparisonMode: string;
+  setComparisonMode: (value: string) => void;
 
-  dateRange: DateRange
-  handleDateRangeChange: (field: keyof DateRange, value: string) => void
+  dateRange: DateRange;
+  handleDateRangeChange: (field: keyof DateRange, value: string) => void;
 
-  allTasks?: string[]
+  allTasks?: string[];
 }
 
 const FilterBar = ({
@@ -41,7 +49,7 @@ const FilterBar = ({
       <div className="flex items-center gap-2 text-slate-700 font-semibold">
         <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
         <span className="text-sm sm:text-base">
-          {isAgent ? 'My Analytics' : 'Organization Analytics'}
+          {isAgent ? "My Analytics" : "Organization Analytics"}
         </span>
       </div>
 
@@ -57,31 +65,35 @@ const FilterBar = ({
       >
         {/* TASK - Hidden for agents and QA */}
         {!isAgent && !isQA && (
-          <CustomSelect
-            value={selectedTask}
-            onChange={setSelectedTask}
-            options={[
-              { value: 'All', label: 'All Tasks' },
-              ...allTasks.map((task) => ({ value: task, label: task })),
-            ]}
-            icon={Clock}
-            placeholder="Select Task"
-          />
+          <Select value={selectedTask} onValueChange={setSelectedTask}>
+            <SelectTrigger className="h-9 w-full lg:w-[180px]">
+              <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="Select Task" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Tasks</SelectItem>
+              {allTasks.map((task) => (
+                <SelectItem key={task} value={task}>
+                  {task}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
 
         {/* PREV PERIOD - Hidden for agents and QA */}
         {!isAgent && !isQA && (
-          <CustomSelect
-            value={comparisonMode}
-            onChange={setComparisonMode}
-            options={[
-              { value: 'previous_period', label: 'Prev Period' },
-              { value: 'prev_week', label: 'Last Week' },
-              { value: 'prev_month', label: 'Last Month' },
-            ]}
-            icon={Activity}
-            placeholder="Select Period"
-          />
+          <Select value={comparisonMode} onValueChange={setComparisonMode}>
+            <SelectTrigger className="h-9 w-full lg:w-[180px]">
+              <Activity className="w-4 h-4 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="Select Period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="previous_period">Prev Period</SelectItem>
+              <SelectItem value="prev_week">Last Week</SelectItem>
+              <SelectItem value="prev_month">Last Month</SelectItem>
+            </SelectContent>
+          </Select>
         )}
 
         {/* FROM DATE */}
@@ -92,12 +104,14 @@ const FilterBar = ({
             flex flex-row items-center gap-3
           "
         >
-          <label className="text-xs text-slate-500 uppercase font-bold">FROM</label>
-          <input
+          <label className="text-xs text-slate-500 uppercase font-bold">
+            FROM
+          </label>
+          <Input
             type="date"
             value={dateRange.start}
-            onChange={(e) => handleDateRangeChange('start', e.target.value)}
-            className="flex-1 bg-white border border-slate-300 text-slate-700 text-sm rounded px-2 py-1.5 outline-none"
+            onChange={(e) => handleDateRangeChange("start", e.target.value)}
+            className="flex-1 h-8 bg-white"
           />
         </div>
 
@@ -109,30 +123,33 @@ const FilterBar = ({
             flex flex-row items-center gap-3
           "
         >
-          <label className="text-xs text-slate-500 uppercase font-bold">TO</label>
-          <input
+          <label className="text-xs text-slate-500 uppercase font-bold">
+            TO
+          </label>
+          <Input
             type="date"
             value={dateRange.end}
-            onChange={(e) => handleDateRangeChange('end', e.target.value)}
-            className="flex-1 bg-white border border-slate-300 text-slate-700 text-sm rounded px-2 py-1.5 outline-none"
+            onChange={(e) => handleDateRangeChange("end", e.target.value)}
+            className="flex-1 h-8 bg-white"
           />
           {(dateRange.start || dateRange.end) && (
-            <button
+            <Button
               type="button"
-              className="ml-2 px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-semibold border border-gray-300 shadow-sm transition"
+              variant="outline"
+              size="sm"
               onClick={() => {
-                handleDateRangeChange('start', '');
-                handleDateRangeChange('end', '');
+                handleDateRangeChange("start", "");
+                handleDateRangeChange("end", "");
               }}
               title="Clear date filter"
             >
               Clear
-            </button>
+            </Button>
           )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default FilterBar
+export default FilterBar;

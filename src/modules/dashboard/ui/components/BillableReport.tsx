@@ -12,7 +12,15 @@ import { fetchDropdown } from "../../../../services/dropdownService";
 import { useAuth } from "../../../../context/AuthContext";
 import MonthCard from "./MonthCard";
 import UserCard from "./UserCard";
-import CustomSelect from "./CustomSelect";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import type { TrackerRow } from "../../../dashboard/types";
 import type { MonthlyBillableReportRow } from "../../services/billableReportService";
 
@@ -558,26 +566,20 @@ const BillableReport: React.FC = () => {
   return (
     <div className="w-full">
       <div className="flex items-center gap-3 mb-6">
-        <button
-          className={`px-6 py-2 rounded-lg font-semibold transition-all duration-150 cursor-pointer ${
-            activeToggle === "daily"
-              ? "bg-blue-600 text-white shadow-md"
-              : "bg-white text-blue-600 border border-blue-200 hover:bg-blue-50"
-          }`}
+        <Button
+          variant={activeToggle === "daily" ? "default" : "outline"}
+          className={`px-6 ${activeToggle === "daily" ? "" : "text-blue-600 border-blue-200 hover:bg-blue-50"}`}
           onClick={() => setActiveToggle("daily")}
         >
           Daily Report
-        </button>
-        <button
-          className={`px-6 py-2 rounded-lg font-semibold transition-all duration-150 cursor-pointer ${
-            activeToggle === "monthly"
-              ? "bg-blue-600 text-white shadow-md"
-              : "bg-white text-blue-600 border border-blue-200 hover:bg-blue-50"
-          }`}
+        </Button>
+        <Button
+          variant={activeToggle === "monthly" ? "default" : "outline"}
+          className={`px-6 ${activeToggle === "monthly" ? "" : "text-blue-600 border-blue-200 hover:bg-blue-50"}`}
           onClick={() => setActiveToggle("monthly")}
         >
           Monthly Report
-        </button>
+        </Button>
       </div>
 
       {activeToggle === "daily" && (
@@ -587,68 +589,69 @@ const BillableReport: React.FC = () => {
               <span className="text-sm font-semibold text-slate-700">
                 Date Range:
               </span>
-              <input
+              <Input
                 type="date"
-                className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-500 bg-white shadow-sm transition"
+                className="h-9 w-40"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />
               <span className="text-slate-500">to</span>
-              <input
+              <Input
                 type="date"
-                className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-500 bg-white shadow-sm transition"
+                className="h-9 w-40"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
               />
               <span className="text-sm font-semibold text-slate-700 ml-4">
                 Month:
               </span>
-              <input
+              <Input
                 type="month"
-                className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-500 bg-white shadow-sm transition"
+                className="h-9 w-36"
                 value={monthFilter}
                 onChange={(e) => setMonthFilter(e.target.value)}
-                style={{ minWidth: 120 }}
               />
               {!isAgent && (
                 <>
                   <span className="text-sm font-semibold text-slate-700 ml-4">
                     Team:
                   </span>
-                  <CustomSelect
-                    value={teamFilter}
-                    onChange={setTeamFilter}
-                    options={[
-                      { label: "All Teams", value: "" },
-                      ...teamOptions.map((t) => ({
-                        label: t.label,
-                        value: t.label,
-                      })),
-                    ]}
-                    placeholder="Select Team"
-                    className="w-48"
-                  />
+                  <Select value={teamFilter} onValueChange={setTeamFilter}>
+                    <SelectTrigger className="h-9 w-48">
+                      <SelectValue placeholder="Select Team" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_all">All Teams</SelectItem>
+                      {teamOptions.map((t) => (
+                        <SelectItem key={t.label} value={t.label}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </>
               )}
-              <button
-                className="px-3 py-2 rounded-lg bg-linear-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white text-sm font-semibold border border-green-700 shadow-sm transition"
+              <Button
+                variant="default"
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 h-9 px-4"
                 onClick={handleExportAllUsers}
-                type="button"
               >
                 Export All
-              </button>
-              <button
-                className="px-3 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm font-semibold border border-gray-400 shadow-sm transition"
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9"
                 onClick={() => {
                   setStartDate("");
                   setEndDate("");
                   setMonthFilter("");
                   setTeamFilter("");
                 }}
-                type="button"
               >
                 Clear Filters
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -714,27 +717,29 @@ const BillableReport: React.FC = () => {
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-4 mb-6">
             <label className="font-semibold text-blue-700">Month:</label>
-            <input
+            <Input
               type="month"
-              className="border border-blue-300 rounded px-3 py-1 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-500 bg-white shadow-sm transition"
+              className="h-9 w-36"
               value={monthlyMonth}
               onChange={(e) => setMonthlyMonth(e.target.value)}
-              style={{ minWidth: 120 }}
             />
-            <button
-              className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs font-semibold border border-gray-400 shadow-sm transition"
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 px-3"
               onClick={() => setMonthlyMonth("")}
-              type="button"
             >
               Clear Filters
-            </button>
+            </Button>
             <div className="flex-1" />
-            <button
+            <Button
+              variant="default"
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 h-9 px-4"
               onClick={handleExportMonthlyTable}
-              className="px-3 py-1 rounded bg-linear-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white text-xs font-semibold border border-green-700 shadow-sm transition"
             >
               Export All
-            </button>
+            </Button>
           </div>
 
           {loadingMonthly ? (

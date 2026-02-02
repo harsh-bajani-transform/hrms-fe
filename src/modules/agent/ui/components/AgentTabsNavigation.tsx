@@ -24,7 +24,7 @@ export interface AgentTabsNavigationProps {
 const tabs: TabDef[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
   { id: "billable_report", label: "Billable Report", icon: Briefcase },
-  { id: "agents", label: "Agent Performance", icon: Users, disabled: true },
+  { id: "projects", label: "My Tasks & Projects", icon: Users },
   {
     id: "adherence",
     label: "Reporting Adherence",

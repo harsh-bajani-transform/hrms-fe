@@ -8,6 +8,8 @@ import {
   Download,
   Filter,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "../../../../context/AuthContext";
 import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 import api from "../../../../services/api";
@@ -140,7 +142,7 @@ const AssistantManagerDashboard: FC = () => {
               })),
           });
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error(
           "[AssistantManagerDashboard] Error fetching dashboard:",
           err,
@@ -187,8 +189,8 @@ const AssistantManagerDashboard: FC = () => {
             <label className="text-xs text-slate-500 uppercase font-bold">
               FROM
             </label>
-            <input
-              className="flex-1 bg-white border border-slate-300 text-slate-700 text-sm rounded px-2 py-1.5 outline-none"
+            <Input
+              className="flex-1 h-8"
               type="date"
               value={dateRange.start}
               onChange={(e) => handleDateRangeChange("start", e.target.value)}
@@ -200,8 +202,8 @@ const AssistantManagerDashboard: FC = () => {
             <label className="text-xs text-slate-500 uppercase font-bold">
               TO
             </label>
-            <input
-              className="flex-1 bg-white border border-slate-300 text-slate-700 text-sm rounded px-2 py-1.5 outline-none"
+            <Input
+              className="flex-1 h-8"
               type="date"
               value={dateRange.end}
               onChange={(e) => handleDateRangeChange("end", e.target.value)}
@@ -209,13 +211,14 @@ const AssistantManagerDashboard: FC = () => {
             />
           </div>
           {/* Clear Filter Button */}
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => setDateRange({ start: "", end: "" })}
-            className="col-span-2 sm:col-span-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg px-4 py-2 transition-colors"
+            className="col-span-2 sm:col-span-2 h-9"
           >
             Clear
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -9,6 +9,7 @@ import {
   Activity,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { Button } from "@/components/ui/button";
 import api from "../../../../services/api";
 import { useAuth } from "../../../../context/AuthContext";
 import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
@@ -344,13 +345,13 @@ const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
                           </div>
                         </div>
                       </div>
-                      <button
+                      <Button
                         onClick={() => handleQCForm(file)}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer"
+                        className="bg-blue-600 hover:bg-blue-700 h-9 px-4"
                       >
                         <FileText className="w-4 h-4" />
                         QC Form
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))}

@@ -6,6 +6,15 @@ import * as XLSX from "xlsx";
 import api from "../../../../services/api";
 import { useAuth } from "../../../../context/AuthContext";
 import { log, logError } from "../../../../config/environment";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface Agent {
   user_id: number | string;
@@ -230,21 +239,24 @@ const QATrackerReport: React.FC = () => {
             </h3>
           </div>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="default"
+              size="sm"
               onClick={handleExportToExcel}
               disabled={loading || filteredTrackers.length === 0}
-              className="bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 shadow disabled:bg-gray-400 disabled:cursor-not-allowed transition-all cursor-pointer"
-              title="Export filtered data to Excel"
+              className="bg-green-600 hover:bg-green-700 h-9 px-4 flex items-center gap-2"
             >
               <FileDown className="w-4 h-4" />
               Export
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleClearFilters}
-              className="px-4 py-2 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-bold shadow transition-all cursor-pointer"
+              className="h-9 px-4"
             >
               Clear Filters
-            </button>
+            </Button>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -253,11 +265,11 @@ const QATrackerReport: React.FC = () => {
             <label className="block text-xs font-semibold text-blue-900 mb-1">
               Start Date <span className="text-red-500">*</span>
             </label>
-            <input
+            <Input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm"
+              className="h-9"
             />
           </div>
 
@@ -266,11 +278,11 @@ const QATrackerReport: React.FC = () => {
             <label className="block text-xs font-semibold text-blue-900 mb-1">
               End Date <span className="text-red-500">*</span>
             </label>
-            <input
+            <Input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm"
+              className="h-9"
             />
           </div>
 
@@ -279,19 +291,23 @@ const QATrackerReport: React.FC = () => {
             <label className="block text-xs font-semibold text-blue-900 mb-1">
               Assigned Agent
             </label>
-            <select
+            <Select
               value={selectedAgent}
-              onChange={(e) => setSelectedAgent(e.target.value)}
+              onValueChange={setSelectedAgent}
               disabled={loadingAgents}
-              className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer"
             >
-              <option value="">All Agents</option>
-              {assignedAgents.map((agent) => (
-                <option key={agent.user_id} value={agent.user_id}>
-                  {agent.user_name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="All Agents" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_all">All Agents</SelectItem>
+                {assignedAgents.map((agent) => (
+                  <SelectItem key={agent.user_id} value={String(agent.user_id)}>
+                    {agent.user_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {loadingAgents && (
               <p className="text-xs text-gray-500 mt-1">Loading agents...</p>
             )}

@@ -19,7 +19,7 @@ export interface Project {
 export type AgentTabId =
   | "overview"
   | "billable_report"
-  | "agents"
+  | "projects"
   | "adherence"
   | "incentives";
 

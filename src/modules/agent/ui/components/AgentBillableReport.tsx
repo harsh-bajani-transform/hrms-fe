@@ -16,6 +16,34 @@ import { useAuth } from "../../../../context/AuthContext";
 
 import type { TrackerRow } from "../../../dashboard/types";
 import type { MonthlyBillableReportRow } from "../../../dashboard/services/billableReportService";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+  Calendar,
+  FileDown,
+  TrendingUp,
+  BarChart3,
+  Clock,
+  CheckCircle2,
+  Filter,
+  Download,
+} from "lucide-react";
 
 type ToggleTab = "daily" | "monthly";
 
@@ -36,164 +64,24 @@ type MonthlyExportRow = {
 };
 
 const AgentBillableReport = () => {
-  // Export the visible monthly report table (with filters applied)
-  const handleExportMonthlyTable = () => {
-    try {
-      const exportData: MonthlyExportRow[] = monthlySummaryData.map((row) => ({
-        "Year & Month": row.month_year ?? "-",
-        "Billable Hours Delivered": row.total_billable_hours
-          ? Number(row.total_billable_hours).toFixed(2)
-          : row.total_billable_hours_month
-            ? Number(row.total_billable_hours_month).toFixed(2)
-            : "-",
-        "Monthly Goal": row.monthly_target ?? row.monthly_goal ?? "-",
-        "Pending Target": row.pending_target
-          ? Number(row.pending_target).toFixed(2)
-          : "-",
-        "Avg. QC Score": row.avg_qc_score ?? "-",
-      }));
+  const { user } = useAuth();
 
-      // Calculate totals
-      const totalBillable = exportData.reduce(
-        (sum, r) => sum + (Number(r["Billable Hours Delivered"]) || 0),
-        0,
-      );
-      const totalGoal = exportData.reduce(
-        (sum, r) => sum + (Number(r["Monthly Goal"]) || 0),
-        0,
-      );
-      const totalPending = exportData.reduce(
-        (sum, r) => sum + (Number(r["Pending Target"]) || 0),
-        0,
-      );
-      const qcScores = exportData
-        .map((r) => Number(r["Avg. QC Score"]))
-        .filter((v) => !isNaN(v));
-      const avgQC =
-        qcScores.length > 0
-          ? (qcScores.reduce((a, b) => a + b, 0) / qcScores.length).toFixed(2)
-          : "-";
+  // State for tab toggle
+  const [activeToggle, setActiveToggle] = useState<ToggleTab>("daily");
 
-      exportData.push({
-        "Year & Month": "TOTAL",
-        "Billable Hours Delivered": totalBillable,
-        "Monthly Goal": totalGoal,
-        "Pending Target": totalPending,
-        "Avg. QC Score": avgQC,
-      });
-
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      worksheet["!cols"] = [
-        { wch: 16 },
-        { wch: 24 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 16 },
-      ];
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Report");
-      const filename = `Monthly_Report.xlsx`;
-      XLSX.writeFile(workbook, filename);
-      toast.success("Monthly report exported!");
-    } catch (err) {
-      const msg = getFriendlyErrorMessage(err);
-      toast.error(msg);
+  useEffect(() => {
+    // Force daily as default on initial load if not set
+    const stored = localStorage.getItem("agent_billable_active_tab");
+    if (!stored) {
+      localStorage.setItem("agent_billable_active_tab", "daily");
+    } else {
+      setActiveToggle(stored === "monthly" ? "monthly" : "daily");
     }
-  };
-
-  // Export daily report for a specific month-year from /tracker/view
-  const handleExportMonthDailyExcel = async (
-    monthYear: string,
-  ): Promise<void> => {
-    try {
-      // Use fetchDailyBillableReport to ensure correct payload (logged_in_user_id, month_year)
-      const payload = { month_year: monthYear };
-      const res = await fetchDailyBillableReport(payload);
-      const trackers: TrackerRow[] = Array.isArray(res.data.trackers)
-        ? res.data.trackers
-        : [];
-      // Format and prepare export data
-      const exportData: DailyExportRow[] = trackers.map((row) => {
-        let formattedDateTime = "";
-        if (row.date_time) {
-          const d = dayjs(row.date_time);
-          formattedDateTime = d.isValid()
-            ? d.format("DD-MM-YYYY hh:mm A")
-            : row.date_time;
-        }
-        return {
-          "Date-Time": formattedDateTime,
-          "Assign Hours": "-",
-          "Worked Hours": row.billable_hours
-            ? Number(row.billable_hours).toFixed(2)
-            : "-",
-          "QC score":
-            "qc_score" in row
-              ? row.qc_score !== null
-                ? Number(row.qc_score).toFixed(2)
-                : "-"
-              : "-",
-          "Daily Required Hours": row.tenure_target
-            ? Number(row.tenure_target).toFixed(2)
-            : "-",
-        };
-      });
-      // Calculate totals for countable columns
-      const totalWorked = exportData.reduce(
-        (sum, r) => sum + (Number(r["Worked Hours"]) || 0),
-        0,
-      );
-      const totalRequired = exportData.reduce(
-        (sum, r) => sum + (Number(r["Daily Required Hours"]) || 0),
-        0,
-      );
-      const qcScores = exportData
-        .map((r) => Number(r["QC score"]))
-        .filter((v) => !isNaN(v));
-      const avgQC =
-        qcScores.length > 0
-          ? (qcScores.reduce((a, b) => a + b, 0) / qcScores.length).toFixed(2)
-          : "-";
-      exportData.push({
-        "Date-Time": "TOTAL",
-        "Assign Hours": "-",
-        "Worked Hours": totalWorked,
-        "QC score": avgQC,
-        "Daily Required Hours": totalRequired,
-      });
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      worksheet["!cols"] = [
-        { wch: 20 },
-        { wch: 14 },
-        { wch: 14 },
-        { wch: 10 },
-        { wch: 20 },
-      ];
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Month Daily Report");
-      const filename = `Month_Daily_Report_${monthYear}.xlsx`;
-      XLSX.writeFile(workbook, filename);
-      toast.success("Month daily report exported!");
-    } catch (err) {
-      const msg = getFriendlyErrorMessage(err);
-      toast.error(msg);
-    }
-  };
-
-  // State for tab toggle (must be first hook)
-  const [activeToggle, setActiveToggle] = useState<ToggleTab>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("agent_billable_active_tab");
-      return stored === "monthly" ? "monthly" : "daily";
-    }
-    return "daily";
-  });
+  }, []);
 
   // Persist tab selection to localStorage
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("agent_billable_active_tab", activeToggle);
-    }
+    localStorage.setItem("agent_billable_active_tab", activeToggle);
   }, [activeToggle]);
 
   // State for date range filter
@@ -213,7 +101,6 @@ const AgentBillableReport = () => {
       try {
         const payload: Record<string, unknown> = {};
         if (monthFilter) {
-          // Use 'month_year' in the format 'JAN2026' for the API if a month is selected
           const [year, month] = monthFilter.split("-");
           const monthNames = [
             "JAN",
@@ -237,8 +124,10 @@ const AgentBillableReport = () => {
         }
         const res = await fetchDailyBillableReport(payload);
         setDailyData(Array.isArray(res.data.trackers) ? res.data.trackers : []);
-      } catch (err) {
-        setErrorDaily(getFriendlyErrorMessage(err));
+      } catch (err: unknown) {
+        setErrorDaily(
+          getFriendlyErrorMessage(err instanceof Error ? err : String(err)),
+        );
       } finally {
         setLoadingDaily(false);
       }
@@ -246,16 +135,15 @@ const AgentBillableReport = () => {
     fetchData();
   }, [startDate, endDate, monthFilter]);
 
-  // State for monthly report API data, loading, and error
+  // State for monthly report API
   const [monthlySummaryData, setMonthlySummaryData] = useState<
     MonthlyBillableReportRow[]
   >([]);
   const [loadingMonthly, setLoadingMonthly] = useState<boolean>(false);
   const [errorMonthly, setErrorMonthly] = useState<string | null>(null);
   const [monthlyMonth, setMonthlyMonth] = useState<string>("");
-  const { user } = useAuth();
 
-  // Fetch monthly report data from API when monthly tab is active or month filter changes
+  // Fetch monthly report data
   useEffect(() => {
     if (activeToggle !== "monthly") return;
     const fetchData = async () => {
@@ -264,7 +152,6 @@ const AgentBillableReport = () => {
       try {
         let payload: Record<string, unknown> = {};
         if (monthlyMonth) {
-          // monthlyMonth is in format YYYY-MM
           const [year, month] = monthlyMonth.split("-");
           const monthNames = [
             "JAN",
@@ -283,13 +170,13 @@ const AgentBillableReport = () => {
           const monthLabel = monthNames[Number(month) - 1];
           payload = { month_year: `${monthLabel}${year}` };
         }
-        if (user?.user_id) {
-          payload.logged_in_user_id = user.user_id;
-        }
+        if (user?.user_id) payload.logged_in_user_id = user.user_id;
         const res = await fetchMonthlyBillableReport(payload);
         setMonthlySummaryData(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        setErrorMonthly(getFriendlyErrorMessage(err));
+      } catch (err: unknown) {
+        setErrorMonthly(
+          getFriendlyErrorMessage(err instanceof Error ? err : String(err)),
+        );
       } finally {
         setLoadingMonthly(false);
       }
@@ -297,436 +184,473 @@ const AgentBillableReport = () => {
     fetchData();
   }, [activeToggle, monthlyMonth, user]);
 
-  // No need to filter here, as API returns filtered data
   const filteredDailyData = dailyData;
 
-  // Export filtered daily data to Excel with totals
+  // Export handlers
+  const handleExportMonthlyTable = () => {
+    try {
+      const exportData: MonthlyExportRow[] = monthlySummaryData.map((row) => ({
+        "Year & Month": row.month_year ?? "-",
+        "Billable Hours Delivered":
+          row.total_billable_hours || row.total_billable_hours_month
+            ? Number(
+                row.total_billable_hours || row.total_billable_hours_month,
+              ).toFixed(2)
+            : "-",
+        "Monthly Goal": row.monthly_target ?? row.monthly_goal ?? "-",
+        "Pending Target": row.pending_target
+          ? Number(row.pending_target).toFixed(2)
+          : "-",
+        "Avg. QC Score": row.avg_qc_score ?? "-",
+      }));
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Report");
+      XLSX.writeFile(workbook, `Monthly_Report.xlsx`);
+      toast.success("Monthly report exported!");
+    } catch {
+      toast.error("Export failed");
+    }
+  };
+
   const handleExportDailyExcel = () => {
     try {
-      // Format and prepare export data
-      const exportData: DailyExportRow[] = filteredDailyData.map((row) => {
-        // Only show date part from work_date
-        let formattedDate = "-";
-        if (row.work_date) {
-          const d = dayjs(row.work_date);
-          if (d.isValid()) {
-            formattedDate = d.format("DD-MM-YYYY");
-          }
-        } else if (row.date_time) {
-          // Fallback to date_time if work_date missing
-          const d = dayjs(row.date_time);
-          formattedDate = d.isValid() ? d.format("DD-MM-YYYY") : row.date_time;
-        }
-
-        return {
-          "Date-Time": formattedDate,
-          "Assign Hours": "-",
-          "Worked Hours":
-            row.cumulative_billable_hours_till_day != null
-              ? Number(row.cumulative_billable_hours_till_day).toFixed(2)
-              : "-",
-          "QC score": "-",
-          "Daily Required Hours":
-            row.daily_required_hours != null
-              ? Number(row.daily_required_hours).toFixed(2)
-              : "-",
-        };
-      });
-
-      // Calculate totals for countable columns
-      const totalAssign = exportData.reduce(
-        (sum, r) => sum + (Number(r["Assign Hours"]) || 0),
-        0,
-      );
-      const totalWorked = exportData.reduce(
-        (sum, r) => sum + (Number(r["Worked Hours"]) || 0),
-        0,
-      );
-      const totalRequired = exportData.reduce(
-        (sum, r) => sum + (Number(r["Daily Required Hours"]) || 0),
-        0,
-      );
-      // For QC score, show average if all are numbers
-      const qcScores = exportData
-        .map((r) => Number(r["QC score"]))
-        .filter((v) => !isNaN(v));
-      const avgQC =
-        qcScores.length > 0
-          ? (qcScores.reduce((a, b) => a + b, 0) / qcScores.length).toFixed(2)
-          : "-";
-
-      // Add totals row
-      exportData.push({
-        "Date-Time": "TOTAL",
-        "Assign Hours": totalAssign,
-        "Worked Hours": totalWorked,
-        "QC score": avgQC,
-        "Daily Required Hours": totalRequired,
-      });
-
+      const exportData: DailyExportRow[] = filteredDailyData.map((row) => ({
+        "Date-Time": row.work_date
+          ? dayjs(row.work_date).format("DD-MM-YYYY")
+          : "-",
+        "Assign Hours": "-",
+        "Worked Hours":
+          row.cumulative_billable_hours_till_day != null
+            ? Number(row.cumulative_billable_hours_till_day).toFixed(2)
+            : "-",
+        "QC score": "-",
+        "Daily Required Hours":
+          row.daily_required_hours != null
+            ? Number(row.daily_required_hours).toFixed(2)
+            : "-",
+      }));
       const worksheet = XLSX.utils.json_to_sheet(exportData);
-      worksheet["!cols"] = [
-        { wch: 20 },
-        { wch: 14 },
-        { wch: 14 },
-        { wch: 10 },
-        { wch: 20 },
-      ];
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Daily Report");
-      const filename = `Daily_Report_${startDate || "all"}_${endDate || "all"}.xlsx`;
-      XLSX.writeFile(workbook, filename);
+      XLSX.writeFile(workbook, `Daily_Report.xlsx`);
       toast.success("Daily report exported!");
     } catch {
-      toast.error("Failed to export daily report");
+      toast.error("Export failed");
+    }
+  };
+
+  const handleExportMonthDailyExcel = async (monthYear: string) => {
+    try {
+      const res = await fetchDailyBillableReport({ month_year: monthYear });
+      const trackers: TrackerRow[] = Array.isArray(res.data.trackers)
+        ? res.data.trackers
+        : [];
+      const exportData: DailyExportRow[] = trackers.map((row) => ({
+        "Date-Time": row.date_time
+          ? dayjs(row.date_time).format("DD-MM-YYYY hh:mm A")
+          : "-",
+        "Assign Hours": "-",
+        "Worked Hours": row.billable_hours
+          ? Number(row.billable_hours).toFixed(2)
+          : "-",
+        "QC score": "-",
+        "Daily Required Hours": row.tenure_target
+          ? Number(row.tenure_target).toFixed(2)
+          : "-",
+      }));
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Month Daily Report");
+      XLSX.writeFile(workbook, `Month_Daily_Report_${monthYear}.xlsx`);
+      toast.success("Exported!");
+    } catch {
+      toast.error("Export failed");
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-2 sm:px-4">
-      <div className="w-full flex flex-col items-center">
-        <div className="w-full max-w-7xl flex items-center gap-4 mb-8">
-          <button
-            className={`px-6 py-2 rounded-lg font-semibold text-blue-700 border-2 border-blue-700 transition-all duration-150 focus:outline-none ${activeToggle === "daily" ? "bg-blue-700 text-white" : "bg-white"}`}
+    <div className="max-w-7xl mx-auto py-8 px-4 space-y-8 animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+            Performance Reports
+          </h2>
+          <p className="text-slate-500 font-medium">
+            View and export your daily and monthly billable performance
+            summaries.
+          </p>
+        </div>
+
+        <div className="flex bg-slate-100/80 p-1.5 rounded-2xl w-fit shadow-inner border border-slate-200">
+          <Button
+            variant={activeToggle === "daily" ? "default" : "ghost"}
+            className={`px-8 h-10 rounded-xl font-black transition-all duration-300 ${activeToggle === "daily" ? "bg-blue-600 text-white shadow-lg border-none" : "text-slate-500 hover:text-blue-600"}`}
             onClick={() => setActiveToggle("daily")}
           >
-            Daily Report
-          </button>
-          <button
-            className={`px-6 py-2 rounded-lg font-semibold text-blue-700 border-2 border-blue-700 transition-all duration-150 focus:outline-none ${activeToggle === "monthly" ? "bg-blue-700 text-white" : "bg-white"}`}
+            <Clock className="w-4.5 h-4.5 mr-2" />
+            Daily View
+          </Button>
+          <Button
+            variant={activeToggle === "monthly" ? "default" : "ghost"}
+            className={`px-8 h-10 rounded-xl font-black transition-all duration-300 ${activeToggle === "monthly" ? "bg-blue-600 text-white shadow-lg border-none" : "text-slate-500 hover:text-blue-600"}`}
             onClick={() => setActiveToggle("monthly")}
           >
-            Monthly Report
-          </button>
+            <BarChart3 className="w-4.5 h-4.5 mr-2" />
+            Monthly View
+          </Button>
         </div>
       </div>
-      {/* Daily Report view (table, filter, export) */}
+
+      {/* Daily Report View */}
       {activeToggle === "daily" && (
-        <div className="w-full max-w-5xl mx-auto mt-8">
-          {/* Date Range Filter and Export Button */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <label className="font-semibold text-blue-700">Date Range:</label>
-              <input
-                type="date"
-                className="border rounded px-2 py-1"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-              <span className="mx-2">to</span>
-              <input
-                type="date"
-                className="border rounded px-2 py-1"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-              <label className="font-semibold text-blue-700 ml-4">Month:</label>
-              <input
-                type="month"
-                className="border rounded px-2 py-1"
-                value={monthFilter}
-                onChange={(e) => setMonthFilter(e.target.value)}
-                style={{ minWidth: 120 }}
-              />
-              {/* Clear Filters Button */}
-              <button
-                className="ml-4 px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs font-semibold border border-gray-400 shadow-sm transition"
-                onClick={() => {
-                  setStartDate("");
-                  setEndDate("");
-                  setMonthFilter("");
-                }}
-                type="button"
-              >
-                Clear Filters
-              </button>
+        <Card className="border-none shadow-2xl overflow-hidden rounded-3xl min-h-[500px] bg-white">
+          <CardHeader className="border-b border-slate-100 bg-slate-50/40 p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-black text-slate-900">
+                    Daily Billable Hours
+                  </CardTitle>
+                  <CardDescription className="font-medium text-slate-500">
+                    Breakdown of billable time per day
+                  </CardDescription>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex items-center gap-4 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
+                  <div className="flex items-center gap-2 px-2">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest lb-1">
+                      From
+                    </span>
+                    <Input
+                      type="date"
+                      className="h-10 w-40 bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold rounded-xl"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 px-2 sm:border-l border-slate-100">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest lb-1">
+                      To
+                    </span>
+                    <Input
+                      type="date"
+                      className="h-10 w-40 bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold rounded-xl"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 px-2 lg:border-l border-slate-100">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest lb-1">
+                      Month
+                    </span>
+                    <Input
+                      type="month"
+                      className="h-10 w-40 bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold rounded-xl"
+                      value={monthFilter}
+                      onChange={(e) => setMonthFilter(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 ml-auto lg:ml-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-10 px-5 font-black text-slate-500 hover:bg-slate-50 rounded-xl"
+                    onClick={() => {
+                      setStartDate("");
+                      setEndDate("");
+                      setMonthFilter("");
+                    }}
+                  >
+                    Reset
+                  </Button>
+                  <Button
+                    variant="default"
+                    className="bg-emerald-600 hover:bg-emerald-700 font-black gap-2 h-10 px-6 shadow-lg shadow-emerald-100 rounded-xl transition-all active:scale-95"
+                    onClick={handleExportDailyExcel}
+                  >
+                    <FileDown className="w-4.5 h-4.5" />
+                    Export
+                  </Button>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={handleExportDailyExcel}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold text-sm border border-green-700 shadow-sm transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-              title="Export filtered data to Excel"
-              aria-label="Export to Excel"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <path
-                  d="M16 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <polyline
-                  points="8 12 12 16 16 12"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <line
-                  x1="12"
-                  y1="8"
-                  x2="12"
-                  y2="16"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span>Export to Excel</span>
-            </button>
-          </div>
-          {/* Daily Report Table */}
-          <div className="overflow-x-auto bg-white rounded-2xl">
+          </CardHeader>
+
+          <CardContent className="p-0">
             {loadingDaily ? (
-              <div className="py-8 text-center text-blue-700 font-semibold">
-                Loading daily report...
+              <div className="py-32 text-center">
+                <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-slate-500 font-medium">
+                  Analyzing daily performance...
+                </p>
               </div>
             ) : errorDaily ? (
-              <ErrorMessage
-                message={errorDaily}
-                onRetry={() => {
-                  setStartDate("");
-                  setEndDate("");
-                  setMonthFilter("");
-                }}
-              />
+              <div className="p-8">
+                <ErrorMessage
+                  message={errorDaily}
+                  onRetry={() => {
+                    setStartDate("");
+                    setEndDate("");
+                    setMonthFilter("");
+                  }}
+                />
+              </div>
             ) : (
-              <table className="min-w-full divide-y divide-blue-100 text-sm">
-                <thead>
-                  <tr className="bg-blue-50">
-                    <th className="px-6 py-3 text-left font-semibold text-blue-700 uppercase tracking-wider">
-                      Date-Time
-                    </th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
-                      Assign Hours
-                    </th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
-                      Worked Hours
-                    </th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
-                      QC score
-                    </th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
-                      Daily Required Hours
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-blue-50">
+              <Table>
+                <TableHeader className="bg-slate-50">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="px-6 font-bold text-slate-900 h-12">
+                      Date
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                      Assigned (Hrs)
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                      Worked (Hrs)
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                      QC Score
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                      Daily Target (Hrs)
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {filteredDailyData.length > 0 ? (
                     filteredDailyData.map((row, idx) => (
-                      <tr
+                      <TableRow
                         key={idx}
-                        className="hover:bg-blue-50 transition group"
+                        className="group hover:bg-slate-50/50 transition-colors border-slate-100"
                       >
-                        <td className="px-6 py-3 text-black font-medium whitespace-nowrap">
+                        <td className="px-6 py-4 font-semibold text-slate-900">
                           {row.work_date
-                            ? (() => {
-                                const d = dayjs(row.work_date);
-                                return d.isValid()
-                                  ? d.format("DD-MM-YYYY")
-                                  : row.work_date;
-                              })()
+                            ? dayjs(row.work_date).format("DD-MM-YYYY")
                             : row.date_time
                               ? dayjs(row.date_time).format("DD-MM-YYYY")
                               : "-"}
                         </td>
-                        <td className="px-6 py-3 text-center text-black">-</td>
-                        <td className="px-6 py-3 text-center text-black">
-                          {row.cumulative_billable_hours_till_day != null
-                            ? Number(
-                                row.cumulative_billable_hours_till_day,
-                              ).toFixed(2)
-                            : "-"}
+                        <td className="px-6 py-4 text-center text-slate-400 font-mediumitalic">
+                          —
                         </td>
-                        <td className="px-6 py-3 text-center text-black">-</td>
-                        <td className="px-6 py-3 text-center text-black">
-                          {row.daily_required_hours != null
-                            ? Number(row.daily_required_hours).toFixed(2)
-                            : "-"}
+                        <td className="px-6 py-4 text-center">
+                          <Badge className="bg-blue-50! text-blue-700! border-blue-100! font-bold text-sm">
+                            {row.cumulative_billable_hours_till_day != null
+                              ? Number(
+                                  row.cumulative_billable_hours_till_day,
+                                ).toFixed(2)
+                              : "-"}
+                          </Badge>
                         </td>
-                      </tr>
+                        <td className="px-6 py-4 text-center text-slate-400 font-mediumitalic">
+                          —
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <Badge
+                            variant="outline"
+                            className="font-bold border-slate-200 text-slate-600"
+                          >
+                            {row.daily_required_hours != null
+                              ? Number(row.daily_required_hours).toFixed(2)
+                              : "-"}
+                          </Badge>
+                        </td>
+                      </TableRow>
                     ))
                   ) : (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-6 py-3 text-center text-gray-400"
-                      >
-                        No data available
-                      </td>
-                    </tr>
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-64 text-center">
+                        <div className="flex flex-col items-center justify-center gap-3 text-slate-300">
+                          <Clock className="w-12 h-12 opacity-20" />
+                          <p className="text-slate-400 font-medium">
+                            No performance data found for this period.
+                          </p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
                   )}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Monthly Report view (summary table, per-row export) */}
+      {/* Monthly Report View */}
       {activeToggle === "monthly" && (
-        <div className="w-full max-w-7xl mx-auto mt-4">
-          <div className="flex flex-wrap items-center gap-4 mb-6">
-            <label className="font-semibold text-blue-700">Month:</label>
-            <input
-              type="month"
-              className="border border-blue-300 rounded px-3 py-1 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-500 bg-white shadow-sm transition"
-              value={monthlyMonth}
-              onChange={(e) => setMonthlyMonth(e.target.value)}
-              style={{ minWidth: 120 }}
-            />
-            {/* Clear Filters Button */}
-            <button
-              className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs font-semibold border border-gray-400 shadow-sm transition"
-              onClick={() => setMonthlyMonth("")}
-              type="button"
-            >
-              Clear Filters
-            </button>
-            <div className="flex-1" />
-            <button
-              onClick={handleExportMonthlyTable}
-              className="px-3 py-1 rounded bg-linear-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white text-xs font-semibold border border-green-700 shadow-sm transition mr-2"
-            >
-              Export Month
-            </button>
-          </div>
-          <div className="p-6 overflow-x-auto bg-white rounded-2xl shadow-lg w-full">
+        <Card className="border-slate-200 shadow-xl overflow-hidden min-h-[500px]">
+          <CardHeader className="border-b border-slate-100 bg-slate-50/50">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-blue-600" />
+                <div>
+                  <CardTitle className="text-lg font-bold text-slate-900">
+                    Monthly Summary
+                  </CardTitle>
+                  <CardDescription>
+                    Aggregate monthly billable performance
+                  </CardDescription>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                    Filter Month
+                  </span>
+                  <Input
+                    type="month"
+                    className="h-9 w-40 bg-white border-slate-200"
+                    value={monthlyMonth}
+                    onChange={(e) => setMonthlyMonth(e.target.value)}
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 font-bold text-slate-500"
+                  onClick={() => setMonthlyMonth("")}
+                >
+                  Reset
+                </Button>
+                <Button
+                  variant="default"
+                  className="bg-emerald-600 hover:bg-emerald-700 font-bold gap-2 h-9 shadow-md"
+                  onClick={handleExportMonthlyTable}
+                >
+                  <FileDown className="w-4 h-4" />
+                  Export All
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-0">
             {loadingMonthly ? (
-              <div className="py-8 text-center text-blue-700 font-semibold">
-                Loading monthly report...
+              <div className="py-32 text-center">
+                <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-slate-500 font-medium">
+                  Generating monthly insights...
+                </p>
               </div>
             ) : errorMonthly ? (
-              <ErrorMessage
-                message={errorMonthly}
-                onRetry={() => setMonthlyMonth("")}
-              />
+              <div className="p-8">
+                <ErrorMessage
+                  message={errorMonthly}
+                  onRetry={() => setMonthlyMonth("")}
+                />
+              </div>
             ) : (
-              <table className="min-w-full divide-y divide-blue-100 text-sm">
-                <thead>
-                  <tr className="bg-blue-50">
-                    <th className="px-6 py-3 text-left font-semibold text-blue-700 uppercase tracking-wider">
+              <Table>
+                <TableHeader className="bg-slate-50">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="px-6 font-bold text-slate-900 h-12">
                       Year & Month
-                    </th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
-                      Billable Hours Delivered
-                    </th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                      Hours Delivered
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-900 h-12">
                       Monthly Goal
-                    </th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
-                      Pending Target
-                    </th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
-                      Avg. QC Score
-                    </th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
-                      Export
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-blue-50">
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                      Pending
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                      Avg QC Score
+                    </TableHead>
+                    <TableHead className="text-right pr-6 font-bold text-slate-900 h-12">
+                      Full Report
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {monthlySummaryData.length > 0 ? (
                     monthlySummaryData.map((row, idx) => (
-                      <tr
+                      <TableRow
                         key={idx}
-                        className="hover:bg-blue-50 transition group"
+                        className="group hover:bg-slate-50/50 transition-colors border-slate-100"
                       >
-                        <td className="px-6 py-3 text-black font-medium whitespace-nowrap">
+                        <td className="px-6 py-4 font-bold text-slate-900">
                           {row.month_year}
                         </td>
-                        <td className="px-6 py-3 text-center text-black">
-                          {row.total_billable_hours
-                            ? Number(row.total_billable_hours).toFixed(2)
-                            : row.total_billable_hours_month
-                              ? Number(row.total_billable_hours_month).toFixed(
-                                  2,
-                                )
+                        <td className="px-6 py-4 text-center">
+                          <Badge className="bg-blue-50! text-blue-700! border-blue-100! font-bold text-sm">
+                            {row.total_billable_hours ||
+                            row.total_billable_hours_month
+                              ? Number(
+                                  row.total_billable_hours ||
+                                    row.total_billable_hours_month,
+                                ).toFixed(2)
                               : "-"}
+                          </Badge>
                         </td>
-                        <td className="px-6 py-3 text-center text-black">
-                          {row.monthly_target ?? row.monthly_goal}
+                        <td className="px-6 py-4 text-center font-bold text-slate-600">
+                          {row.monthly_target ?? row.monthly_goal ?? "-"}
                         </td>
-                        <td className="px-6 py-3 text-center text-black">
-                          {row.pending_target
-                            ? Number(row.pending_target).toFixed(2)
-                            : "-"}
-                        </td>
-                        <td className="px-6 py-3 text-center text-black">
-                          {row.avg_qc_score ?? "-"}
-                        </td>
-                        <td className="px-6 py-3 text-center">
-                          <button
-                            onClick={() => {
-                              if (row.month_year) {
-                                void handleExportMonthDailyExcel(
-                                  row.month_year,
-                                );
-                              }
-                            }}
-                            className="flex items-center gap-2 px-3 py-1 rounded bg-green-600 hover:bg-green-700 text-white text-xs font-semibold border border-green-700 shadow-sm transition"
-                            title={`Export daily report for ${row.month_year}`}
-                            aria-label={`Export daily report for ${row.month_year}`}
+                        <td className="px-6 py-4 text-center">
+                          <Badge
+                            variant="outline"
+                            className={`font-bold border-slate-200 ${Number(row.pending_target) > 0 ? "text-amber-600 bg-amber-50" : "text-emerald-600 bg-emerald-50"}`}
                           >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                            >
-                              <path
-                                d="M16 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"
-                                stroke="white"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <polyline
-                                points="8 12 12 16 16 12"
-                                stroke="white"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <line
-                                x1="12"
-                                y1="8"
-                                x2="12"
-                                y2="16"
-                                stroke="white"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                            <span>Excel</span>
-                          </button>
+                            {row.pending_target
+                              ? Number(row.pending_target).toFixed(2)
+                              : "-"}
+                          </Badge>
                         </td>
-                      </tr>
+                        <td className="px-6 py-4 text-center">
+                          {row.avg_qc_score != null ? (
+                            <Badge
+                              variant="secondary"
+                              className="bg-slate-100 text-slate-900 font-bold border-none"
+                            >
+                              {row.avg_qc_score}
+                            </Badge>
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right pr-6">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-bold gap-2"
+                            onClick={() =>
+                              row.month_year &&
+                              void handleExportMonthDailyExcel(row.month_year)
+                            }
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            Excel
+                          </Button>
+                        </td>
+                      </TableRow>
                     ))
                   ) : (
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className="px-6 py-3 text-center text-gray-400"
-                      >
-                        No data available
-                      </td>
-                    </tr>
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-64 text-center">
+                        <div className="flex flex-col items-center justify-center gap-3 text-slate-300">
+                          <TrendingUp className="w-12 h-12 opacity-20" />
+                          <p className="text-slate-400 font-medium">
+                            No monthly performance data available.
+                          </p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
                   )}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

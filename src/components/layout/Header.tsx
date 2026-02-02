@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   FileText,
   LayoutDashboard,
@@ -9,40 +9,50 @@ import {
   Users,
   X,
   type LucideIcon,
-} from 'lucide-react'
-import { Link, useLocation, useNavigate, useSearch } from '@tanstack/react-router'
-import type { User } from '../../context/AuthContext'
-import type { DashboardSearchParams } from '../../routes/dashboard'
+} from "lucide-react";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearch,
+} from "@tanstack/react-router";
+import type { User } from "../../context/AuthContext";
+import type { DashboardSearchParams } from "../../routes/dashboard";
 
-import logo from '../../assets/Transform logo.png'
+import logo from "../../assets/Transform logo.png";
 
 // Role ID to role string mapping
 const ROLE_MAP: Record<number, string> = {
-  1: 'SUPER_ADMIN',
-  2: 'ADMIN',
-  3: 'PROJECT_MANAGER',
-  4: 'ASSISTANT_MANAGER',
-  5: 'QA_AGENT',
-  6: 'AGENT',
-}
+  1: "SUPER_ADMIN",
+  2: "ADMIN",
+  3: "PROJECT_MANAGER",
+  4: "ASSISTANT_MANAGER",
+  5: "QA_AGENT",
+  6: "AGENT",
+};
 
-type HeaderView = 'DASHBOARD' | 'ADMIN_PANEL' | 'ENTRY' | 'TRACKER_REPORT' | 'AGENT_LIST'
-type TargetPath = '/dashboard' | '/admin' | '/entry' | '/agent'
+type HeaderView =
+  | "DASHBOARD"
+  | "ADMIN_PANEL"
+  | "ENTRY"
+  | "TRACKER_REPORT"
+  | "AGENT_LIST";
+type TargetPath = "/dashboard" | "/admin" | "/entry" | "/agent";
 
 type LooseSearch = {
-  tab?: string
-  view?: string
-}
+  tab?: string;
+  view?: string;
+};
 
 interface NavItem {
-  view: HeaderView
-  label: string
-  icon: LucideIcon
+  view: HeaderView;
+  label: string;
+  icon: LucideIcon;
 }
 
 export interface HeaderProps {
-  currentUser: User | null
-  handleLogout?: () => void
+  currentUser: User | null;
+  handleLogout?: () => void;
 }
 
 const Header = ({ currentUser, handleLogout }: HeaderProps) => {
@@ -52,20 +62,20 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
       currentUser?.name ||
       currentUser?.user_name ||
       currentUser?.username ||
-      ''
+      "";
 
-    if (!name) return ''
+    if (!name) return "";
 
-    const parts = name.trim().split(' ')
-    const first = parts[0]?.[0]?.toUpperCase() ?? ''
+    const parts = name.trim().split(" ");
+    const first = parts[0]?.[0]?.toUpperCase() ?? "";
 
     if (parts.length === 1) {
-      return first
+      return first;
     }
 
-    const last = parts[parts.length - 1]?.[0]?.toUpperCase() ?? ''
-    return `${first}${last}`
-  }
+    const last = parts[parts.length - 1]?.[0]?.toUpperCase() ?? "";
+    return `${first}${last}`;
+  };
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -90,57 +100,60 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
   // -----------------------------
   // Helper for Navigation with role-based routing
   const goTo = (view: HeaderView): void => {
-    const roleId = Number(currentUser?.role_id)
+    const roleId = Number(currentUser?.role_id);
     const role = String(
-      currentUser?.role ?? currentUser?.role_name ?? currentUser?.user_role ?? '',
-    ).toUpperCase()
+      currentUser?.role ??
+        currentUser?.role_name ??
+        currentUser?.user_role ??
+        "",
+    ).toUpperCase();
 
-    let targetPath: TargetPath = '/dashboard'
-    let dashboardSearch: DashboardSearchParams | undefined
+    let targetPath: TargetPath = "/dashboard";
+    let dashboardSearch: DashboardSearchParams | undefined;
 
     // QA-specific views
-    if (view === 'TRACKER_REPORT') {
-      targetPath = '/dashboard'
-      dashboardSearch = { view: 'tracker-report' }
-    } else if (view === 'AGENT_LIST') {
-      targetPath = '/dashboard'
-      dashboardSearch = { view: 'agent-list' }
+    if (view === "TRACKER_REPORT") {
+      targetPath = "/dashboard";
+      dashboardSearch = { view: "tracker-report" };
+    } else if (view === "AGENT_LIST") {
+      targetPath = "/dashboard";
+      dashboardSearch = { view: "agent-list" };
     }
 
     // Assistant Manager: Manage lives under /dashboard?tab=manage
-    else if (view === 'ADMIN_PANEL' && roleId === 4) {
-      targetPath = '/dashboard'
-      dashboardSearch = { tab: 'manage' }
+    else if (view === "ADMIN_PANEL" && roleId === 4) {
+      targetPath = "/dashboard";
+      dashboardSearch = { tab: "manage" };
     }
 
     // Agents: entry goes to /agent, dashboard goes to /dashboard
-    else if (roleId === 6 || role.includes('AGENT')) {
-      targetPath = view === 'ENTRY' ? '/agent' : '/dashboard'
+    else if (roleId === 6 || role.includes("AGENT")) {
+      targetPath = view === "ENTRY" ? "/agent" : "/dashboard";
     }
 
     // Admin/PM/QA/etc
     else {
-      if (view === 'ADMIN_PANEL') {
-        targetPath = '/admin'
-      } else if (view === 'ENTRY') {
-        targetPath = '/entry'
+      if (view === "ADMIN_PANEL") {
+        targetPath = "/admin";
+      } else if (view === "ENTRY") {
+        targetPath = "/entry";
       } else {
-        targetPath = '/dashboard'
-        dashboardSearch = { tab: 'overview' }
+        targetPath = "/dashboard";
+        dashboardSearch = { tab: "overview" };
       }
     }
 
-    if (targetPath === '/dashboard') {
+    if (targetPath === "/dashboard") {
       navigate({
-        to: '/dashboard',
+        to: "/dashboard",
         ...(dashboardSearch ? { search: dashboardSearch } : {}),
-      })
+      });
     } else {
-      navigate({ to: targetPath })
+      navigate({ to: targetPath });
     }
 
-    setIsMobileMenuOpen(false)
-  }
+    setIsMobileMenuOpen(false);
+  };
 
   // -----------------------------
   // Nav Items (Header Buttons)
@@ -164,11 +177,11 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
         if (roleId === 6)
           return [
             {
-              view: 'DASHBOARD',
+              view: "DASHBOARD",
               label: "Analytics",
               icon: LayoutDashboard,
             },
-            { view: 'ENTRY', label: 'Tracker', icon: PenTool },
+            { view: "ENTRY", label: "Tracker", icon: PenTool },
             // { view: ViewState.SCHEDULER, label: "Roster", icon: CalendarClock },
           ];
 
@@ -176,49 +189,49 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
         if (roleId === 5)
           return [
             {
-              view: 'DASHBOARD',
-              label: 'Analytics',
+              view: "DASHBOARD",
+              label: "Analytics",
               icon: LayoutDashboard,
             },
-            { view: 'TRACKER_REPORT', label: 'Tracker Report', icon: FileText },
-            { view: 'AGENT_LIST', label: 'Agent File Report', icon: Users },
+            { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
+            { view: "AGENT_LIST", label: "Agent File Report", icon: Users },
           ];
 
         // Project Manager tabs (role_id 3)
         if (roleId === 3)
           return [
             {
-              view: 'DASHBOARD',
-              label: 'Analytics',
+              view: "DASHBOARD",
+              label: "Analytics",
               icon: LayoutDashboard,
             },
-            { view: 'ADMIN_PANEL', label: 'Manage', icon: Settings },
-            { view: 'ENTRY', label: 'User Permission', icon: PenTool },
+            { view: "ADMIN_PANEL", label: "Manage", icon: Settings },
+            { view: "ENTRY", label: "User Permission", icon: PenTool },
           ];
 
         // Assistant Manager tabs (role_id 4)
         if (roleId === 4)
           return [
             {
-              view: 'DASHBOARD',
-              label: 'Analytics',
+              view: "DASHBOARD",
+              label: "Analytics",
               icon: LayoutDashboard,
             },
-            { view: 'TRACKER_REPORT', label: 'Tracker Report', icon: FileText },
-            { view: 'AGENT_LIST', label: 'Agent File Report', icon: Users },
-            { view: 'ADMIN_PANEL', label: 'Manage', icon: Settings },
-            { view: 'ENTRY', label: 'User Permission', icon: PenTool },
+            { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
+            { view: "AGENT_LIST", label: "Agent File Report", icon: Users },
+            { view: "ADMIN_PANEL", label: "Manage", icon: Settings },
+            { view: "ENTRY", label: "User Permission", icon: PenTool },
           ];
 
         // All other role_ids (Admin/Super Admin)
         return [
           {
-            view: 'DASHBOARD',
-            label: 'Analytics',
+            view: "DASHBOARD",
+            label: "Analytics",
             icon: LayoutDashboard,
           },
-          { view: 'ADMIN_PANEL', label: 'Manage', icon: Settings },
-          { view: 'ENTRY', label: 'User Permission', icon: PenTool },
+          { view: "ADMIN_PANEL", label: "Manage", icon: Settings },
+          { view: "ENTRY", label: "User Permission", icon: PenTool },
         ];
       }
       return [];
@@ -228,12 +241,12 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
     if (role.includes("QA")) {
       return [
         {
-          view: 'DASHBOARD',
-          label: 'Analytics',
+          view: "DASHBOARD",
+          label: "Analytics",
           icon: LayoutDashboard,
         },
-        { view: 'TRACKER_REPORT', label: 'Tracker Report', icon: FileText },
-        { view: 'AGENT_LIST', label: 'Agent File Report', icon: Users },
+        { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
+        { view: "AGENT_LIST", label: "Agent File Report", icon: Users },
       ];
     }
 
@@ -241,14 +254,14 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
     if (role.includes("ASSISTANT") || role.includes("ASST")) {
       return [
         {
-          view: 'DASHBOARD',
-          label: 'Analytics',
+          view: "DASHBOARD",
+          label: "Analytics",
           icon: LayoutDashboard,
         },
-        { view: 'TRACKER_REPORT', label: 'Tracker Report', icon: FileText },
-        { view: 'AGENT_LIST', label: 'Agent File Report', icon: Users },
-        { view: 'ADMIN_PANEL', label: 'Manage', icon: Settings },
-        { view: 'ENTRY', label: 'User Permission', icon: PenTool },
+        { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
+        { view: "AGENT_LIST", label: "Agent File Report", icon: Users },
+        { view: "ADMIN_PANEL", label: "Manage", icon: Settings },
+        { view: "ENTRY", label: "User Permission", icon: PenTool },
       ];
     }
 
@@ -256,12 +269,12 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
     if (role.includes("PROJECT_MANAGER")) {
       return [
         {
-          view: 'DASHBOARD',
-          label: 'Analytics',
+          view: "DASHBOARD",
+          label: "Analytics",
           icon: LayoutDashboard,
         },
-        { view: 'ADMIN_PANEL', label: 'Manage', icon: Settings },
-        { view: 'ENTRY', label: 'User Permission', icon: PenTool },
+        { view: "ADMIN_PANEL", label: "Manage", icon: Settings },
+        { view: "ENTRY", label: "User Permission", icon: PenTool },
       ];
     }
 
@@ -269,12 +282,12 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
     if (role.includes("ADMIN")) {
       return [
         {
-          view: 'DASHBOARD',
-          label: 'Analytics',
+          view: "DASHBOARD",
+          label: "Analytics",
           icon: LayoutDashboard,
         },
-        { view: 'ADMIN_PANEL', label: 'Manage', icon: Settings },
-        { view: 'ENTRY', label: 'User Permission', icon: PenTool },
+        { view: "ADMIN_PANEL", label: "Manage", icon: Settings },
+        { view: "ENTRY", label: "User Permission", icon: PenTool },
       ];
     }
 
@@ -282,21 +295,21 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
     if (role.includes("AGENT")) {
       return [
         {
-          view: 'DASHBOARD',
-          label: 'Analytics',
+          view: "DASHBOARD",
+          label: "Analytics",
           icon: LayoutDashboard,
         },
-        { view: 'ENTRY', label: 'Tracker', icon: PenTool },
+        { view: "ENTRY", label: "Tracker", icon: PenTool },
       ];
     }
 
     return [];
   };
 
-  const navItems = getNavItems()
+  const navItems = getNavItems();
 
-  const { pathname } = useLocation()
-  const search = useSearch({ strict: false }) as LooseSearch
+  const { pathname } = useLocation();
+  const search = useSearch({ strict: false }) as LooseSearch;
 
   // -----------------------------
   // NAV BUTTON UI (Desktop)
@@ -304,24 +317,35 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
   const renderNavButton = (item: NavItem) => {
     // Determine if this nav item is active
     let isActive = false;
-    
+
     // Logic to determine active state based on route and view/tab search params
-    if (item.view === 'DASHBOARD' || item.view === 'TRACKER_REPORT' || item.view === 'AGENT_LIST') {
-      isActive = pathname === "/dashboard" && (!search.tab || search.tab !== "manage");
-      
+    if (
+      item.view === "DASHBOARD" ||
+      item.view === "TRACKER_REPORT" ||
+      item.view === "AGENT_LIST"
+    ) {
+      isActive =
+        pathname === "/dashboard" && (!search.tab || search.tab !== "manage");
+
       // Fine-grained active state for QA views if they are in the header
-      if (item.view === 'TRACKER_REPORT') {
-        isActive = pathname === "/dashboard" && search.view === "tracker-report";
-      } else if (item.view === 'AGENT_LIST') {
+      if (item.view === "TRACKER_REPORT") {
+        isActive =
+          pathname === "/dashboard" && search.view === "tracker-report";
+      } else if (item.view === "AGENT_LIST") {
         isActive = pathname === "/dashboard" && search.view === "agent-list";
-      } else if (item.view === 'DASHBOARD') {
+      } else if (item.view === "DASHBOARD") {
         // Analytics is active if we are on dashboard and NOT on a specific sub-view
-        isActive = pathname === "/dashboard" && !search.view && (!search.tab || search.tab === "overview");
+        isActive =
+          pathname === "/dashboard" &&
+          !search.view &&
+          (!search.tab || search.tab === "overview");
       }
-    } else if (item.view === 'ADMIN_PANEL') {
+    } else if (item.view === "ADMIN_PANEL") {
       // Manage can be /admin OR /dashboard?tab=manage
-      isActive = pathname === "/admin" || (pathname === "/dashboard" && search.tab === "manage");
-    } else if (item.view === 'ENTRY') {
+      isActive =
+        pathname === "/admin" ||
+        (pathname === "/dashboard" && search.tab === "manage");
+    } else if (item.view === "ENTRY") {
       isActive = pathname === "/entry" || pathname === "/agent";
     }
 
@@ -331,13 +355,14 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
         onClick={() => goTo(item.view)}
         className={`
           flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-all whitespace-nowrap cursor-pointer
-          ${isActive 
-            ? 'bg-blue-600 text-white shadow-sm' 
-            : 'text-slate-600 bg-slate-50 hover:bg-slate-200'
+          ${
+            isActive
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-slate-600 bg-slate-50 hover:bg-slate-200"
           }
         `}
       >
-        <item.icon className={`w-4 h-4 ${isActive ? 'text-white' : ''}`} />
+        <item.icon className={`w-4 h-4 ${isActive ? "text-white" : ""}`} />
         <span className="hidden md:inline">{item.label}</span>
       </button>
     );
@@ -348,21 +373,29 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
   // -----------------------------
   const renderMobileNavButton = (item: NavItem) => {
     let isActive = false;
-    if (item.view === 'DASHBOARD' || item.view === 'TRACKER_REPORT' || item.view === 'AGENT_LIST') {
-      isActive = pathname === "/dashboard" && (!search.tab || search.tab !== "manage");
-      if (item.view === 'TRACKER_REPORT') {
-        isActive = pathname === '/dashboard' && search.view === 'tracker-report'
-      } else if (item.view === 'AGENT_LIST') {
-        isActive = pathname === '/dashboard' && search.view === 'agent-list'
-      } else if (item.view === 'DASHBOARD') {
+    if (
+      item.view === "DASHBOARD" ||
+      item.view === "TRACKER_REPORT" ||
+      item.view === "AGENT_LIST"
+    ) {
+      isActive =
+        pathname === "/dashboard" && (!search.tab || search.tab !== "manage");
+      if (item.view === "TRACKER_REPORT") {
         isActive =
-          pathname === '/dashboard' &&
+          pathname === "/dashboard" && search.view === "tracker-report";
+      } else if (item.view === "AGENT_LIST") {
+        isActive = pathname === "/dashboard" && search.view === "agent-list";
+      } else if (item.view === "DASHBOARD") {
+        isActive =
+          pathname === "/dashboard" &&
           !search.view &&
-          (!search.tab || search.tab === 'overview')
+          (!search.tab || search.tab === "overview");
       }
-    } else if (item.view === 'ADMIN_PANEL') {
-      isActive = pathname === "/admin" || (pathname === "/dashboard" && search.tab === "manage");
-    } else if (item.view === 'ENTRY') {
+    } else if (item.view === "ADMIN_PANEL") {
+      isActive =
+        pathname === "/admin" ||
+        (pathname === "/dashboard" && search.tab === "manage");
+    } else if (item.view === "ENTRY") {
       isActive = pathname === "/entry" || pathname === "/agent";
     }
 
@@ -372,13 +405,14 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
         onClick={() => goTo(item.view)}
         className={`
           flex items-center gap-3 px-4 py-3 rounded-lg text-base font-semibold transition-all w-full cursor-pointer
-          ${isActive 
-            ? 'bg-blue-600 text-white shadow-sm' 
-            : 'text-slate-700 bg-slate-50 hover:bg-slate-200'
+          ${
+            isActive
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-slate-700 bg-slate-50 hover:bg-slate-200"
           }
         `}
       >
-        <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} />
+        <item.icon className={`w-5 h-5 ${isActive ? "text-white" : ""}`} />
         <span>{item.label}</span>
       </button>
     );
@@ -399,7 +433,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
           <div className="flex justify-between items-center h-16">
             {/* LOGO + TITLE */}
             <div className="flex items-center gap-2">
-              <Link to={"/"}>
+              <Link to={"/dashboard"}>
                 <img
                   src={logo}
                   alt="TFS Ops Tracker Logo"
@@ -458,7 +492,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
               {String(
                 currentUser?.designation ??
                   (currentUser as Record<string, unknown> | null)?.role ??
-                  '',
+                  "",
               )}
             </p>
             <p className="text-xs text-slate-400 mt-1">
@@ -472,15 +506,15 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
           </div>
 
           {/* LOGOUT */}
-              <button
+          <button
             onClick={() => {
-              if (typeof handleLogout === 'function') {
-                handleLogout()
+              if (typeof handleLogout === "function") {
+                handleLogout();
               } else if (window && window.sessionStorage) {
-                window.sessionStorage.clear()
-                window.location.assign('/')
+                window.sessionStorage.clear();
+                window.location.assign("/");
               }
-              setIsMobileMenuOpen(false)
+              setIsMobileMenuOpen(false);
             }}
             className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-red-600 hover:bg-red-50 w-full transition-colors mt-6 border-t border-slate-200 pt-6 cursor-pointer"
           >

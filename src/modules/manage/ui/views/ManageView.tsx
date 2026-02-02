@@ -12,6 +12,7 @@ import UsersManagement from "../components/UsersManagement";
 import ProjectsManagement from "../components/ProjectsManagement";
 import UserTrackingView from "../components/UserTrackingView";
 import UserMonthlyTargetCard from "../components/UserMonthlyTargetCard";
+import { Button } from "@/components/ui/button";
 import {
   fetchUsersList,
   fetchProjectsList,
@@ -145,32 +146,47 @@ const ManageView: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-8">
-      <div className="flex gap-4 mb-8">
-        <button
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${activeTab === "users" ? "bg-blue-600 text-white" : "bg-white text-blue-700 border border-blue-200"}`}
+    <div className="max-w-7xl mx-auto py-8 px-4">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+            Management
+          </h1>
+          <p className="text-slate-500 mt-1">
+            Manage users, projects, and tracking settings.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-8 bg-slate-100/50 p-1.5 rounded-xl w-fit">
+        <Button
+          variant={activeTab === "users" ? "default" : "ghost"}
+          className={`flex items-center gap-2 px-6 h-10 rounded-lg font-semibold text-sm transition-all ${activeTab === "users" ? "bg-blue-600 text-white shadow-md border-none" : "text-slate-600 hover:text-blue-600 hover:bg-white"}`}
           onClick={() => setActiveTab("users")}
         >
-          <Users className="w-5 h-5" /> Users
-        </button>
-        <button
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${activeTab === "projects" ? "bg-blue-600 text-white" : "bg-white text-blue-700 border border-blue-200"}`}
+          <Users className="w-4 h-4" /> Users
+        </Button>
+        <Button
+          variant={activeTab === "projects" ? "default" : "ghost"}
+          className={`flex items-center gap-2 px-6 h-10 rounded-lg font-semibold text-sm transition-all ${activeTab === "projects" ? "bg-blue-600 text-white shadow-md border-none" : "text-slate-600 hover:text-blue-600 hover:bg-white"}`}
           onClick={() => setActiveTab("projects")}
         >
-          <Briefcase className="w-5 h-5" /> Projects
-        </button>
-        <button
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${activeTab === "tracking" ? "bg-blue-600 text-white" : "bg-white text-blue-700 border border-blue-200"}`}
+          <Briefcase className="w-4 h-4" /> Projects
+        </Button>
+        <Button
+          variant={activeTab === "tracking" ? "default" : "ghost"}
+          className={`flex items-center gap-2 px-6 h-10 rounded-lg font-semibold text-sm transition-all ${activeTab === "tracking" ? "bg-blue-600 text-white shadow-md border-none" : "text-slate-600 hover:text-blue-600 hover:bg-white"}`}
           onClick={() => setActiveTab("tracking")}
         >
-          <Settings className="w-5 h-5" /> User Tracking
-        </button>
-        <button
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${activeTab === "monthly_target" ? "bg-blue-600 text-white" : "bg-white text-blue-700 border border-blue-200"}`}
+          <Settings className="w-4 h-4" /> User Tracking
+        </Button>
+        <Button
+          variant={activeTab === "monthly_target" ? "default" : "ghost"}
+          className={`flex items-center gap-2 px-6 h-10 rounded-lg font-semibold text-sm transition-all ${activeTab === "monthly_target" ? "bg-blue-600 text-white shadow-md border-none" : "text-slate-600 hover:text-blue-600 hover:bg-white"}`}
           onClick={() => setActiveTab("monthly_target")}
         >
-          <Briefcase className="w-5 h-5" /> Monthly Target
-        </button>
+          <Briefcase className="w-4 h-4" /> Monthly Target
+        </Button>
       </div>
 
       {activeTab === "users" && (
