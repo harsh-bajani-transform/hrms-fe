@@ -1,130 +1,160 @@
 /**
- * File: AuthContext.jsx
- * Description:
- * This file manages authentication and authorization state
- * across the application using React Context API.
- * 
- * It:
- * - Stores logged-in user data in sessionStorage
- * - Provides login and logout functionality
- * - Exposes role-based and permission-based helpers
- * - Makes auth data available to all components
+ * AuthContext
+ * Manages authentication and authorization state using React Context.
  */
 
-import { createContext, useState, useContext, useMemo } from "react";
+import {
+  createContext,
+  useState,
+  useContext,
+  useMemo,
+  type ReactNode,
+} from 'react'
 
-// Create Auth Context
-const AuthContext = createContext();
+export type PermissionFlag = 0 | 1 | '0' | '1' | boolean | null | undefined
 
-// Auth Provider Component
-export const AuthProvider = ({ children }) => {
+export interface User {
+  user_id?: number | string
+  id?: number | string
 
-  // Initialize user state from sessionStorage and normalize user_id
-  const [user, setUser] = useState(() => {
-    const storedUser = sessionStorage.getItem("user");
-    if (storedUser && storedUser !== "undefined") {
-      try {
-        const parsed = JSON.parse(storedUser);
-        // Normalize: always have user_id
-        if (parsed && !parsed.user_id && parsed.id) {
-          parsed.user_id = parsed.id;
-        }
-        return parsed;
-      } catch {
-        return null;
-      }
+  role_id?: number | string
+  role_name?: string
+  user_role?: string
+
+  name?: string
+  user_name?: string
+  username?: string
+
+  designation?: string
+  user_designation?: string
+
+  is_active?: 0 | 1 | boolean
+
+  user_creation_permission?: PermissionFlag
+  project_creation_permission?: PermissionFlag
+
+  // Backend can send additional fields (permission flags, etc.)
+  [key: string]: unknown
+}
+
+type Action =
+  | 'edit'
+  | 'delete'
+  | 'create'
+  | 'manage_projects'
+  | 'edit_project'
+  | 'delete_project'
+  | 'create_project'
+
+export interface AuthContextValue {
+  user: User | null
+  login: (userData: User) => void
+  logout: () => void
+  hasPermission: (permissionKey: string) => boolean
+  canPerformAction: (targetUser: User | null, action: Action) => boolean
+
+  canManageUsers: boolean
+  canManageProjects: boolean
+  isSuperAdmin: boolean
+  canViewSalary: boolean
+}
+
+const isAllowed = (value: unknown): boolean =>
+  value === 1 || value === '1' || value === true
+
+const normalizeUser = (u: User): User => {
+  if (u.user_id == null && u.id != null) {
+    return { ...u, user_id: u.id }
+  }
+  return u
+}
+
+const parseStoredUser = (raw: string | null): User | null => {
+  if (!raw || raw === 'undefined') return null
+
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (parsed && typeof parsed === 'object') {
+      return normalizeUser(parsed as User)
     }
-    return null;
-  });
+  } catch {
+    // ignore
+  }
 
-  // Login: save user data in state and sessionStorage, normalize user_id
-  const login = (userData) => {
-    let normalized = { ...userData };
-    if (!normalized.user_id && normalized.id) {
-      normalized.user_id = normalized.id;
-    }
-    setUser(normalized);
-    sessionStorage.setItem("user", JSON.stringify(normalized));
-  };
+  return null
+}
 
-  // Logout: clear user state and sessionStorage
+const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(() =>
+    parseStoredUser(sessionStorage.getItem('user')),
+  )
+
+  const login = (userData: User) => {
+    const normalized = normalizeUser({ ...userData })
+    setUser(normalized)
+    sessionStorage.setItem('user', JSON.stringify(normalized))
+  }
+
   const logout = () => {
-    setUser(null);
-    sessionStorage.removeItem("user");
-  };
+    setUser(null)
+    sessionStorage.removeItem('user')
+  }
 
-  // Generic permission checker (1 = allowed, 0 = denied)
-  const hasPermission = (permissionKey) => {
-    if (!user) return false;
-    return user[permissionKey] === 1;
-  };
+  const hasPermission = (permissionKey: string): boolean => {
+    if (!user) return false
+    return isAllowed((user as Record<string, unknown>)[permissionKey])
+  }
 
-  // Check if user can perform action (PURE permission-based - NO role restrictions)
-  const canPerformAction = (targetUser, action) => {
-    if (!user) return false;
-    
-    // Check permission flags based on action type
+  const canPerformAction = (_targetUser: User | null, action: Action): boolean => {
+    if (!user) return false
+
     const permissionMap = {
-      edit: "user_creation_permission",
-      delete: "user_creation_permission",
-      create: "user_creation_permission",
-      manage_projects: "project_creation_permission",
-      edit_project: "project_creation_permission",
-      delete_project: "project_creation_permission",
-      create_project: "project_creation_permission",
-    };
+      edit: 'user_creation_permission',
+      delete: 'user_creation_permission',
+      create: 'user_creation_permission',
+      manage_projects: 'project_creation_permission',
+      edit_project: 'project_creation_permission',
+      delete_project: 'project_creation_permission',
+      create_project: 'project_creation_permission',
+    } as const satisfies Record<Action, string>
 
-    const permissionKey = permissionMap[action];
-    if (!permissionKey) return false;
+    const permissionKey = permissionMap[action]
+    return hasPermission(permissionKey)
+  }
 
-    // PURE PERMISSION-BASED: If user has the permission flag, they can do the action
-    return user[permissionKey] === 1 || user[permissionKey] === "1";
-  };
-
-  // Derived permissions based on permission flags from login response
-  const permissions = useMemo(() => {
-    if (!user) return {};
-
-    return {
-      // Can create/manage users - based on user_creation_permission flag
-      canManageUsers:
-        user.user_creation_permission === 1 ||
-        user.user_creation_permission === "1",
-
-      // Can create/manage projects - based on project_creation_permission flag
-      canManageProjects:
-        user.project_creation_permission === 1 ||
-        user.project_creation_permission === "1",
-
-      // Super Admin check - if user has both permissions, they're essentially a super admin
+  const permissions = useMemo(
+    () => ({
+      canManageUsers: isAllowed(user?.user_creation_permission),
+      canManageProjects: isAllowed(user?.project_creation_permission),
       isSuperAdmin:
-        (user.user_creation_permission === 1 || user.user_creation_permission === "1") &&
-        (user.project_creation_permission === 1 || user.project_creation_permission === "1"),
-
-      // Can view salary details
+        isAllowed(user?.user_creation_permission) &&
+        isAllowed(user?.project_creation_permission),
       canViewSalary:
-        String(user.role_name || "").toLowerCase() === "admin" ||
-        String(user.user_role || "").toUpperCase() === "FINANCE_HR",
-    };
-  }, [user]);
+        String(user?.role_name ?? '').toLowerCase() === 'admin' ||
+        String(user?.user_role ?? '').toUpperCase() === 'FINANCE_HR',
+    }),
+    [user],
+  )
 
-  // Provide auth data and helpers to entire app
-  return (
-    <AuthContext.Provider
-      value={{
-        user,          // Logged-in user object
-        login,         // Login function
-        logout,        // Logout function
-        ...permissions,// Derived permission flags
-        hasPermission, // Generic permission checker
-        canPerformAction, // Column-wise action permission checker
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  const value: AuthContextValue = {
+    user,
+    login,
+    logout,
+    hasPermission,
+    canPerformAction,
+    ...permissions,
+  }
 
-// Custom hook to use Auth Context
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = (): AuthContextValue => {
+  const ctx = useContext(AuthContext)
+  if (!ctx) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return ctx
+}

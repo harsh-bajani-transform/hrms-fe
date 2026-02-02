@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import {
   LayoutGrid,
   Briefcase,
@@ -6,9 +7,26 @@ import {
   FileWarning,
   DollarSign,
   Gem,
-  ClipboardCheck,
-  FileText
-} from 'lucide-react';
+  FileText,
+} from 'lucide-react'
+
+export interface TabsNavigationProps {
+  activeTab: string
+  setActiveTab: (tabId: string) => void
+  isAgent: boolean
+  isQA: boolean
+  canViewIncentivesTab: boolean
+  canViewAdherence: boolean
+  canAccessManage?: boolean
+}
+
+interface TabDef {
+  id: string
+  label: string
+  icon: LucideIcon
+  alwaysVisible?: boolean
+  visible?: boolean
+}
 
 const TabsNavigation = ({
   activeTab,
@@ -16,21 +34,46 @@ const TabsNavigation = ({
   isAgent,
   isQA,
   canViewIncentivesTab,
-  canViewAdherence
-}) => {
-  const tabsRef = useRef(null);
-    
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: LayoutGrid, alwaysVisible: true },
-    { id: 'bookings', label: 'User Monthly Target', icon: Briefcase, visible: !isAgent && !isQA },
-    { id: 'billable_report', label: 'Billable Reports', icon: FileText, visible: true },
-    { id: 'agents', label: 'Agent Performance', icon: Users, visible: !isQA },
-    { id: 'adherence', label: 'Reporting Adherence', icon: FileWarning, visible: (canViewAdherence && !isQA) || isAgent },
-    { id: 'incentives', label: 'Agent Incentives', icon: DollarSign, visible: (canViewIncentivesTab && !isQA) || isAgent },
-    { id: 'mgmt_incentives', label: 'Management Incentives', icon: Gem, visible: !isAgent && !isQA }
-  ];
+  canViewAdherence,
+}: TabsNavigationProps) => {
+  const tabsRef = useRef<HTMLDivElement | null>(null)
 
-  const visibleTabs = tabs.filter(tab => tab.alwaysVisible || tab.visible);
+  const tabs: TabDef[] = [
+    { id: 'overview', label: 'Overview', icon: LayoutGrid, alwaysVisible: true },
+    {
+      id: 'bookings',
+      label: 'User Monthly Target',
+      icon: Briefcase,
+      visible: !isAgent && !isQA,
+    },
+    {
+      id: 'billable_report',
+      label: 'Billable Reports',
+      icon: FileText,
+      visible: true,
+    },
+    { id: 'agents', label: 'Agent Performance', icon: Users, visible: !isQA },
+    {
+      id: 'adherence',
+      label: 'Reporting Adherence',
+      icon: FileWarning,
+      visible: (canViewAdherence && !isQA) || isAgent,
+    },
+    {
+      id: 'incentives',
+      label: 'Agent Incentives',
+      icon: DollarSign,
+      visible: (canViewIncentivesTab && !isQA) || isAgent,
+    },
+    {
+      id: 'mgmt_incentives',
+      label: 'Management Incentives',
+      icon: Gem,
+      visible: !isAgent && !isQA,
+    },
+  ]
+
+  const visibleTabs = tabs.filter((tab) => tab.alwaysVisible || tab.visible)
 
   return (
     <div className="relative w-full">
@@ -44,9 +87,9 @@ const TabsNavigation = ({
         "
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {visibleTabs.map(tab => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
+        {visibleTabs.map((tab) => {
+          const Icon = tab.icon
+          const isActive = activeTab === tab.id
 
           return (
             <button
@@ -54,14 +97,11 @@ const TabsNavigation = ({
               onClick={() => setActiveTab(tab.id)}
               className={`
                 grow lg:grow-0
-                px-4 sm:px-4 py-3 sm:py-3 rounded-lg text-sm font-semibold 
-                flex items-center justify-center gap-1.5 sm:gap-2 
+                px-4 sm:px-4 py-3 sm:py-3 rounded-lg text-sm font-semibold
+                flex items-center justify-center gap-1.5 sm:gap-2
                 transition-all whitespace-nowrap snap-start cursor-pointer
                 bg-white shadow border border-slate-200
-                ${isActive 
-                  ? 'bg-blue-600! text-white border-blue-600! shadow-md' 
-                  : 'text-slate-600 hover:text-blue-600 hover:border-slate-300'
-                }
+                ${isActive ? 'bg-blue-600! text-white border-blue-600! shadow-md' : 'text-slate-600 hover:text-blue-600 hover:border-slate-300'}
               `}
               title={tab.label}
             >
@@ -69,7 +109,7 @@ const TabsNavigation = ({
               <span className="hidden xs:inline">{tab.label}</span>
               <span className="xs:hidden">{tab.label}</span>
             </button>
-          );
+          )
         })}
       </div>
 
@@ -80,7 +120,7 @@ const TabsNavigation = ({
           onChange={(e) => setActiveTab(e.target.value)}
           className="w-full p-2 border border-slate-300 rounded-lg bg-white text-slate-700 text-sm font-medium cursor-pointer"
         >
-          {visibleTabs.map(tab => (
+          {visibleTabs.map((tab) => (
             <option key={tab.id} value={tab.id}>
               {tab.label}
             </option>
@@ -88,7 +128,7 @@ const TabsNavigation = ({
         </select>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default TabsNavigation;
+export default TabsNavigation

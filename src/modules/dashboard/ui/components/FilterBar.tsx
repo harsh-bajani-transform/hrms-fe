@@ -1,6 +1,22 @@
-import React from 'react';
-import { Filter, Clock, Activity } from 'lucide-react';
-import CustomSelect from '../../../../components/common/CustomSelect';
+import { Filter, Clock, Activity } from 'lucide-react'
+import CustomSelect from '../../../../components/common/CustomSelect'
+import type { DateRange } from '../../types'
+
+export interface FilterBarProps {
+  isAgent: boolean
+  isQA?: boolean
+
+  selectedTask: string
+  setSelectedTask: (value: string) => void
+
+  comparisonMode: string
+  setComparisonMode: (value: string) => void
+
+  dateRange: DateRange
+  handleDateRangeChange: (field: keyof DateRange, value: string) => void
+
+  allTasks?: string[]
+}
 
 const FilterBar = ({
   isAgent,
@@ -11,8 +27,8 @@ const FilterBar = ({
   setComparisonMode,
   dateRange,
   handleDateRangeChange,
-  allTasks = []
-}) => {
+  allTasks = [],
+}: FilterBarProps) => {
   return (
     <div
       className="
@@ -25,7 +41,7 @@ const FilterBar = ({
       <div className="flex items-center gap-2 text-slate-700 font-semibold">
         <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
         <span className="text-sm sm:text-base">
-          {isAgent ? "My Analytics" : "Organization Analytics"}
+          {isAgent ? 'My Analytics' : 'Organization Analytics'}
         </span>
       </div>
 
@@ -39,7 +55,6 @@ const FilterBar = ({
           lg:flex lg:flex-row lg:gap-4 lg:w-auto
         "
       >
-
         {/* TASK - Hidden for agents and QA */}
         {!isAgent && !isQA && (
           <CustomSelect
@@ -47,7 +62,7 @@ const FilterBar = ({
             onChange={setSelectedTask}
             options={[
               { value: 'All', label: 'All Tasks' },
-              ...allTasks.map(task => ({ value: task, label: task }))
+              ...allTasks.map((task) => ({ value: task, label: task })),
             ]}
             icon={Clock}
             placeholder="Select Task"
@@ -62,7 +77,7 @@ const FilterBar = ({
             options={[
               { value: 'previous_period', label: 'Prev Period' },
               { value: 'prev_week', label: 'Last Week' },
-              { value: 'prev_month', label: 'Last Month' }
+              { value: 'prev_month', label: 'Last Month' },
             ]}
             icon={Activity}
             placeholder="Select Period"
@@ -92,7 +107,7 @@ const FilterBar = ({
             col-span-2 sm:col-span-1
             bg-slate-50 p-3 rounded-lg border border-slate-200
             flex flex-row items-center gap-3
-          "  
+          "
         >
           <label className="text-xs text-slate-500 uppercase font-bold">TO</label>
           <input
@@ -104,7 +119,7 @@ const FilterBar = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default FilterBar;
+export default FilterBar

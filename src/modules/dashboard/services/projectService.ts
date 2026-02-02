@@ -1,21 +1,20 @@
-import api from "../../../services/api";
+import api from '../../../services/api'
+import type { ApiEnvelope, ProjectRef } from '../types'
 
-/**
- * Fetch project tasks API
- * @param {number} projectId
- */
-export const fetchProjectTasks = async (projectId) => {
-  const res = await api.post("/task/list", { project_id: projectId });
-  return res.data;
-};
+export interface ProjectTasksPayload {
+  project_id: number
+}
 
-/**
- * Fetch Projects List API
- * @returns {Promise} Project list response
- */
-export const fetchProjectsList = async () => {
-  const res = await api.post("/project/list", {});
-  return res.data;
-};
+export const fetchProjectTasks = async (
+  projectId: number,
+): Promise<ApiEnvelope<unknown>> => {
+  const res = await api.post<ApiEnvelope<unknown>>('/task/list', {
+    project_id: projectId,
+  } satisfies ProjectTasksPayload)
+  return res.data
+}
 
-// Add other project services as needed for subsequent features
+export const fetchProjectsList = async (): Promise<ApiEnvelope<ProjectRef[]>> => {
+  const res = await api.post<ApiEnvelope<ProjectRef[]>>('/project/list', {})
+  return res.data
+}
