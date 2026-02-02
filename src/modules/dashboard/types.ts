@@ -35,6 +35,7 @@ export interface ProjectRef {
   asst_project_manager_id?: string;
   project_qa_id?: string;
   project_team_id?: string;
+  project_file?: string | null;
 }
 
 export interface DashboardSummary {

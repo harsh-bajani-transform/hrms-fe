@@ -22,6 +22,7 @@ export interface ProjectType {
   owner_id?: string | number;
   apm_id?: string | number;
   qa_id?: string | number;
+  project_file?: string | null;
   [key: string]: unknown;
 }
 

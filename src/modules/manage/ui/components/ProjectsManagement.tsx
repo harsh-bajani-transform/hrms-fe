@@ -10,11 +10,13 @@ import {
   ChevronDown,
   ChevronUp,
   Layers,
+  Download,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../../../../context/AuthContext";
 import CustomSelect from "../../../../components/common/CustomSelect";
 import { deleteProject, deleteTask } from "../../services/manageService";
+import { fetchProjectsList } from "../../../dashboard/services/projectService";
 
 import ProjectFormModal from "./ProjectFormModal";
 import TaskFormModal from "./TaskFormModal";
@@ -34,7 +36,7 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
   onRefresh,
   dropdowns,
 }) => {
-  const { canManageProjects } = useAuth() as { canManageProjects: boolean };
+  const { canManageProjects, user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProject, setEditingProject] = useState<ProjectType | null>(
@@ -85,6 +87,41 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
       onRefresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unknown error");
+    }
+  };
+
+  const handleDownloadFile = async (project: ProjectType) => {
+    try {
+      const res = await fetchProjectsList(user?.user_id);
+      const projectsList = res.data || [];
+
+      const current = projectsList.find(
+        (p) => String(p.project_id) === String(project.project_id),
+      );
+
+      if (!current) {
+        toast.error("Project not found in latest list.");
+        return;
+      }
+
+      if (!current.project_file || current.project_file === "null") {
+        toast.error("No file available for this project.");
+        return;
+      }
+
+      const filePath = current.project_file;
+      const fileName =
+        filePath.split(/[\\/]/).filter(Boolean).pop() || "project-file";
+
+      const link = document.createElement("a");
+      link.href = filePath;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Download error:", err);
+      toast.error("Failed to download file.");
     }
   };
 
@@ -200,22 +237,31 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
                       ? "Hide Details"
                       : "View Details"}
                   </button>
-                  {canManageProjects && (
-                    <div className="flex items-center gap-2 border-l border-slate-100 pl-3">
-                      <button
-                        onClick={() => setEditingProject(p)}
-                        className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProject(p)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-50 rounded-lg transition-all"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 border-l border-slate-100 pl-3">
+                    <button
+                      onClick={() => handleDownloadFile(p)}
+                      className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-all"
+                      title="Download Project File"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+                    {canManageProjects && (
+                      <>
+                        <button
+                          onClick={() => setEditingProject(p)}
+                          className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProject(p)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-50 rounded-lg transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 

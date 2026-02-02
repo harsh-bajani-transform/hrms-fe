@@ -20,7 +20,7 @@ const DocxPreview: React.FC<DocxPreviewProps> = ({ html }) => {
   // Fix: Move heading after table to before table
   const fixTableHeadings = (rawHtml: string): string => {
     return rawHtml.replace(
-      /(<table[\s\S]*?<\/table>)(\s*<(h[1-6])[^>]*>.*?<\/\\3>)/gi,
+      /(<table[\s\S]*?<\/table>)(\s*<(h[1-6])[^>]*>.*?<\/\3>)/gi,
       "$2$1",
     );
   };
@@ -393,7 +393,7 @@ const AgentProjectList: React.FC = () => {
                             // Use the same processing as DocxPreview for popup
                             function fixTableHeadings(h: string) {
                               return h.replace(
-                                /(<table[\s\S]*?<\/table>)(\s*<(h[1-6])[^>]*>.*?<\/\\3>)/gi,
+                                /(<table[\s\S]*?<\/table>)(\s*<(h[1-6])[^>]*>.*?<\/\3>)/gi,
                                 "$2$1",
                               );
                             }
