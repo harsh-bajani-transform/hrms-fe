@@ -2,20 +2,20 @@ import api from "../../../services/api";
 
 /**
  * Fetch user list with permissions
- * @param {number} user_id - Logged in user ID
- * @returns {Promise<Object>} API response with user list
+ * @param user_id - Logged in user ID
+ * @returns API response with user list
  */
-export const fetchUserList = async (user_id) => {
+export const fetchUserList = async (user_id: number | string) => {
   const response = await api.post("/permission/user_list", { user_id });
   return response.data;
 };
 
 /**
  * Update user permissions
- * @param {Object} payload - Permission update data
- * @returns {Promise<Object>} API response
+ * @param payload - Permission update data
+ * @returns API response
  */
-export const updatePermission = async (payload) => {
+export const updatePermission = async (payload: Record<string, unknown>) => {
   const response = await api.post("/permission/update", payload);
   return response.data;
 };

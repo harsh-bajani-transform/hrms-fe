@@ -14,7 +14,7 @@ export const ViewState = {
   GUIDELINES: "GUIDELINES",
   TRACKER_REPORT: "TRACKER_REPORT",
   AGENT_LIST: "AGENT_LIST",
-};
+} as const;
 
 // Incentive Configuration Defaults
 export const DEFAULT_INCENTIVE_CONFIG = {

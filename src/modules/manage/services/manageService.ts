@@ -6,7 +6,11 @@ import { log, logError } from "../../../config/environment";
 /**
  * Fetch a specific user by ID - parity with legacy userService.js
  */
-export const fetchUserById = async (userId, deviceId, deviceType) => {
+export const fetchUserById = async (
+  userId: string | number,
+  deviceId?: string,
+  deviceType?: string,
+) => {
   try {
     log("[manageService] Fetching user by ID:", userId);
 
@@ -36,7 +40,7 @@ export const fetchUserById = async (userId, deviceId, deviceType) => {
 
     if (res.data && res.status === 200) {
       const users = res.data.data || res.data || [];
-      const user = users.find((u) => String(u.user_id) === String(userId));
+      const user = users.find((u: any) => String(u.user_id) === String(userId));
       if (user) {
         log("[manageService] User found:", user.user_name);
         return user;
@@ -45,7 +49,7 @@ export const fetchUserById = async (userId, deviceId, deviceType) => {
 
     logError("[manageService] User not found with ID:", userId);
     throw new Error("User not found");
-  } catch (error) {
+  } catch (error: any) {
     logError("[manageService] Failed to fetch user by ID:", error.message);
     throw new Error(
       error.response?.data?.message || "Failed to fetch user details",
@@ -53,7 +57,11 @@ export const fetchUserById = async (userId, deviceId, deviceType) => {
   }
 };
 
-export const fetchUsersList = async (userId, deviceId, deviceType) => {
+export const fetchUsersList = async (
+  userId: string | number,
+  deviceId: string,
+  deviceType: string,
+) => {
   try {
     log("[manageService] Fetching user list for user:", userId);
     const payload = {
@@ -63,41 +71,44 @@ export const fetchUsersList = async (userId, deviceId, deviceType) => {
     };
     const response = await api.post("/user/list", payload);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     logError("[manageService] Failed to fetch user list:", error);
     throw new Error(error.response?.data?.message || "Failed to fetch users");
   }
 };
 
-export const addUser = async (userData) => {
+export const addUser = async (userData: Record<string, unknown>) => {
   try {
     log("[manageService] Adding new user:", userData.user_name);
     const response = await api.post("/auth/user", userData);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     logError("[manageService] Failed to create user:", error);
     throw new Error(error.response?.data?.message || "Failed to create user");
   }
 };
 
-export const updateUser = async (userData) => {
+export const updateUser = async (userData: Record<string, unknown>) => {
   try {
     log("[manageService] Updating user:", userData.user_id);
     const response = await api.put("/user/update_user", userData);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     logError("[manageService] Failed to update user:", error);
     throw new Error(error.response?.data?.message || "Failed to update user");
   }
 };
 
-export const deleteUser = async (userId, auditData) => {
+export const deleteUser = async (
+  userId: string | number,
+  auditData: Record<string, unknown>,
+) => {
   try {
     log("[manageService] Deleting user:", userId);
     const payload = { user_id: userId, ...auditData };
     const response = await api.put("/user/delete_user", payload);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     logError("[manageService] Failed to delete user:", error);
     throw new Error(error.response?.data?.message || "Failed to delete user");
   }
@@ -108,45 +119,48 @@ export const fetchProjectsList = async () => {
   try {
     const response = await api.post("/project/list", {});
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(
       error.response?.data?.message || "Failed to fetch projects",
     );
   }
 };
 
-export const createProject = async (projectData) => {
+export const createProject = async (projectData: Record<string, unknown>) => {
   try {
     const response = await api.post("/project/create", projectData);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(
       error.response?.data?.message || "Failed to create project",
     );
   }
 };
 
-export const updateProject = async (projectId, projectData) => {
+export const updateProject = async (
+  projectId: string | number,
+  projectData: Record<string, unknown>,
+) => {
   try {
     const response = await api.put("/project/update", {
       project_id: projectId,
       ...projectData,
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(
       error.response?.data?.message || "Failed to update project",
     );
   }
 };
 
-export const deleteProject = async (projectId) => {
+export const deleteProject = async (projectId: string | number) => {
   try {
     const response = await api.put("/project/delete", {
       project_id: projectId,
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(
       error.response?.data?.message || "Failed to delete project",
     );
@@ -154,29 +168,29 @@ export const deleteProject = async (projectId) => {
 };
 
 // Task Management
-export const addTask = async (taskData) => {
+export const addTask = async (taskData: Record<string, unknown>) => {
   try {
     const response = await api.post("/task/add", taskData);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(error.response?.data?.message || "Failed to add task");
   }
 };
 
-export const updateTask = async (taskData) => {
+export const updateTask = async (taskData: Record<string, unknown>) => {
   try {
     const response = await api.put("/task/update", taskData);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(error.response?.data?.message || "Failed to update task");
   }
 };
 
-export const deleteTask = async (taskData) => {
+export const deleteTask = async (taskData: Record<string, unknown>) => {
   try {
     const response = await api.put("/task/delete", taskData);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(error.response?.data?.message || "Failed to delete task");
   }
 };

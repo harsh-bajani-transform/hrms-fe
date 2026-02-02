@@ -1,8 +1,8 @@
 /**
- * File: fileToBase64.js
+ * File: fileToBase64.ts
  * Utility to convert file to base64 string
  */
-export const fileToBase64 = (file) => {
+export const fileToBase64 = (file: File | null): Promise<string | null> => {
   return new Promise((resolve, reject) => {
     if (!file) {
       resolve(null);
@@ -10,7 +10,7 @@ export const fileToBase64 = (file) => {
     }
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
+    reader.onload = () => resolve(reader.result as string);
     reader.onerror = (error) => reject(error);
   });
 };

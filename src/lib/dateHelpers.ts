@@ -1,11 +1,25 @@
-export const isWithinRange = (dateStr, start, end) => {
+interface DateRange {
+  start: string;
+  end: string;
+  label: string;
+}
+
+export const isWithinRange = (
+  dateStr: string,
+  start: string,
+  end: string,
+): boolean => {
   if (!dateStr || !start || !end) return false;
   return dateStr >= start && dateStr <= end;
 };
 
-export const getComparisonRange = (start, end, mode) => {
+export const getComparisonRange = (
+  start: string | null | undefined,
+  end: string | null | undefined,
+  mode: "previous_period" | "prev_week" | "prev_month",
+): DateRange => {
   if (!start || !end) {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")[0] || "";
     return { start: today, end: today, label: "Today" };
   }
 
@@ -23,9 +37,12 @@ export const getComparisonRange = (start, end, mode) => {
     const prevStart = new Date(prevEnd);
     prevStart.setDate(prevStart.getDate() - (daysLength - 1));
 
+    const prevStartStr = prevStart.toISOString().split("T")[0];
+    const prevEndStr = prevEnd.toISOString().split("T")[0];
+
     return {
-      start: prevStart.toISOString().split("T")[0],
-      end: prevEnd.toISOString().split("T")[0],
+      start: prevStartStr || "",
+      end: prevEndStr || "",
       label: "Previous Period",
     };
   } else if (mode === "prev_week") {
@@ -33,9 +50,13 @@ export const getComparisonRange = (start, end, mode) => {
     pStart.setDate(pStart.getDate() - 7);
     const pEnd = new Date(endDate);
     pEnd.setDate(pEnd.getDate() - 7);
+
+    const pStartStr = pStart.toISOString().split("T")[0];
+    const pEndStr = pEnd.toISOString().split("T")[0];
+
     return {
-      start: pStart.toISOString().split("T")[0],
-      end: pEnd.toISOString().split("T")[0],
+      start: pStartStr || "",
+      end: pEndStr || "",
       label: "Last Week",
     };
   } else {
@@ -43,9 +64,13 @@ export const getComparisonRange = (start, end, mode) => {
     pStart.setMonth(pStart.getMonth() - 1);
     const pEnd = new Date(endDate);
     pEnd.setMonth(pEnd.getMonth() - 1);
+
+    const pStartStr = pStart.toISOString().split("T")[0];
+    const pEndStr = pEnd.toISOString().split("T")[0];
+
     return {
-      start: pStart.toISOString().split("T")[0],
-      end: pEnd.toISOString().split("T")[0],
+      start: pStartStr || "",
+      end: pEndStr || "",
       label: "Last Month",
     };
   }

@@ -1,23 +1,32 @@
 /**
- * File Name: dropdownService.js
+ * File Name: dropdownService.ts
  * Migrated from legacy frontend
  */
 
 import api from "./api";
 
+interface DropdownPayload {
+  dropdown_type: string;
+  project_id?: string | number;
+}
+
 /**
  * Fetches data for a specific dropdown category from the backend.
- * @param {string} dropdownType - The type of data to retrieve.
+ * @param dropdownType - The type of data to retrieve.
+ * @param projectId - Optional project ID filter
  */
-export const fetchDropdown = async (dropdownType, projectId = null) => {
+export const fetchDropdown = async (
+  dropdownType: string,
+  projectId: string | number | null = null,
+): Promise<any[]> => {
   try {
-    const payload = { dropdown_type: dropdownType };
+    const payload: DropdownPayload = { dropdown_type: dropdownType };
     if (projectId) payload.project_id = projectId;
     const response = await api.post("/dropdown/get", payload);
 
     // Returns the data array or an empty array as a fallback
     return response.data?.data || [];
-  } catch (error) {
+  } catch (error: any) {
     console.error(
       `❌ Error fetching ${dropdownType}:`,
       error.response?.data || error.message,
@@ -26,11 +35,21 @@ export const fetchDropdown = async (dropdownType, projectId = null) => {
   }
 };
 
+interface UserDropdowns {
+  roles: any[];
+  designations: any[];
+  teams: any[];
+  projectManagers: any[];
+  assistantManagers: any[];
+  qas: any[];
+  agents: any[];
+}
+
 /**
  * Executes concurrent API calls to retrieve all metadata required for user profiles.
  * Optimized with Promise.all for faster loading.
  */
-export const fetchUserDropdowns = async () => {
+export const fetchUserDropdowns = async (): Promise<UserDropdowns> => {
   try {
     const [
       roles,
@@ -50,7 +69,7 @@ export const fetchUserDropdowns = async () => {
       fetchDropdown("agent"),
     ]);
 
-    const result = {
+    const result: UserDropdowns = {
       roles,
       designations,
       teams,

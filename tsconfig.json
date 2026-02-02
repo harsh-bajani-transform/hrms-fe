@@ -22,10 +22,10 @@
     "allowJs": true,
     "checkJs": false,
 
-    "types": ["vite/client", "node"],
+    "types": ["vite/client"],
 
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src", "vite.config.js", "eslint.config.js"],
+  "include": ["src", "vite.config.ts", "eslint.config.ts"],
   "exclude": ["dist", "node_modules"]
 }
