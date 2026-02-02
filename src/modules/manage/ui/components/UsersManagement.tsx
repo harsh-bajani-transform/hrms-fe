@@ -259,13 +259,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
             setEditingUser(null);
             onRefresh();
           }}
-          roles={roleOptions}
-          projectManagers={projectManagerOptions}
-          assistantManagers={asstManagerOptions}
-          qas={qaOptions}
-          teams={teamOptions}
-          designations={designationOptions}
-          isDropdownLoading={dropdownLoading}
+          dropdowns={dropdowns}
         />
       )}
     </div>

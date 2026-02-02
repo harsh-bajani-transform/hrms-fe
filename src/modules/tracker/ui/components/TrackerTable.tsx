@@ -21,11 +21,6 @@ interface TrackerTableProps {
   onClose: () => void;
 }
 
-const getTodayDate = () => {
-  const today = new Date();
-  return today.toISOString().split("T")[0];
-};
-
 const TrackerTable: React.FC<TrackerTableProps> = ({
   userId,
   projects,
@@ -472,7 +467,8 @@ const TrackerTable: React.FC<TrackerTableProps> = ({
                     {tracker.date_time
                       ? (() => {
                           const d = new Date(tracker.date_time);
-                          const pad = (n) => n.toString().padStart(2, "0");
+                          const pad = (n: number) =>
+                            n.toString().padStart(2, "0");
                           return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
                         })()
                       : "-"}

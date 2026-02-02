@@ -477,7 +477,6 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                               : String(m.label ?? ""),
                         }))}
                         placeholder="Select PM"
-                        isLoading={isDropdownLoading}
                       />
                     </div>
                   )}
@@ -502,7 +501,6 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                               : String(m.label ?? ""),
                         }))}
                         placeholder="Select AM"
-                        isLoading={isDropdownLoading}
                       />
                     </div>
                   )}
@@ -527,7 +525,6 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                               : String(q.label ?? ""),
                         }))}
                         placeholder="Select QA"
-                        isLoading={isDropdownLoading}
                       />
                     </div>
                   )}

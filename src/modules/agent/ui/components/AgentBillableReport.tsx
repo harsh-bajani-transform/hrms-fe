@@ -1,75 +1,89 @@
-import { useEffect, useState } from 'react'
-import * as XLSX from 'xlsx'
-import { toast } from 'react-hot-toast'
-import dayjs from 'dayjs'
-import customParseFormat from 'dayjs/plugin/customParseFormat'
+import { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
+import { toast } from "react-hot-toast";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 
-dayjs.extend(customParseFormat)
+dayjs.extend(customParseFormat);
 
-import { getFriendlyErrorMessage } from '../../../../utils/errorMessages'
-import ErrorMessage from '../../../../components/common/ErrorMessage'
+import { getFriendlyErrorMessage } from "../../../../utils/errorMessages";
+import ErrorMessage from "../../../../components/common/ErrorMessage";
 import {
   fetchDailyBillableReport,
   fetchMonthlyBillableReport,
-} from '../../../dashboard/services/billableReportService'
-import { useAuth } from '../../../../context/AuthContext'
+} from "../../../dashboard/services/billableReportService";
+import { useAuth } from "../../../../context/AuthContext";
 
-import type { TrackerRow } from '../../../dashboard/types'
-import type { MonthlyBillableReportRow } from '../../../dashboard/services/billableReportService'
+import type { TrackerRow } from "../../../dashboard/types";
+import type { MonthlyBillableReportRow } from "../../../dashboard/services/billableReportService";
 
-type ToggleTab = 'daily' | 'monthly'
+type ToggleTab = "daily" | "monthly";
 
 type DailyExportRow = {
-  'Date-Time': string
-  'Assign Hours': string | number
-  'Worked Hours': string | number
-  'QC score': string | number
-  'Daily Required Hours': string | number
-}
+  "Date-Time": string;
+  "Assign Hours": string | number;
+  "Worked Hours": string | number;
+  "QC score": string | number;
+  "Daily Required Hours": string | number;
+};
 
 type MonthlyExportRow = {
-  'Year & Month': string
-  'Billable Hours Delivered': string | number
-  'Monthly Goal': string | number
-  'Pending Target': string | number
-  'Avg. QC Score': string | number
-}
+  "Year & Month": string;
+  "Billable Hours Delivered": string | number;
+  "Monthly Goal": string | number;
+  "Pending Target": string | number;
+  "Avg. QC Score": string | number;
+};
 
 const AgentBillableReport = () => {
   // Export the visible monthly report table (with filters applied)
   const handleExportMonthlyTable = () => {
     try {
       const exportData: MonthlyExportRow[] = monthlySummaryData.map((row) => ({
-        'Year & Month': row.month_year ?? '-',
-        'Billable Hours Delivered': row.total_billable_hours
+        "Year & Month": row.month_year ?? "-",
+        "Billable Hours Delivered": row.total_billable_hours
           ? Number(row.total_billable_hours).toFixed(2)
           : row.total_billable_hours_month
             ? Number(row.total_billable_hours_month).toFixed(2)
-            : '-',
-        'Monthly Goal': row.monthly_target ?? row.monthly_goal ?? '-',
-        'Pending Target': row.pending_target
+            : "-",
+        "Monthly Goal": row.monthly_target ?? row.monthly_goal ?? "-",
+        "Pending Target": row.pending_target
           ? Number(row.pending_target).toFixed(2)
-          : '-',
-        'Avg. QC Score': row.avg_qc_score ?? '-',
-      }))
+          : "-",
+        "Avg. QC Score": row.avg_qc_score ?? "-",
+      }));
 
       // Calculate totals
-      const totalBillable = exportData.reduce((sum, r) => sum + (Number(r['Billable Hours Delivered']) || 0), 0);
-      const totalGoal = exportData.reduce((sum, r) => sum + (Number(r['Monthly Goal']) || 0), 0);
-      const totalPending = exportData.reduce((sum, r) => sum + (Number(r['Pending Target']) || 0), 0);
-      const qcScores = exportData.map(r => Number(r['Avg. QC Score'])).filter(v => !isNaN(v));
-      const avgQC = qcScores.length > 0 ? (qcScores.reduce((a, b) => a + b, 0) / qcScores.length).toFixed(2) : '-';
+      const totalBillable = exportData.reduce(
+        (sum, r) => sum + (Number(r["Billable Hours Delivered"]) || 0),
+        0,
+      );
+      const totalGoal = exportData.reduce(
+        (sum, r) => sum + (Number(r["Monthly Goal"]) || 0),
+        0,
+      );
+      const totalPending = exportData.reduce(
+        (sum, r) => sum + (Number(r["Pending Target"]) || 0),
+        0,
+      );
+      const qcScores = exportData
+        .map((r) => Number(r["Avg. QC Score"]))
+        .filter((v) => !isNaN(v));
+      const avgQC =
+        qcScores.length > 0
+          ? (qcScores.reduce((a, b) => a + b, 0) / qcScores.length).toFixed(2)
+          : "-";
 
       exportData.push({
-        'Year & Month': 'TOTAL',
-        'Billable Hours Delivered': totalBillable,
-        'Monthly Goal': totalGoal,
-        'Pending Target': totalPending,
-        'Avg. QC Score': avgQC,
+        "Year & Month": "TOTAL",
+        "Billable Hours Delivered": totalBillable,
+        "Monthly Goal": totalGoal,
+        "Pending Target": totalPending,
+        "Avg. QC Score": avgQC,
       });
 
       const worksheet = XLSX.utils.json_to_sheet(exportData);
-      worksheet['!cols'] = [
+      worksheet["!cols"] = [
         { wch: 16 },
         { wch: 24 },
         { wch: 16 },
@@ -77,10 +91,10 @@ const AgentBillableReport = () => {
         { wch: 16 },
       ];
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Monthly Report');
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Report");
       const filename = `Monthly_Report.xlsx`;
       XLSX.writeFile(workbook, filename);
-      toast.success('Monthly report exported!');
+      toast.success("Monthly report exported!");
     } catch (err) {
       const msg = getFriendlyErrorMessage(err);
       toast.error(msg);
@@ -88,43 +102,67 @@ const AgentBillableReport = () => {
   };
 
   // Export daily report for a specific month-year from /tracker/view
-  const handleExportMonthDailyExcel = async (monthYear: string): Promise<void> => {
+  const handleExportMonthDailyExcel = async (
+    monthYear: string,
+  ): Promise<void> => {
     try {
       // Use fetchDailyBillableReport to ensure correct payload (logged_in_user_id, month_year)
       const payload = { month_year: monthYear };
-      const res = await fetchDailyBillableReport(payload)
+      const res = await fetchDailyBillableReport(payload);
       const trackers: TrackerRow[] = Array.isArray(res.data.trackers)
         ? res.data.trackers
-        : []
+        : [];
       // Format and prepare export data
       const exportData: DailyExportRow[] = trackers.map((row) => {
-        let formattedDateTime = '';
+        let formattedDateTime = "";
         if (row.date_time) {
           const d = dayjs(row.date_time);
-          formattedDateTime = d.isValid() ? d.format('DD-MM-YYYY hh:mm A') : row.date_time;
+          formattedDateTime = d.isValid()
+            ? d.format("DD-MM-YYYY hh:mm A")
+            : row.date_time;
         }
         return {
-          'Date-Time': formattedDateTime,
-          'Assign Hours': '-',
-          'Worked Hours': row.billable_hours ? Number(row.billable_hours).toFixed(2) : '-',
-          'QC score': 'qc_score' in row ? (row.qc_score !== null ? Number(row.qc_score).toFixed(2) : '-') : '-',
-          'Daily Required Hours': row.tenure_target ? Number(row.tenure_target).toFixed(2) : '-',
+          "Date-Time": formattedDateTime,
+          "Assign Hours": "-",
+          "Worked Hours": row.billable_hours
+            ? Number(row.billable_hours).toFixed(2)
+            : "-",
+          "QC score":
+            "qc_score" in row
+              ? row.qc_score !== null
+                ? Number(row.qc_score).toFixed(2)
+                : "-"
+              : "-",
+          "Daily Required Hours": row.tenure_target
+            ? Number(row.tenure_target).toFixed(2)
+            : "-",
         };
       });
       // Calculate totals for countable columns
-      const totalWorked = exportData.reduce((sum, r) => sum + (Number(r['Worked Hours']) || 0), 0);
-      const totalRequired = exportData.reduce((sum, r) => sum + (Number(r['Daily Required Hours']) || 0), 0);
-      const qcScores = exportData.map(r => Number(r['QC score'])).filter(v => !isNaN(v));
-      const avgQC = qcScores.length > 0 ? (qcScores.reduce((a, b) => a + b, 0) / qcScores.length).toFixed(2) : '-';
+      const totalWorked = exportData.reduce(
+        (sum, r) => sum + (Number(r["Worked Hours"]) || 0),
+        0,
+      );
+      const totalRequired = exportData.reduce(
+        (sum, r) => sum + (Number(r["Daily Required Hours"]) || 0),
+        0,
+      );
+      const qcScores = exportData
+        .map((r) => Number(r["QC score"]))
+        .filter((v) => !isNaN(v));
+      const avgQC =
+        qcScores.length > 0
+          ? (qcScores.reduce((a, b) => a + b, 0) / qcScores.length).toFixed(2)
+          : "-";
       exportData.push({
-        'Date-Time': 'TOTAL',
-        'Assign Hours': '-',
-        'Worked Hours': totalWorked,
-        'QC score': avgQC,
-        'Daily Required Hours': totalRequired,
+        "Date-Time": "TOTAL",
+        "Assign Hours": "-",
+        "Worked Hours": totalWorked,
+        "QC score": avgQC,
+        "Daily Required Hours": totalRequired,
       });
       const worksheet = XLSX.utils.json_to_sheet(exportData);
-      worksheet['!cols'] = [
+      worksheet["!cols"] = [
         { wch: 20 },
         { wch: 14 },
         { wch: 14 },
@@ -132,10 +170,10 @@ const AgentBillableReport = () => {
         { wch: 20 },
       ];
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Month Daily Report');
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Month Daily Report");
       const filename = `Month_Daily_Report_${monthYear}.xlsx`;
       XLSX.writeFile(workbook, filename);
-      toast.success('Month daily report exported!');
+      toast.success("Month daily report exported!");
     } catch (err) {
       const msg = getFriendlyErrorMessage(err);
       toast.error(msg);
@@ -144,28 +182,28 @@ const AgentBillableReport = () => {
 
   // State for tab toggle (must be first hook)
   const [activeToggle, setActiveToggle] = useState<ToggleTab>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('agent_billable_active_tab')
-      return stored === 'monthly' ? 'monthly' : 'daily'
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("agent_billable_active_tab");
+      return stored === "monthly" ? "monthly" : "daily";
     }
-    return 'daily'
-  })
+    return "daily";
+  });
 
   // Persist tab selection to localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('agent_billable_active_tab', activeToggle);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("agent_billable_active_tab", activeToggle);
     }
   }, [activeToggle]);
 
   // State for date range filter
-  const [startDate, setStartDate] = useState<string>('')
-  const [endDate, setEndDate] = useState<string>('')
-  const [monthFilter, setMonthFilter] = useState<string>('')
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [monthFilter, setMonthFilter] = useState<string>("");
 
-  const [dailyData, setDailyData] = useState<TrackerRow[]>([])
-  const [loadingDaily, setLoadingDaily] = useState<boolean>(false)
-  const [errorDaily, setErrorDaily] = useState<string | null>(null)
+  const [dailyData, setDailyData] = useState<TrackerRow[]>([]);
+  const [loadingDaily, setLoadingDaily] = useState<boolean>(false);
+  const [errorDaily, setErrorDaily] = useState<string | null>(null);
 
   // Fetch daily report data from API on mount or when date range/month changes
   useEffect(() => {
@@ -173,19 +211,32 @@ const AgentBillableReport = () => {
       setLoadingDaily(true);
       setErrorDaily(null);
       try {
-        const payload: Record<string, unknown> = {}
+        const payload: Record<string, unknown> = {};
         if (monthFilter) {
           // Use 'month_year' in the format 'JAN2026' for the API if a month is selected
-          const [year, month] = monthFilter.split('-');
-          const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+          const [year, month] = monthFilter.split("-");
+          const monthNames = [
+            "JAN",
+            "FEB",
+            "MAR",
+            "APR",
+            "MAY",
+            "JUN",
+            "JUL",
+            "AUG",
+            "SEP",
+            "OCT",
+            "NOV",
+            "DEC",
+          ];
           const monthLabel = monthNames[Number(month) - 1];
           payload.month_year = `${monthLabel}${year}`;
         } else {
           if (startDate) payload.date_from = startDate;
           if (endDate) payload.date_to = endDate;
         }
-        const res = await fetchDailyBillableReport(payload)
-        setDailyData(Array.isArray(res.data.trackers) ? res.data.trackers : [])
+        const res = await fetchDailyBillableReport(payload);
+        setDailyData(Array.isArray(res.data.trackers) ? res.data.trackers : []);
       } catch (err) {
         setErrorDaily(getFriendlyErrorMessage(err));
       } finally {
@@ -196,33 +247,47 @@ const AgentBillableReport = () => {
   }, [startDate, endDate, monthFilter]);
 
   // State for monthly report API data, loading, and error
-  const [monthlySummaryData, setMonthlySummaryData] =
-    useState<MonthlyBillableReportRow[]>([])
-  const [loadingMonthly, setLoadingMonthly] = useState<boolean>(false)
-  const [errorMonthly, setErrorMonthly] = useState<string | null>(null)
-  const [monthlyMonth, setMonthlyMonth] = useState<string>('')
-  const { user } = useAuth()
+  const [monthlySummaryData, setMonthlySummaryData] = useState<
+    MonthlyBillableReportRow[]
+  >([]);
+  const [loadingMonthly, setLoadingMonthly] = useState<boolean>(false);
+  const [errorMonthly, setErrorMonthly] = useState<string | null>(null);
+  const [monthlyMonth, setMonthlyMonth] = useState<string>("");
+  const { user } = useAuth();
 
   // Fetch monthly report data from API when monthly tab is active or month filter changes
   useEffect(() => {
-    if (activeToggle !== 'monthly') return;
+    if (activeToggle !== "monthly") return;
     const fetchData = async () => {
       setLoadingMonthly(true);
       setErrorMonthly(null);
       try {
-        let payload: Record<string, unknown> = {}
+        let payload: Record<string, unknown> = {};
         if (monthlyMonth) {
           // monthlyMonth is in format YYYY-MM
-          const [year, month] = monthlyMonth.split('-');
-          const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+          const [year, month] = monthlyMonth.split("-");
+          const monthNames = [
+            "JAN",
+            "FEB",
+            "MAR",
+            "APR",
+            "MAY",
+            "JUN",
+            "JUL",
+            "AUG",
+            "SEP",
+            "OCT",
+            "NOV",
+            "DEC",
+          ];
           const monthLabel = monthNames[Number(month) - 1];
           payload = { month_year: `${monthLabel}${year}` };
         }
         if (user?.user_id) {
-          payload.logged_in_user_id = user.user_id
+          payload.logged_in_user_id = user.user_id;
         }
-        const res = await fetchMonthlyBillableReport(payload)
-        setMonthlySummaryData(Array.isArray(res.data) ? res.data : [])
+        const res = await fetchMonthlyBillableReport(payload);
+        setMonthlySummaryData(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         setErrorMonthly(getFriendlyErrorMessage(err));
       } finally {
@@ -240,13 +305,15 @@ const AgentBillableReport = () => {
     try {
       // Format and prepare export data
       const exportData: DailyExportRow[] = filteredDailyData.map((row) => {
-        const extra = row as TrackerRow & Record<string, unknown>
+        const extra = row as TrackerRow & Record<string, unknown>;
 
         // Format date-time as dd-mm-yyyy hh:mm am/pm
-        let formattedDateTime = ''
+        let formattedDateTime = "";
         if (row.date_time) {
-          const d = dayjs(row.date_time)
-          formattedDateTime = d.isValid() ? d.format('DD-MM-YYYY hh:mm A') : row.date_time
+          const d = dayjs(row.date_time);
+          formattedDateTime = d.isValid()
+            ? d.format("DD-MM-YYYY hh:mm A")
+            : row.date_time;
         }
 
         const workedHours = Number(
@@ -254,49 +321,65 @@ const AgentBillableReport = () => {
             (extra.workedHours as unknown) ??
             (extra.worked_hours as unknown) ??
             0,
-        )
+        );
 
         const dailyRequired = Number(
           row.tenure_target ??
             (extra.dailyRequiredHours as unknown) ??
             (extra.daily_required_hours as unknown) ??
             0,
-        )
+        );
 
-        const qcScoreRaw = row.qc_score ?? (extra.qcScore as unknown)
+        const qcScoreRaw = row.qc_score ?? (extra.qcScore as unknown);
         const qcScore =
-          qcScoreRaw != null && qcScoreRaw !== '' && !Number.isNaN(Number(qcScoreRaw))
+          qcScoreRaw != null &&
+          qcScoreRaw !== "" &&
+          !Number.isNaN(Number(qcScoreRaw))
             ? Number(qcScoreRaw)
-            : '-'
+            : "-";
 
         return {
-          'Date-Time': formattedDateTime,
-          'Assign Hours': '-',
-          'Worked Hours': workedHours || 0,
-          'QC score': qcScore,
-          'Daily Required Hours': dailyRequired || 0,
-        }
-      })
+          "Date-Time": formattedDateTime,
+          "Assign Hours": "-",
+          "Worked Hours": workedHours || 0,
+          "QC score": qcScore,
+          "Daily Required Hours": dailyRequired || 0,
+        };
+      });
 
       // Calculate totals for countable columns
-      const totalAssign = exportData.reduce((sum, r) => sum + (Number(r['Assign Hours']) || 0), 0);
-      const totalWorked = exportData.reduce((sum, r) => sum + (Number(r['Worked Hours']) || 0), 0);
-      const totalRequired = exportData.reduce((sum, r) => sum + (Number(r['Daily Required Hours']) || 0), 0);
+      const totalAssign = exportData.reduce(
+        (sum, r) => sum + (Number(r["Assign Hours"]) || 0),
+        0,
+      );
+      const totalWorked = exportData.reduce(
+        (sum, r) => sum + (Number(r["Worked Hours"]) || 0),
+        0,
+      );
+      const totalRequired = exportData.reduce(
+        (sum, r) => sum + (Number(r["Daily Required Hours"]) || 0),
+        0,
+      );
       // For QC score, show average if all are numbers
-      const qcScores = exportData.map(r => Number(r['QC score'])).filter(v => !isNaN(v));
-      const avgQC = qcScores.length > 0 ? (qcScores.reduce((a, b) => a + b, 0) / qcScores.length).toFixed(2) : '-';
+      const qcScores = exportData
+        .map((r) => Number(r["QC score"]))
+        .filter((v) => !isNaN(v));
+      const avgQC =
+        qcScores.length > 0
+          ? (qcScores.reduce((a, b) => a + b, 0) / qcScores.length).toFixed(2)
+          : "-";
 
       // Add totals row
       exportData.push({
-        'Date-Time': 'TOTAL',
-        'Assign Hours': totalAssign,
-        'Worked Hours': totalWorked,
-        'QC score': avgQC,
-        'Daily Required Hours': totalRequired,
+        "Date-Time": "TOTAL",
+        "Assign Hours": totalAssign,
+        "Worked Hours": totalWorked,
+        "QC score": avgQC,
+        "Daily Required Hours": totalRequired,
       });
 
       const worksheet = XLSX.utils.json_to_sheet(exportData);
-      worksheet['!cols'] = [
+      worksheet["!cols"] = [
         { wch: 20 },
         { wch: 14 },
         { wch: 14 },
@@ -304,12 +387,12 @@ const AgentBillableReport = () => {
         { wch: 20 },
       ];
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Daily Report');
-      const filename = `Daily_Report_${startDate || 'all'}_${endDate || 'all'}.xlsx`;
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Daily Report");
+      const filename = `Daily_Report_${startDate || "all"}_${endDate || "all"}.xlsx`;
       XLSX.writeFile(workbook, filename);
-      toast.success('Daily report exported!');
+      toast.success("Daily report exported!");
     } catch {
-      toast.error('Failed to export daily report');
+      toast.error("Failed to export daily report");
     }
   };
 
@@ -318,44 +401,54 @@ const AgentBillableReport = () => {
       <div className="w-full flex flex-col items-center">
         <div className="w-full max-w-7xl flex items-center gap-4 mb-8">
           <button
-            className={`px-6 py-2 rounded-lg font-semibold text-blue-700 border-2 border-blue-700 transition-all duration-150 focus:outline-none ${activeToggle === 'daily' ? 'bg-blue-700 text-white' : 'bg-white'}`}
-            onClick={() => setActiveToggle('daily')}
+            className={`px-6 py-2 rounded-lg font-semibold text-blue-700 border-2 border-blue-700 transition-all duration-150 focus:outline-none ${activeToggle === "daily" ? "bg-blue-700 text-white" : "bg-white"}`}
+            onClick={() => setActiveToggle("daily")}
           >
             Daily Report
           </button>
           <button
-            className={`px-6 py-2 rounded-lg font-semibold text-blue-700 border-2 border-blue-700 transition-all duration-150 focus:outline-none ${activeToggle === 'monthly' ? 'bg-blue-700 text-white' : 'bg-white'}`}
-            onClick={() => setActiveToggle('monthly')}
+            className={`px-6 py-2 rounded-lg font-semibold text-blue-700 border-2 border-blue-700 transition-all duration-150 focus:outline-none ${activeToggle === "monthly" ? "bg-blue-700 text-white" : "bg-white"}`}
+            onClick={() => setActiveToggle("monthly")}
           >
             Monthly Report
           </button>
         </div>
       </div>
       {/* Daily Report view (table, filter, export) */}
-      {activeToggle === 'daily' && (
+      {activeToggle === "daily" && (
         <div className="w-full max-w-5xl mx-auto mt-8">
           {/* Date Range Filter and Export Button */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div className="flex items-center gap-2">
               <label className="font-semibold text-blue-700">Date Range:</label>
-              <input type="date" className="border rounded px-2 py-1" value={startDate} onChange={e => setStartDate(e.target.value)} />
+              <input
+                type="date"
+                className="border rounded px-2 py-1"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
               <span className="mx-2">to</span>
-              <input type="date" className="border rounded px-2 py-1" value={endDate} onChange={e => setEndDate(e.target.value)} />
+              <input
+                type="date"
+                className="border rounded px-2 py-1"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
               <label className="font-semibold text-blue-700 ml-4">Month:</label>
               <input
                 type="month"
                 className="border rounded px-2 py-1"
                 value={monthFilter}
-                onChange={e => setMonthFilter(e.target.value)}
+                onChange={(e) => setMonthFilter(e.target.value)}
                 style={{ minWidth: 120 }}
               />
               {/* Clear Filters Button */}
               <button
                 className="ml-4 px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs font-semibold border border-gray-400 shadow-sm transition"
                 onClick={() => {
-                  setStartDate('');
-                  setEndDate('');
-                  setMonthFilter('');
+                  setStartDate("");
+                  setEndDate("");
+                  setMonthFilter("");
                 }}
                 type="button"
               >
@@ -368,53 +461,122 @@ const AgentBillableReport = () => {
               title="Export filtered data to Excel"
               aria-label="Export to Excel"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M16 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><polyline points="8 12 12 16 16 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="8" x2="12" y2="16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M16 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <polyline
+                  points="8 12 12 16 16 12"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <line
+                  x1="12"
+                  y1="8"
+                  x2="12"
+                  y2="16"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
               <span>Export to Excel</span>
             </button>
           </div>
           {/* Daily Report Table */}
           <div className="overflow-x-auto bg-white rounded-2xl">
             {loadingDaily ? (
-              <div className="py-8 text-center text-blue-700 font-semibold">Loading daily report...</div>
+              <div className="py-8 text-center text-blue-700 font-semibold">
+                Loading daily report...
+              </div>
             ) : errorDaily ? (
-              <ErrorMessage message={errorDaily} onRetry={() => {
-                setStartDate('');
-                setEndDate('');
-                setMonthFilter('');
-              }} />
+              <ErrorMessage
+                message={errorDaily}
+                onRetry={() => {
+                  setStartDate("");
+                  setEndDate("");
+                  setMonthFilter("");
+                }}
+              />
             ) : (
               <table className="min-w-full divide-y divide-blue-100 text-sm">
                 <thead>
                   <tr className="bg-blue-50">
-                    <th className="px-6 py-3 text-left font-semibold text-blue-700 uppercase tracking-wider">Date-Time</th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">Assign Hours</th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">Worked Hours</th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">QC score</th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">Daily Required Hours</th>
+                    <th className="px-6 py-3 text-left font-semibold text-blue-700 uppercase tracking-wider">
+                      Date-Time
+                    </th>
+                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
+                      Assign Hours
+                    </th>
+                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
+                      Worked Hours
+                    </th>
+                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
+                      QC score
+                    </th>
+                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
+                      Daily Required Hours
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-blue-50">
                   {filteredDailyData.length > 0 ? (
                     filteredDailyData.map((row, idx) => (
-                      <tr key={idx} className="hover:bg-blue-50 transition group">
-                        <td className="px-6 py-3 text-black font-medium whitespace-nowrap">{
-                          row.date_time 
+                      <tr
+                        key={idx}
+                        className="hover:bg-blue-50 transition group"
+                      >
+                        <td className="px-6 py-3 text-black font-medium whitespace-nowrap">
+                          {row.date_time
                             ? (() => {
                                 const d = new Date(row.date_time);
-                                const pad = (n) => n.toString().padStart(2, '0');
+                                const pad = (n: number) =>
+                                  n.toString().padStart(2, "0");
                                 return `${pad(d.getUTCDate())}-${pad(d.getUTCMonth() + 1)}-${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
                               })()
-                            : '-'
-                        }</td>
+                            : "-"}
+                        </td>
                         <td className="px-6 py-3 text-center text-black">-</td>
-                        <td className="px-6 py-3 text-center text-black">{row.billable_hours ? Number(row.billable_hours).toFixed(2) : '-'}</td>
-                        <td className="px-6 py-3 text-center text-black">{'qc_score' in row ? (row.qc_score !== null ? Number(row.qc_score).toFixed(2) : '-') : '-'}</td>
-                        <td className="px-6 py-3 text-center text-black">{row.tenure_target ? Number(row.tenure_target).toFixed(2) : '-'}</td>
+                        <td className="px-6 py-3 text-center text-black">
+                          {row.billable_hours
+                            ? Number(row.billable_hours).toFixed(2)
+                            : "-"}
+                        </td>
+                        <td className="px-6 py-3 text-center text-black">
+                          {"qc_score" in row
+                            ? row.qc_score !== null
+                              ? Number(row.qc_score).toFixed(2)
+                              : "-"
+                            : "-"}
+                        </td>
+                        <td className="px-6 py-3 text-center text-black">
+                          {row.tenure_target
+                            ? Number(row.tenure_target).toFixed(2)
+                            : "-"}
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="px-6 py-3 text-center text-gray-400">No data available</td>
+                      <td
+                        colSpan={5}
+                        className="px-6 py-3 text-center text-gray-400"
+                      >
+                        No data available
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -425,7 +587,7 @@ const AgentBillableReport = () => {
       )}
 
       {/* Monthly Report view (summary table, per-row export) */}
-      {activeToggle === 'monthly' && (
+      {activeToggle === "monthly" && (
         <div className="w-full max-w-7xl mx-auto mt-4">
           <div className="flex flex-wrap items-center gap-4 mb-6">
             <label className="font-semibold text-blue-700">Month:</label>
@@ -433,7 +595,7 @@ const AgentBillableReport = () => {
               type="month"
               className="border border-blue-300 rounded px-3 py-1 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-500 bg-white shadow-sm transition"
               value={monthlyMonth}
-              onChange={e => setMonthlyMonth(e.target.value)}
+              onChange={(e) => setMonthlyMonth(e.target.value)}
               style={{ minWidth: 120 }}
             />
             {/* Clear Filters Button */}
@@ -454,42 +616,113 @@ const AgentBillableReport = () => {
           </div>
           <div className="p-6 overflow-x-auto bg-white rounded-2xl shadow-lg w-full">
             {loadingMonthly ? (
-              <div className="py-8 text-center text-blue-700 font-semibold">Loading monthly report...</div>
+              <div className="py-8 text-center text-blue-700 font-semibold">
+                Loading monthly report...
+              </div>
             ) : errorMonthly ? (
-              <ErrorMessage message={errorMonthly} onRetry={() => setMonthlyMonth("")} />
+              <ErrorMessage
+                message={errorMonthly}
+                onRetry={() => setMonthlyMonth("")}
+              />
             ) : (
               <table className="min-w-full divide-y divide-blue-100 text-sm">
                 <thead>
                   <tr className="bg-blue-50">
-                    <th className="px-6 py-3 text-left font-semibold text-blue-700 uppercase tracking-wider">Year & Month</th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">Billable Hours Delivered</th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">Monthly Goal</th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">Pending Target</th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">Avg. QC Score</th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">Export</th>
+                    <th className="px-6 py-3 text-left font-semibold text-blue-700 uppercase tracking-wider">
+                      Year & Month
+                    </th>
+                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
+                      Billable Hours Delivered
+                    </th>
+                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
+                      Monthly Goal
+                    </th>
+                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
+                      Pending Target
+                    </th>
+                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
+                      Avg. QC Score
+                    </th>
+                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
+                      Export
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-blue-50">
                   {monthlySummaryData.length > 0 ? (
                     monthlySummaryData.map((row, idx) => (
-                      <tr key={idx} className="hover:bg-blue-50 transition group">
-                        <td className="px-6 py-3 text-black font-medium whitespace-nowrap">{row.month_year}</td>
-                        <td className="px-6 py-3 text-center text-black">{row.total_billable_hours ? Number(row.total_billable_hours).toFixed(2) : (row.total_billable_hours_month ? Number(row.total_billable_hours_month).toFixed(2) : '-')}</td>
-                        <td className="px-6 py-3 text-center text-black">{row.monthly_target ?? row.monthly_goal}</td>
-                        <td className="px-6 py-3 text-center text-black">{row.pending_target ? Number(row.pending_target).toFixed(2) : '-'}</td>
-                        <td className="px-6 py-3 text-center text-black">{row.avg_qc_score ?? '-'}</td>
+                      <tr
+                        key={idx}
+                        className="hover:bg-blue-50 transition group"
+                      >
+                        <td className="px-6 py-3 text-black font-medium whitespace-nowrap">
+                          {row.month_year}
+                        </td>
+                        <td className="px-6 py-3 text-center text-black">
+                          {row.total_billable_hours
+                            ? Number(row.total_billable_hours).toFixed(2)
+                            : row.total_billable_hours_month
+                              ? Number(row.total_billable_hours_month).toFixed(
+                                  2,
+                                )
+                              : "-"}
+                        </td>
+                        <td className="px-6 py-3 text-center text-black">
+                          {row.monthly_target ?? row.monthly_goal}
+                        </td>
+                        <td className="px-6 py-3 text-center text-black">
+                          {row.pending_target
+                            ? Number(row.pending_target).toFixed(2)
+                            : "-"}
+                        </td>
+                        <td className="px-6 py-3 text-center text-black">
+                          {row.avg_qc_score ?? "-"}
+                        </td>
                         <td className="px-6 py-3 text-center">
                           <button
                             onClick={() => {
                               if (row.month_year) {
-                                void handleExportMonthDailyExcel(row.month_year)
+                                void handleExportMonthDailyExcel(
+                                  row.month_year,
+                                );
                               }
                             }}
                             className="flex items-center gap-2 px-3 py-1 rounded bg-green-600 hover:bg-green-700 text-white text-xs font-semibold border border-green-700 shadow-sm transition"
                             title={`Export daily report for ${row.month_year}`}
                             aria-label={`Export daily report for ${row.month_year}`}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><polyline points="8 12 12 16 16 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="8" x2="12" y2="16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <path
+                                d="M16 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"
+                                stroke="white"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <polyline
+                                points="8 12 12 16 16 12"
+                                stroke="white"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <line
+                                x1="12"
+                                y1="8"
+                                x2="12"
+                                y2="16"
+                                stroke="white"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
                             <span>Excel</span>
                           </button>
                         </td>
@@ -497,7 +730,12 @@ const AgentBillableReport = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="px-6 py-3 text-center text-gray-400">No data available</td>
+                      <td
+                        colSpan={6}
+                        className="px-6 py-3 text-center text-gray-400"
+                      >
+                        No data available
+                      </td>
                     </tr>
                   )}
                 </tbody>

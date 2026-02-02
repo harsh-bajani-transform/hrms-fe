@@ -50,27 +50,30 @@ const AssistantManagerDashboard: FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch dropdowns for names
+  // Fetch reference data for dropdowns
+  const [taskNameMap, setTaskNameMap] = useState<Record<string, string>>({});
+
   useEffect(() => {
-    const fetchNames = async () => {
+    const fetchRefData = async () => {
       try {
-        const [projRes, taskRes] = await Promise.all([
+        const [, taskRes] = await Promise.all([
           api.post("/dropdown/get", { dropdown_type: "projects" }),
           api.post("/dropdown/get", { dropdown_type: "tasks" }),
         ]);
-        if (projRes.data?.status === 200) {
-          // Project name map not currently used as we use row.project_name
-        }
+        // Projects handled via row.project_name usually, but could store if needed
         if (taskRes.data?.status === 200) {
-          const tMap = {};
-          taskRes.data.data.forEach((t) => (tMap[String(t.task_id)] = t.label));
+          const tMap: Record<string, string> = {};
+          taskRes.data.data.forEach(
+            (t: { task_id: string | number; label: string }) =>
+              (tMap[String(t.task_id)] = t.label),
+          );
           setTaskNameMap(tMap);
         }
       } catch (err) {
-        console.error("Failed to fetch name maps:", err);
+        console.error("Error loading dropdowns", err);
       }
     };
-    fetchNames();
+    fetchRefData();
   }, []);
 
   // Fetch dashboard data
@@ -80,7 +83,15 @@ const AssistantManagerDashboard: FC = () => {
       setError(null);
       try {
         // If no filter applied, show today's data only (but do not set date in filter UI)
-        let payload = {
+        interface PayloadType {
+          logged_in_user_id: string | number | undefined;
+          device_id: string;
+          device_type: string;
+          date_from?: string;
+          date_to?: string;
+        }
+
+        let payload: PayloadType = {
           logged_in_user_id: user?.user_id || user?.id,
           device_id: device_id || "web_default",
           device_type: device_type || "web",
