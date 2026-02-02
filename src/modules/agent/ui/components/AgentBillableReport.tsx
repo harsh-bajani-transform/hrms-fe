@@ -305,45 +305,31 @@ const AgentBillableReport = () => {
     try {
       // Format and prepare export data
       const exportData: DailyExportRow[] = filteredDailyData.map((row) => {
-        const extra = row as TrackerRow & Record<string, unknown>;
-
-        // Format date-time as dd-mm-yyyy hh:mm am/pm
-        let formattedDateTime = "";
-        if (row.date_time) {
+        // Only show date part from work_date
+        let formattedDate = "-";
+        if (row.work_date) {
+          const d = dayjs(row.work_date);
+          if (d.isValid()) {
+            formattedDate = d.format("DD-MM-YYYY");
+          }
+        } else if (row.date_time) {
+          // Fallback to date_time if work_date missing
           const d = dayjs(row.date_time);
-          formattedDateTime = d.isValid()
-            ? d.format("DD-MM-YYYY hh:mm A")
-            : row.date_time;
+          formattedDate = d.isValid() ? d.format("DD-MM-YYYY") : row.date_time;
         }
 
-        const workedHours = Number(
-          row.billable_hours ??
-            (extra.workedHours as unknown) ??
-            (extra.worked_hours as unknown) ??
-            0,
-        );
-
-        const dailyRequired = Number(
-          row.tenure_target ??
-            (extra.dailyRequiredHours as unknown) ??
-            (extra.daily_required_hours as unknown) ??
-            0,
-        );
-
-        const qcScoreRaw = row.qc_score ?? (extra.qcScore as unknown);
-        const qcScore =
-          qcScoreRaw != null &&
-          qcScoreRaw !== "" &&
-          !Number.isNaN(Number(qcScoreRaw))
-            ? Number(qcScoreRaw)
-            : "-";
-
         return {
-          "Date-Time": formattedDateTime,
+          "Date-Time": formattedDate,
           "Assign Hours": "-",
-          "Worked Hours": workedHours || 0,
-          "QC score": qcScore,
-          "Daily Required Hours": dailyRequired || 0,
+          "Worked Hours":
+            row.cumulative_billable_hours_till_day != null
+              ? Number(row.cumulative_billable_hours_till_day).toFixed(2)
+              : "-",
+          "QC score": "-",
+          "Daily Required Hours":
+            row.daily_required_hours != null
+              ? Number(row.daily_required_hours).toFixed(2)
+              : "-",
         };
       });
 
@@ -540,31 +526,29 @@ const AgentBillableReport = () => {
                         className="hover:bg-blue-50 transition group"
                       >
                         <td className="px-6 py-3 text-black font-medium whitespace-nowrap">
-                          {row.date_time
+                          {row.work_date
                             ? (() => {
-                                const d = new Date(row.date_time);
-                                const pad = (n: number) =>
-                                  n.toString().padStart(2, "0");
-                                return `${pad(d.getUTCDate())}-${pad(d.getUTCMonth() + 1)}-${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+                                const d = dayjs(row.work_date);
+                                return d.isValid()
+                                  ? d.format("DD-MM-YYYY")
+                                  : row.work_date;
                               })()
+                            : row.date_time
+                              ? dayjs(row.date_time).format("DD-MM-YYYY")
+                              : "-"}
+                        </td>
+                        <td className="px-6 py-3 text-center text-black">-</td>
+                        <td className="px-6 py-3 text-center text-black">
+                          {row.cumulative_billable_hours_till_day != null
+                            ? Number(
+                                row.cumulative_billable_hours_till_day,
+                              ).toFixed(2)
                             : "-"}
                         </td>
                         <td className="px-6 py-3 text-center text-black">-</td>
                         <td className="px-6 py-3 text-center text-black">
-                          {row.billable_hours
-                            ? Number(row.billable_hours).toFixed(2)
-                            : "-"}
-                        </td>
-                        <td className="px-6 py-3 text-center text-black">
-                          {"qc_score" in row
-                            ? row.qc_score !== null
-                              ? Number(row.qc_score).toFixed(2)
-                              : "-"
-                            : "-"}
-                        </td>
-                        <td className="px-6 py-3 text-center text-black">
-                          {row.tenure_target
-                            ? Number(row.tenure_target).toFixed(2)
+                          {row.daily_required_hours != null
+                            ? Number(row.daily_required_hours).toFixed(2)
                             : "-"}
                         </td>
                       </tr>

@@ -165,7 +165,12 @@ const QATrackerReport: React.FC = () => {
     try {
       const exportData = filteredTrackers.map((tracker) => ({
         "Date/Time": tracker.date_time
-          ? format(new Date(tracker.date_time), "M/d/yyyy h:mm a")
+          ? (() => {
+              const d = new Date(tracker.date_time);
+              return isNaN(d.getTime())
+                ? tracker.date_time
+                : format(d, "M/d/yyyy h:mm a");
+            })()
           : "-",
         Agent: tracker.user_name || "-",
         Project: tracker.project_name || "-",
@@ -369,7 +374,12 @@ const QATrackerReport: React.FC = () => {
                 >
                   <td className="px-5 py-3 align-middle whitespace-nowrap">
                     {tracker.date_time
-                      ? format(new Date(tracker.date_time), "M/d/yyyy h:mma")
+                      ? (() => {
+                          const d = new Date(tracker.date_time);
+                          return isNaN(d.getTime())
+                            ? tracker.date_time
+                            : format(d, "M/d/yyyy h:mma");
+                        })()
                       : "-"}
                   </td>
                   <td className="px-5 py-3 align-middle font-semibold text-blue-700 whitespace-nowrap">
