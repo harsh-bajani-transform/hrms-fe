@@ -1,11 +1,24 @@
-import React, { useState, useRef } from 'react';
-import { X, Upload, User, UserPlus, Eye, EyeOff, Shield, Briefcase, Users, Phone, Mail, MapPin } from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import CustomSelect from '../../../../components/common/CustomSelect';
-import { fileToBase64 } from '../../../../lib/fileToBase64';
-import { addUser, updateUser } from '../../services/manageService';
-import { useDeviceInfo } from '../../../../hooks/useDeviceInfo';
-import { UserDropdowns } from '../../../../hooks/useUserDropdowns';
+import React, { useState, useRef } from "react";
+import {
+  X,
+  Upload,
+  User,
+  UserPlus,
+  Eye,
+  EyeOff,
+  Shield,
+  Briefcase,
+  Users,
+  Phone,
+  Mail,
+  MapPin,
+} from "lucide-react";
+import { toast } from "react-hot-toast";
+import CustomSelect from "../../../../components/common/CustomSelect";
+import { fileToBase64 } from "../../../../lib/fileToBase64";
+import { addUser, updateUser } from "../../services/manageService";
+import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
+import { UserDropdowns } from "../../../../hooks/useUserDropdowns";
 
 interface UserType {
   user_id?: string | number;
@@ -51,31 +64,40 @@ interface EditState {
   [key: string]: string;
 }
 
-const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess, dropdowns }) => {
+const UserFormModal: React.FC<UserFormModalProps> = ({
+  user,
+  onClose,
+  onSuccess,
+  dropdowns,
+}) => {
   const isEditMode = !!user;
   const { device_id, device_type } = useDeviceInfo();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<FormData>({
-    name: user?.user_name || '',
-    email: user?.user_email || '',
-    phone: user?.user_number || '',
-    password: '',
-    roleId: user?.role_id?.toString() || '',
-    designationId: user?.designation_id?.toString() || '',
-    projectManagerId: user?.project_manager_id?.toString() || '',
-    assistantManagerId: user?.assistant_manager_id?.toString() || '',
-    qaId: user?.qa_id?.toString() || '',
-    teamId: user?.team_id?.toString() || '',
-    address: user?.user_address || '',
-    tenure: user?.user_tenure || '',
+    name: user?.user_name || "",
+    email: user?.user_email || "",
+    phone: user?.user_number || "",
+    password: "",
+    roleId: user?.role_id?.toString() || "",
+    designationId: user?.designation_id?.toString() || "",
+    projectManagerId: user?.project_manager_id?.toString() || "",
+    assistantManagerId: user?.assistant_manager_id?.toString() || "",
+    qaId: user?.qa_id?.toString() || "",
+    teamId: user?.team_id?.toString() || "",
+    address: user?.user_address || "",
+    tenure: user?.user_tenure || "",
     profilePicture: null,
   });
 
-  const [profilePreview, setProfilePreview] = useState<string | null>(user?.profile_picture || null);
+  const [profilePreview, setProfilePreview] = useState<string | null>(
+    user?.profile_picture || null,
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
+    {},
+  );
 
   const getFieldVisibility = (selectedRoleId: string) => {
     const roleId = Number(selectedRoleId);
@@ -92,13 +114,17 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess,
 
   const validate = () => {
     const newErrors: Partial<Record<keyof FormData, string>> = {};
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!isEditMode && !formData.email.trim()) newErrors.email = 'Email is required';
-    if (!isEditMode && !formData.password) newErrors.password = 'Password is required';
-    if (formData.password && formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-    if (!formData.roleId) newErrors.roleId = 'Role is required';
-    if (!formData.designationId) newErrors.designationId = 'Designation is required';
-    if (!formData.teamId) newErrors.teamId = 'Team is required';
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!isEditMode && !formData.email.trim())
+      newErrors.email = "Email is required";
+    if (!isEditMode && !formData.password)
+      newErrors.password = "Password is required";
+    if (formData.password && formData.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
+    if (!formData.roleId) newErrors.roleId = "Role is required";
+    if (!formData.designationId)
+      newErrors.designationId = "Designation is required";
+    if (!formData.teamId) newErrors.teamId = "Team is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -127,14 +153,14 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess,
       };
       if (isEditMode) {
         await updateUser({ ...payload, user_id: user?.user_id });
-        toast.success('User updated successfully');
+        toast.success("User updated successfully");
       } else {
         await addUser(payload);
-        toast.success('User created successfully');
+        toast.success("User created successfully");
       }
       onSuccess();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unknown error');
+      toast.error(error instanceof Error ? error.message : "Unknown error");
     } finally {
       setIsSubmitting(false);
     }
@@ -144,7 +170,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess,
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        toast.error('Image size must be less than 2MB');
+        toast.error("Image size must be less than 2MB");
         return;
       }
       const base64 = await fileToBase64(file);
@@ -160,14 +186,23 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess,
         <div className="px-6 py-4 bg-indigo-600 text-white flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold flex items-center gap-2">
-              {isEditMode ? <User className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
-              {isEditMode ? 'Edit User' : 'Create New User'}
+              {isEditMode ? (
+                <User className="w-5 h-5" />
+              ) : (
+                <UserPlus className="w-5 h-5" />
+              )}
+              {isEditMode ? "Edit User" : "Create New User"}
             </h2>
             <p className="text-indigo-100 text-xs mt-0.5">
-              {isEditMode ? `Updating ${user?.user_name}'s profile` : 'Fill in the information to invite a new member'}
+              {isEditMode
+                ? `Updating ${user?.user_name}'s profile`
+                : "Fill in the information to invite a new member"}
             </p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -179,7 +214,11 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess,
               <div className="relative group">
                 <div className="w-24 h-24 rounded-full bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden">
                   {profilePreview ? (
-                    <img src={profilePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <img
+                      src={profilePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <User className="w-10 h-10 text-slate-300" />
                   )}
@@ -199,45 +238,65 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess,
                   accept="image/*"
                 />
               </div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profile Picture (Max 2MB)</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Profile Picture (Max 2MB)
+              </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Basic Info */}
               <div className="space-y-4">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                   <User className="w-3.5 h-3.5" /> Basic Information
+                  <User className="w-3.5 h-3.5" /> Basic Information
                 </h3>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700 ml-1">Full Name</label>
+                  <label className="text-xs font-bold text-slate-700 ml-1">
+                    Full Name
+                  </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       type="text"
                       placeholder="e.g. John Doe"
-                      className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border ${errors.name ? 'border-rose-400' : 'border-slate-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
+                      className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border ${errors.name ? "border-rose-400" : "border-slate-200"} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                     />
                   </div>
-                  {errors.name && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.name}</p>}
+                  {errors.name && (
+                    <p className="text-[10px] text-rose-500 font-bold ml-1">
+                      {errors.name}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700 ml-1">Email Address</label>
+                  <label className="text-xs font-bold text-slate-700 ml-1">
+                    Email Address
+                  </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       type="email"
                       placeholder="john@example.com"
                       disabled={isEditMode}
-                      className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border ${errors.email ? 'border-rose-400' : 'border-slate-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${isEditMode ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border ${errors.email ? "border-rose-400" : "border-slate-200"} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${isEditMode ? "opacity-60 cursor-not-allowed" : ""}`}
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                     />
                   </div>
-                  {errors.email && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.email}</p>}
+                  {errors.email && (
+                    <p className="text-[10px] text-rose-500 font-bold ml-1">
+                      {errors.email}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700 ml-1">Phone Number</label>
+                  <label className="text-xs font-bold text-slate-700 ml-1">
+                    Phone Number
+                  </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -245,13 +304,18 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess,
                       placeholder="10-digit number"
                       className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          phone: e.target.value.replace(/\D/g, "").slice(0, 10),
+                        })
+                      }
                     />
                   </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-700 ml-1">
-                    {isEditMode ? 'New Password (Optional)' : 'Password'}
+                    {isEditMode ? "New Password (Optional)" : "Password"}
                   </label>
                   <div className="relative">
                     <button
@@ -259,69 +323,134 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess,
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-indigo-600 transition-colors"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                     <input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder={isEditMode ? 'Leave blank to keep current' : 'At least 6 characters'}
-                      className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.password ? 'border-rose-400' : 'border-slate-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
+                      type={showPassword ? "text" : "password"}
+                      placeholder={
+                        isEditMode
+                          ? "Leave blank to keep current"
+                          : "At least 6 characters"
+                      }
+                      className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.password ? "border-rose-400" : "border-slate-200"} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
                       value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
                     />
                   </div>
-                  {errors.password && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.password}</p>}
+                  {errors.password && (
+                    <p className="text-[10px] text-rose-500 font-bold ml-1">
+                      {errors.password}
+                    </p>
+                  )}
                 </div>
               </div>
               {/* Organization Info */}
               <div className="space-y-4">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                   <Shield className="w-3.5 h-3.5" /> Organization Details
+                  <Shield className="w-3.5 h-3.5" /> Organization Details
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 ml-1">Role</label>
+                    <label className="text-xs font-bold text-slate-700 ml-1">
+                      Role
+                    </label>
                     <CustomSelect
                       value={formData.roleId}
-                      onChange={(val: string) => setFormData({ ...formData, roleId: val })}
-                      options={dropdowns.roles.map(r => ({ value: ((r.role_id ?? r.id) ? String(r.role_id ?? r.id) : ''), label: typeof r.label === 'string' ? r.label : String(r.label ?? '') }))}
+                      onChange={(val: string) =>
+                        setFormData({ ...formData, roleId: val })
+                      }
+                      options={dropdowns.roles.map((r) => ({
+                        value:
+                          (r.role_id ?? r.id) ? String(r.role_id ?? r.id) : "",
+                        label:
+                          typeof r.label === "string"
+                            ? r.label
+                            : String(r.label ?? ""),
+                      }))}
                       placeholder="Select Role"
-                      className={errors.roleId ? 'border-rose-400' : ''}
+                      className={errors.roleId ? "border-rose-400" : ""}
                     />
-                    {errors.roleId && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.roleId}</p>}
+                    {errors.roleId && (
+                      <p className="text-[10px] text-rose-500 font-bold ml-1">
+                        {errors.roleId}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 ml-1">Designation</label>
+                    <label className="text-xs font-bold text-slate-700 ml-1">
+                      Designation
+                    </label>
                     <CustomSelect
                       value={formData.designationId}
-                      onChange={(val: string) => setFormData({ ...formData, designationId: val })}
-                      options={dropdowns.designations.map(d => ({ value: ((d.designation_id ?? d.id) ? String(d.designation_id ?? d.id) : ''), label: typeof d.label === 'string' ? d.label : String(d.label ?? '') }))}
+                      onChange={(val: string) =>
+                        setFormData({ ...formData, designationId: val })
+                      }
+                      options={dropdowns.designations.map((d) => ({
+                        value:
+                          (d.designation_id ?? d.id)
+                            ? String(d.designation_id ?? d.id)
+                            : "",
+                        label:
+                          typeof d.label === "string"
+                            ? d.label
+                            : String(d.label ?? ""),
+                      }))}
                       placeholder="Select Designation"
-                      className={errors.designationId ? 'border-rose-400' : ''}
+                      className={errors.designationId ? "border-rose-400" : ""}
                     />
-                    {errors.designationId && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.designationId}</p>}
+                    {errors.designationId && (
+                      <p className="text-[10px] text-rose-500 font-bold ml-1">
+                        {errors.designationId}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 ml-1">Team</label>
+                    <label className="text-xs font-bold text-slate-700 ml-1">
+                      Team
+                    </label>
                     <CustomSelect
                       value={formData.teamId}
-                      onChange={(val: string) => setFormData({ ...formData, teamId: val })}
-                      options={dropdowns.teams.map(t => ({ value: ((t.team_id ?? t.id) ? String(t.team_id ?? t.id) : ''), label: typeof t.label === 'string' ? t.label : String(t.label ?? '') }))}
+                      onChange={(val: string) =>
+                        setFormData({ ...formData, teamId: val })
+                      }
+                      options={dropdowns.teams.map((t) => ({
+                        value:
+                          (t.team_id ?? t.id) ? String(t.team_id ?? t.id) : "",
+                        label:
+                          typeof t.label === "string"
+                            ? t.label
+                            : String(t.label ?? ""),
+                      }))}
                       placeholder="Select Team"
-                      className={errors.teamId ? 'border-rose-400' : ''}
+                      className={errors.teamId ? "border-rose-400" : ""}
                     />
-                    {errors.teamId && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.teamId}</p>}
+                    {errors.teamId && (
+                      <p className="text-[10px] text-rose-500 font-bold ml-1">
+                        {errors.teamId}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 ml-1">Tenure (Years)</label>
+                    <label className="text-xs font-bold text-slate-700 ml-1">
+                      Tenure (Years)
+                    </label>
                     <input
                       type="number"
                       step="0.1"
                       placeholder="e.g. 1.5"
                       className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                       value={formData.tenure}
-                      onChange={(e) => setFormData({ ...formData, tenure: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, tenure: e.target.value })
+                      }
                     />
                   </div>
                 </div>
@@ -329,34 +458,76 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess,
                 <div className="space-y-4 pt-2">
                   {visibility.pm && (
                     <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-700 ml-1">Project Manager</label>
+                      <label className="text-xs font-bold text-slate-700 ml-1">
+                        Project Manager
+                      </label>
                       <CustomSelect
                         value={formData.projectManagerId}
-                        onChange={(val: string) => setFormData({ ...formData, projectManagerId: val })}
-                        options={dropdowns.projectManagers.map(m => ({ value: ((m.user_id ?? m.id) ? String(m.user_id ?? m.id) : ''), label: typeof m.label === 'string' ? m.label : String(m.label ?? '') }))}
+                        onChange={(val: string) =>
+                          setFormData({ ...formData, projectManagerId: val })
+                        }
+                        options={dropdowns.projectManagers.map((m) => ({
+                          value:
+                            (m.user_id ?? m.id)
+                              ? String(m.user_id ?? m.id)
+                              : "",
+                          label:
+                            typeof m.label === "string"
+                              ? m.label
+                              : String(m.label ?? ""),
+                        }))}
                         placeholder="Select PM"
+                        isLoading={isDropdownLoading}
                       />
                     </div>
                   )}
                   {visibility.am && (
                     <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-700 ml-1">Assistant Manager</label>
+                      <label className="text-xs font-bold text-slate-700 ml-1">
+                        Assistant Manager
+                      </label>
                       <CustomSelect
                         value={formData.assistantManagerId}
-                        onChange={(val: string) => setFormData({ ...formData, assistantManagerId: val })}
-                        options={dropdowns.assistantManagers.map(m => ({ value: ((m.user_id ?? m.id) ? String(m.user_id ?? m.id) : ''), label: typeof m.label === 'string' ? m.label : String(m.label ?? '') }))}
+                        onChange={(val: string) =>
+                          setFormData({ ...formData, assistantManagerId: val })
+                        }
+                        options={dropdowns.assistantManagers.map((m) => ({
+                          value:
+                            (m.user_id ?? m.id)
+                              ? String(m.user_id ?? m.id)
+                              : "",
+                          label:
+                            typeof m.label === "string"
+                              ? m.label
+                              : String(m.label ?? ""),
+                        }))}
                         placeholder="Select AM"
+                        isLoading={isDropdownLoading}
                       />
                     </div>
                   )}
                   {visibility.qa && (
                     <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-700 ml-1">Quality Analyst</label>
+                      <label className="text-xs font-bold text-slate-700 ml-1">
+                        Quality Analyst
+                      </label>
                       <CustomSelect
                         value={formData.qaId}
-                        onChange={(val: string) => setFormData({ ...formData, qaId: val })}
-                        options={dropdowns.qas.map(q => ({ value: ((q.user_id ?? q.id) ? String(q.user_id ?? q.id) : ''), label: typeof q.label === 'string' ? q.label : String(q.label ?? '') }))}
+                        onChange={(val: string) =>
+                          setFormData({ ...formData, qaId: val })
+                        }
+                        options={dropdowns.qas.map((q) => ({
+                          value:
+                            (q.user_id ?? q.id)
+                              ? String(q.user_id ?? q.id)
+                              : "",
+                          label:
+                            typeof q.label === "string"
+                              ? q.label
+                              : String(q.label ?? ""),
+                        }))}
                         placeholder="Select QA"
+                        isLoading={isDropdownLoading}
                       />
                     </div>
                   )}
@@ -366,14 +537,16 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess,
             {/* Address */}
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-700 ml-1 flex items-center gap-2">
-                 <MapPin className="w-3.5 h-3.5" /> Address (Optional)
+                <MapPin className="w-3.5 h-3.5" /> Address (Optional)
               </label>
               <textarea
                 placeholder="Street name, City, State..."
                 rows={2}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none"
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
               />
             </div>
           </form>
@@ -396,7 +569,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess,
             {isSubmitting ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : null}
-            {isEditMode ? 'Update User' : 'Create Account'}
+            {isEditMode ? "Update User" : "Create Account"}
           </button>
         </div>
       </div>

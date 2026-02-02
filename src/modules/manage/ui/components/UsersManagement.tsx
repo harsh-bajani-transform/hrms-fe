@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   Search,
   UserPlus,
@@ -8,12 +8,12 @@ import {
   XCircle,
   Shield,
   User,
-} from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import { useAuth } from '../../../../context/AuthContext';
-import { deleteUser, updateUser } from '../../services/manageService';
-import UserFormModal from './UserFormModal';
-import { UserDropdowns } from '../../../../hooks/useUserDropdowns';
+} from "lucide-react";
+import { toast } from "react-hot-toast";
+import { useAuth } from "../../../../context/AuthContext";
+import { deleteUser, updateUser } from "../../services/manageService";
+import UserFormModal from "./UserFormModal";
+import { UserDropdowns } from "../../../../hooks/useUserDropdowns";
 
 interface UserType {
   user_id: string | number;
@@ -32,9 +32,14 @@ interface UsersManagementProps {
   dropdowns: UserDropdowns;
 }
 
-const UsersManagement: React.FC<UsersManagementProps> = ({ users, loading, onRefresh, dropdowns }) => {
+const UsersManagement: React.FC<UsersManagementProps> = ({
+  users,
+  loading,
+  onRefresh,
+  dropdowns,
+}) => {
   const { canManageUsers } = useAuth() as { canManageUsers: boolean };
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | number | null>(null);
@@ -43,22 +48,27 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ users, loading, onRef
     return users.filter(
       (u) =>
         u.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.user_email?.toLowerCase().includes(searchTerm.toLowerCase())
+        u.user_email?.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [users, searchTerm]);
 
   const handleDelete = async (userToDelete: UserType) => {
-    if (!window.confirm(`Are you sure you want to delete ${userToDelete.user_name}?`)) return;
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${userToDelete.user_name}?`,
+      )
+    )
+      return;
     try {
       setIsDeleting(userToDelete.user_id);
       await deleteUser(userToDelete.user_id, {
-        device_id: 'web',
-        device_type: 'Laptop',
+        device_id: "web",
+        device_type: "Laptop",
       });
-      toast.success('User deleted successfully');
+      toast.success("User deleted successfully");
       onRefresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unknown error');
+      toast.error(error instanceof Error ? error.message : "Unknown error");
     } finally {
       setIsDeleting(null);
     }
@@ -71,10 +81,12 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ users, loading, onRef
         user_id: userToToggle.user_id,
         is_active: newStatus,
       });
-      toast.success(`User ${newStatus === 1 ? 'activated' : 'deactivated'} successfully`);
+      toast.success(
+        `User ${newStatus === 1 ? "activated" : "deactivated"} successfully`,
+      );
       onRefresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unknown error');
+      toast.error(error instanceof Error ? error.message : "Unknown error");
     }
   };
 
@@ -109,25 +121,41 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ users, loading, onRef
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">User</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Role & Designation</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Role & Designation
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-400">
+                  <td
+                    colSpan={4}
+                    className="px-6 py-12 text-center text-slate-400"
+                  >
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm font-medium">Loading users...</span>
+                      <span className="text-sm font-medium">
+                        Loading users...
+                      </span>
                     </div>
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-400">
+                  <td
+                    colSpan={4}
+                    className="px-6 py-12 text-center text-slate-400"
+                  >
                     <div className="flex flex-col items-center gap-2">
                       <User className="w-8 h-8 opacity-20" />
                       <span className="text-sm">No users found</span>
@@ -136,15 +164,22 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ users, loading, onRef
                 </tr>
               ) : (
                 filteredUsers.map((u) => (
-                  <tr key={u.user_id} className="hover:bg-slate-50/50 transition-colors group">
+                  <tr
+                    key={u.user_id}
+                    className="hover:bg-slate-50/50 transition-colors group"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs border border-indigo-100 uppercase">
                           {u.user_name?.substring(0, 2)}
                         </div>
                         <div>
-                          <div className="text-sm font-bold text-slate-800">{u.user_name}</div>
-                          <div className="text-xs text-slate-500">{u.user_email}</div>
+                          <div className="text-sm font-bold text-slate-800">
+                            {u.user_name}
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            {u.user_email}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -152,9 +187,11 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ users, loading, onRef
                       <div className="space-y-1">
                         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
                           <Shield className="w-3 h-3 text-indigo-500" />
-                          {u.role_name || 'AGENT'}
+                          {u.role_name || "AGENT"}
                         </div>
-                        <div className="text-xs text-slate-500">{u.designation_name || '—'}</div>
+                        <div className="text-xs text-slate-500">
+                          {u.designation_name || "—"}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">
@@ -163,14 +200,18 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ users, loading, onRef
                         disabled={!canManageUsers}
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
                           u.is_active === 1
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                            : 'bg-slate-100 text-slate-600 border border-slate-200'
-                        } ${canManageUsers ? 'hover:scale-105 active:scale-95' : 'cursor-default'}`}
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                            : "bg-slate-100 text-slate-600 border border-slate-200"
+                        } ${canManageUsers ? "hover:scale-105 active:scale-95" : "cursor-default"}`}
                       >
                         {u.is_active === 1 ? (
-                          <><CheckCircle className="w-3 h-3" /> Active</>
+                          <>
+                            <CheckCircle className="w-3 h-3" /> Active
+                          </>
                         ) : (
-                          <><XCircle className="w-3 h-3" /> Inactive</>
+                          <>
+                            <XCircle className="w-3 h-3" /> Inactive
+                          </>
                         )}
                       </button>
                     </td>
@@ -190,7 +231,9 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ users, loading, onRef
                             disabled={isDeleting === u.user_id}
                             title="Delete User"
                           >
-                            <Trash2 className={`w-4 h-4 ${isDeleting === u.user_id ? 'animate-pulse' : ''}`} />
+                            <Trash2
+                              className={`w-4 h-4 ${isDeleting === u.user_id ? "animate-pulse" : ""}`}
+                            />
                           </button>
                         </div>
                       )}
@@ -216,7 +259,13 @@ const UsersManagement: React.FC<UsersManagementProps> = ({ users, loading, onRef
             setEditingUser(null);
             onRefresh();
           }}
-          dropdowns={dropdowns}
+          roles={roleOptions}
+          projectManagers={projectManagerOptions}
+          assistantManagers={asstManagerOptions}
+          qas={qaOptions}
+          teams={teamOptions}
+          designations={designationOptions}
+          isDropdownLoading={dropdownLoading}
         />
       )}
     </div>

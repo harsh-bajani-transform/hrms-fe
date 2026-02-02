@@ -398,7 +398,13 @@ const AgentBillableReport = () => {
                     filteredDailyData.map((row, idx) => (
                       <tr key={idx} className="hover:bg-blue-50 transition group">
                         <td className="px-6 py-3 text-black font-medium whitespace-nowrap">{
-                          row.date_time ? dayjs(row.date_time).format('DD-MM-YYYY hh:mm A') : '-'
+                          row.date_time 
+                            ? (() => {
+                                const d = new Date(row.date_time);
+                                const pad = (n) => n.toString().padStart(2, '0');
+                                return `${pad(d.getUTCDate())}-${pad(d.getUTCMonth() + 1)}-${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+                              })()
+                            : '-'
                         }</td>
                         <td className="px-6 py-3 text-center text-black">-</td>
                         <td className="px-6 py-3 text-center text-black">{row.billable_hours ? Number(row.billable_hours).toFixed(2) : '-'}</td>
