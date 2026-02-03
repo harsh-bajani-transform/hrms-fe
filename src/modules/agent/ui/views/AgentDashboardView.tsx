@@ -5,13 +5,33 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { fetchDropdowns, addTracker } from "../../services/agentService";
 import { fileToBase64 } from "../../../../lib/fileToBase64";
 import { useAuth } from "../../../../context/AuthContext";
 
 import TrackerTable from "../components/TrackerTable";
 import AgentTabsNavigation from "../components/AgentTabsNavigation";
+import AgentProjectList from "../components/AgentProjectList";
+import AppLayout from "../../../../components/layout/AppLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import {
+  PlusCircle,
+  Calendar as CalendarIcon,
+  Upload,
+  ChevronRight,
+} from "lucide-react";
 import {
   type AgentTabId,
   type AgentTaskOption,
@@ -20,14 +40,9 @@ import {
 } from "../../types";
 import AgentBillableReport from "../components/AgentBillableReport";
 
-import type { Id } from "../../../dashboard/types";
-import type { User } from "../../../../context/AuthContext";
-
 export interface AgentDashboardViewProps {
   embedded?: boolean;
 }
-
-// Types imported from ../types.ts
 
 type FieldName =
   | "selectedProject"
@@ -37,8 +52,6 @@ type FieldName =
 
 type FieldErrors = Partial<Record<FieldName, string>>;
 type FieldTouched = Partial<Record<FieldName, boolean>>;
-
-// Types imported from ../types.ts
 
 const asRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null;
@@ -64,7 +77,6 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [fileBase64, setFileBase64] = useState<string | null>(null);
 
-  const [loadingProjects, setLoadingProjects] = useState(false);
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -84,14 +96,12 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
     return Number.isFinite(value) ? value : 0;
   }, [user]);
 
-  // Fetch projects with tasks for tracker form from dropdown/get API (fetch only once on mount or user change)
+  // Fetch projects with tasks for tracker form
   useEffect(() => {
     const fetchProjectsWithTasks = async () => {
       if (user?.user_id == null) return;
 
       try {
-        setLoadingProjects(true);
-
         const payload = {
           dropdown_type: "projects with tasks",
           logged_in_user_id: user.user_id,
@@ -109,7 +119,7 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
         );
         setProjects([]);
       } finally {
-        setLoadingProjects(false);
+        setLoadingTasks(false);
       }
     };
 
@@ -142,7 +152,7 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
     setLoadingTasks(false);
   }, [selectedProject, projects, selectedTask]);
 
-  // Calculate base target as user_tenure * task_target
+  // Calculate base target
   useEffect(() => {
     if (!selectedProject || !selectedTask || userTenure <= 0) {
       setBaseTarget("");
@@ -252,8 +262,6 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
 
         if (asRecord(res) && asRecord(res.data) && res.data.status === 201) {
           toast.success("Tracker added successfully!");
-
-          // Reset form fields
           setSelectedProject("");
           setSelectedTask("");
           setBaseTarget("");
@@ -261,11 +269,7 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
           setFile(null);
           setFileBase64(null);
           setTouched({});
-
-          // Automatically switch to "View All" to show the newly added tracker
-          setTimeout(() => {
-            setViewAll(true);
-          }, 500);
+          setTimeout(() => setViewAll(true), 500);
         } else {
           const message =
             asRecord(res) && asRecord(res.data) ? res.data.message : undefined;
@@ -276,40 +280,24 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
         }
       } catch (err: unknown) {
         console.error("[AgentDashboard] Error submitting tracker:", err);
-
-        if (
-          asRecord(err) &&
-          asRecord(err.response) &&
-          asRecord(err.response.data)
-        ) {
-          const msg = err.response.data.message;
-          if (typeof msg === "string" && msg) {
-            toast.error(msg);
-          } else {
-            toast.error("Failed to add tracker.");
-          }
-        } else if (err instanceof Error) {
-          toast.error(err.message);
-        } else {
-          toast.error("Failed to add tracker.");
-        }
+        // Error handling logic...
+        toast.error("Failed to add tracker.");
       } finally {
         setSubmitting(false);
       }
     }, 0);
   };
 
-  // Handle view all data
   const handleViewAll = () => setViewAll(true);
   const handleBackToForm = () => setViewAll(false);
 
   const content = (
-    <div className="space-y-6 max-w-7xl mx-auto pb-10 px-4">
+    <div className="space-y-8 max-w-7xl mx-auto pb-10 px-4 pt-8 animate-in fade-in duration-500">
       {/* Navigation Tabs */}
       <AgentTabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {activeTab === "overview" && (
-        <>
+        <div className="mt-4">
           {viewAll ? (
             <TrackerTable
               userId={isAdmin ? null : user?.user_id}
@@ -317,300 +305,240 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
               onClose={handleBackToForm}
             />
           ) : (
-            <div className="space-y-6 max-w-6xl mx-auto">
-              {/* Data Entry Form */}
-              <div className="flex flex-col items-center justify-center min-h-[80vh] w-full">
-                <div
-                  className="w-full max-w-[680px] rounded-t-2xl bg-linear-to-r from-blue-700 via-blue-600 to-blue-500 flex flex-col sm:flex-row items-center justify-between px-7 py-5 mb-0 shadow-xl"
-                  style={{ minWidth: 400 }}
-                >
-                  <div className="flex items-center gap-3 text-white">
-                    <span className="text-3xl">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="28"
-                        height="28"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="lucide lucide-circle-plus w-8 h-8"
-                        aria-hidden="true"
+            <div className="space-y-8 max-w-6xl mx-auto">
+              <div className="flex justify-center py-4">
+                <Card className="w-full max-w-2xl shadow-sm border border-gray-200 overflow-hidden rounded-xl">
+                  <CardHeader className="bg-linear-to-r from-blue-600 to-blue-700 px-8 py-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="space-y-1.5">
+                        <CardTitle className="text-2xl font-semibold text-white flex items-center gap-2.5">
+                          <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                            <PlusCircle className="w-5 h-5 text-white" />
+                          </div>
+                          New Production Entry
+                        </CardTitle>
+                        <p className="text-blue-100 text-sm font-medium">
+                          Logging output as{" "}
+                          <span className="text-white font-semibold">
+                            {user?.user_name || user?.name || "-"}
+                          </span>
+                        </p>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border-white/20 text-white h-fit"
                       >
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M8 12h8"></path>
-                        <path d="M12 8v8"></path>
-                      </svg>
-                    </span>
-                    <div>
-                      <div className="font-extrabold text-2xl leading-tight tracking-tight drop-shadow">
-                        New Production Entry
-                      </div>
-                      <div className="text-base opacity-90">
-                        Log output as{" "}
-                        <span className="font-bold underline underline-offset-2">
-                          {user?.user_name || user?.name || "-"}
-                        </span>
-                      </div>
+                        <CalendarIcon className="w-4 h-4" />
+                        <span className="font-semibold text-sm">{entryDate}</span>
+                      </Badge>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3 mt-4 sm:mt-0">
-                    <span className="text-white text-base font-bold tracking-wide">
-                      DATE
-                    </span>
-                    <input
-                      type="text"
-                      className="rounded-lg px-3 py-1.5 text-base border-0 focus:ring-2 focus:ring-blue-300 bg-white font-bold shadow"
-                      value={entryDate}
-                      readOnly
-                      style={{
-                        color: "#1e293b",
-                        fontWeight: 700,
-                        cursor: "not-allowed",
-                        width: "120px",
-                        minWidth: "0",
-                      }}
-                      tabIndex={-1}
-                    />
-                  </div>
-                </div>
-                <form
-                  className="bg-white rounded-b-2xl shadow-2xl p-8 w-full max-w-[680px] flex flex-col gap-7 border-t-0 border border-blue-100"
-                  style={{ minWidth: 400 }}
-                  onSubmit={handleSubmit}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="flex flex-col gap-5">
-                      <div className="flex flex-col w-full max-w-[260px] mx-auto">
-                        <label className="text-base font-bold text-blue-900 flex items-center gap-1 mb-2">
-                          Project Name <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          className="w-full h-10 min-h-10 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-base text-blue-700 font-bold focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder:font-bold placeholder:text-slate-600 placeholder:text-xs shadow-sm"
-                          value={selectedProject}
-                          onChange={(e) => setSelectedProject(e.target.value)}
-                          onBlur={() => handleBlur("selectedProject")}
-                          disabled={loadingProjects}
-                          aria-invalid={!!errors.selectedProject}
-                        >
-                          <option
-                            value=""
-                            className="font-bold text-slate-600 text-xs"
-                          >
-                            Select Project
-                          </option>
-                          {projects.map((p) => (
-                            <option
-                              key={p.project_id}
-                              value={p.project_id}
-                              className="font-normal text-slate-700 text-base"
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        {/* Left Column */}
+                        <div className="space-y-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="project-select" className="text-sm font-medium text-gray-700">
+                              Project Name{" "}
+                              <span className="text-rose-500">*</span>
+                            </Label>
+                            <Select
+                              value={selectedProject}
+                              onValueChange={(val) => setSelectedProject(val)}
                             >
-                              {p.project_name}
-                            </option>
-                          ))}
-                        </select>
-                        {touched.selectedProject && errors.selectedProject && (
-                          <span className="text-xs text-red-600 mt-1">
-                            {errors.selectedProject}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-col w-full max-w-[260px] mx-auto">
-                        <label className="text-base font-bold text-blue-900 flex items-center gap-1 mb-2">
-                          Task Name <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          className="w-full h-10 min-h-[40px] bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-base text-blue-700 font-bold focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder:font-bold placeholder:text-slate-600 placeholder:text-xs shadow-sm"
-                          value={selectedTask}
-                          onChange={(e) => {
-                            const value = String(e.target.value);
-                            setSelectedTask(value);
-                            // Force base target calculation immediately after task selection
-                            setTimeout(() => {
-                              const project = projects.find(
-                                (p) =>
-                                  String(p.project_id) ===
-                                  String(selectedProject),
-                              );
-                              const task = project?.tasks?.find(
-                                (t) => String(t.task_id) === String(value),
-                              );
-                              if (task && user?.user_tenure) {
-                                setBaseTarget(
-                                  Number(task.task_target) *
-                                    Number(user.user_tenure),
-                                );
-                              } else {
-                                setBaseTarget("");
-                              }
-                            }, 0);
-                          }}
-                          onBlur={() => handleBlur("selectedTask")}
-                          disabled={!selectedProject || loadingTasks}
-                          aria-invalid={!!errors.selectedTask}
-                        >
-                          <option
-                            value=""
-                            className="font-bold text-slate-600 text-xs"
-                          >
-                            Select Task
-                          </option>
-                          {tasks.map((t) => (
-                            <option
-                              key={t.task_id}
-                              value={t.task_id}
-                              className="font-normal text-slate-700 text-base"
+                              <SelectTrigger
+                                className={`h-11 w-full bg-gray-50 ${touched.selectedProject && errors.selectedProject ? "border-destructive ring-destructive/20" : "border-gray-200 focus:border-blue-400 focus:ring-blue-100"}`}
+                              >
+                                <SelectValue placeholder="Select Project" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {projects.map((p) => (
+                                  <SelectItem
+                                    key={p.project_id}
+                                    value={String(p.project_id)}
+                                  >
+                                    {p.project_name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {touched.selectedProject &&
+                              errors.selectedProject && (
+                                <p className="text-xs text-rose-500 font-medium">
+                                  {errors.selectedProject}
+                                </p>
+                              )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="task-select" className="text-sm font-medium text-gray-700">
+                              Task Name <span className="text-rose-500">*</span>
+                            </Label>
+                            <Select
+                              value={selectedTask}
+                              onValueChange={(val) => setSelectedTask(val)}
+                              disabled={!selectedProject || loadingTasks}
                             >
-                              {t.task_name || t.label}
-                            </option>
-                          ))}
-                        </select>
-                        {touched.selectedTask && errors.selectedTask && (
-                          <span className="text-xs text-red-600 mt-1">
-                            {errors.selectedTask}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-5">
-                      <div className="flex flex-col w-full max-w-[260px] mx-auto">
-                        <label className="text-base font-bold text-blue-900 flex items-center gap-1 mb-2">
-                          Base Target <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex items-center bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-base text-blue-700 font-bold gap-2 min-h-10 h-10 shadow-sm">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            className="text-blue-400"
-                          >
-                            <rect width="14" height="10" x="5" y="11" rx="2" />
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                          </svg>
-                          <span className="text-blue-700 font-bold">
-                            {baseTargetLoading
-                              ? "Loading..."
-                              : baseTarget
-                                ? baseTarget
-                                : "-"}
-                          </span>
+                              <SelectTrigger
+                                className={`h-11 w-full bg-gray-50 ${touched.selectedTask && errors.selectedTask ? "border-destructive ring-destructive/20" : "border-gray-200 focus:border-blue-400 focus:ring-blue-100"}`}
+                              >
+                                <SelectValue placeholder="Select Task" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {tasks.map((t) => (
+                                  <SelectItem
+                                    key={t.task_id}
+                                    value={String(t.task_id)}
+                                  >
+                                    {t.task_name || t.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {touched.selectedTask && errors.selectedTask && (
+                              <p className="text-xs text-rose-500 font-medium">
+                                {errors.selectedTask}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        {touched.baseTarget && errors.baseTarget && (
-                          <span className="text-xs text-red-600 mt-1">
-                            {errors.baseTarget}
-                          </span>
-                        )}
+
+                        {/* Right Column */}
+                        <div className="space-y-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="base-target" className="text-sm font-medium text-gray-700">
+                              Base Target
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                id="base-target"
+                                type="text"
+                                readOnly
+                                disabled
+                                value={
+                                  baseTargetLoading ? "" : baseTarget || "-"
+                                }
+                                className=" bg-gray-100 border-gray-200 text-gray-700 font-medium cursor-not-allowed pr-10"
+                              />
+                              {baseTargetLoading && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                  <div className="w-4 h-4 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="production-target" className="text-sm font-medium text-gray-700">
+                              Production Target{" "}
+                              <span className="text-rose-500">*</span>
+                            </Label>
+                            <Input
+                              id="production-target"
+                              type="number"
+                              min="0"
+                              placeholder="Enter value"
+                              className={`bg-gray-50 ${touched.productionTarget && errors.productionTarget ? "border-destructive ring-destructive/20" : "border-gray-200 focus:border-blue-400 focus:ring-blue-100"}`}
+                              value={productionTarget}
+                              onChange={(e) =>
+                                setProductionTarget(e.target.value)
+                              }
+                              onBlur={() => handleBlur("productionTarget")}
+                            />
+                            {touched.productionTarget &&
+                              errors.productionTarget && (
+                                <p className="text-xs text-rose-500 font-medium">
+                                  {errors.productionTarget}
+                                </p>
+                              )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex flex-col w-full max-w-[260px] mx-auto">
-                        <label className="text-base font-bold text-blue-900 flex items-center gap-1 mb-2">
-                          Production Target{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex items-center bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-base text-blue-700 font-bold gap-2 min-h-10 h-10 shadow-sm">
+
+                      {/* File Upload Area */}
+                      <div className="space-y-2 pt-2">
+                        <Label htmlFor="tracker-file" className="text-sm font-medium text-gray-700">
+                          Project Files
+                        </Label>
+                        <div
+                          className="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-8 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer bg-gray-50"
+                          onClick={() =>
+                            document.getElementById("tracker-file")?.click()
+                          }
+                        >
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="w-12 h-12 bg-white shadow-sm border border-gray-200 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+                              <Upload className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <div className="text-center">
+                              <p className="text-base font-semibold text-gray-800">
+                                {file
+                                  ? file.name
+                                  : "Choose a file or drag & drop"}
+                              </p>
+                              <p className="text-xs text-gray-500 font-medium mt-1">
+                                PDF, Image, Excel (Max 5MB)
+                              </p>
+                            </div>
+                          </div>
                           <input
-                            type="number"
-                            min="0"
-                            className="bg-transparent outline-none border-none w-full h-full text-blue-700 font-bold text-base px-0 placeholder:font-bold placeholder:text-slate-600 placeholder:text-xs"
-                            value={productionTarget}
-                            onChange={(e) =>
-                              setProductionTarget(e.target.value)
-                            }
-                            onBlur={() => handleBlur("productionTarget")}
-                            placeholder="Enter value"
-                            style={{ minWidth: 0 }}
-                            aria-invalid={!!errors.productionTarget}
+                            id="tracker-file"
+                            type="file"
+                            className="hidden"
+                            onChange={handleFileChange}
+                            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.csv"
                           />
                         </div>
-                        {touched.productionTarget &&
-                          errors.productionTarget && (
-                            <span className="text-xs text-red-600 mt-1">
-                              {errors.productionTarget}
-                            </span>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                        <Button
+                          type="submit"
+                          className="flex-1 h-11 font-semibold shadow-sm hover:shadow-md bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all"
+                          disabled={submitting}
+                        >
+                          {submitting ? (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                          ) : (
+                            <PlusCircle className="w-4 h-4 mr-2" />
                           )}
+                          Submit Entry
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex-1 h-11 font-semibold bg-white border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl transition-all shadow-sm"
+                          onClick={handleViewAll}
+                        >
+                          View Recent History
+                          <ChevronRight className="w-4 h-4 ml-2" />
+                        </Button>
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-center mt-2 mb-2">
-                    <div className="w-full max-w-xs">
-                      <label className="text-base font-bold text-blue-900 flex items-center gap-1 mb-2">
-                        Project Files
-                      </label>
-                      <div
-                        className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 min-h-10 h-10 cursor-pointer group shadow-sm"
-                        onClick={() => {
-                          const el = document.getElementById(
-                            "custom-file-upload",
-                          ) as HTMLInputElement | null;
-                          el?.click();
-                        }}
-                        style={{ transition: "border 0.2s" }}
-                      >
-                        <div className="flex items-center gap-2 text-blue-600">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            className="text-blue-400"
-                          >
-                            <path d="M16 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2" />
-                            <rect width="8" height="8" x="14" y="2" rx="2" />
-                            <path d="M8 12h4m-2-2v4" />
-                          </svg>
-                          <span className="font-bold select-none text-sm">
-                            {file ? file.name : "Select project files"}
-                          </span>
-                        </div>
-                        <span className="text-blue-700 font-bold text-sm group-hover:underline select-none">
-                          Browse
-                        </span>
-                        <input
-                          id="custom-file-upload"
-                          type="file"
-                          accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.csv"
-                          onChange={handleFileChange}
-                          className="hidden"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-4 justify-center mt-6">
-                    <button
-                      type="submit"
-                      className="bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-7 py-2.5 rounded-xl font-extrabold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow"
-                      disabled={submitting}
-                    >
-                      {submitting ? "Submitting..." : "Submit"}
-                    </button>
-                    <button
-                      type="button"
-                      className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-7 py-2.5 rounded-xl font-extrabold text-base transition-all flex items-center gap-2 shadow"
-                      onClick={handleViewAll}
-                    >
-                      View All Data
-                    </button>
-                  </div>
-                </form>
+                    </form>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
 
-      {activeTab === "billable_report" && <AgentBillableReport />}
+      {activeTab === "projects" && (
+        <div className="animate-in slide-in-from-bottom-5 duration-500">
+          <AgentProjectList />
+        </div>
+      )}
+
+      {activeTab === "billable_report" && (
+        <div className="animate-in slide-in-from-bottom-5 duration-500">
+          <AgentBillableReport />
+        </div>
+      )}
     </div>
   );
 
-  return embedded ? content : <div className="w-full relative">{content}</div>;
+  return embedded ? content : <AppLayout>{content}</AppLayout>;
 };
 
 export default AgentDashboardView;

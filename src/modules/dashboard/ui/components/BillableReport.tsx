@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -12,7 +12,15 @@ import { fetchDropdown } from "../../../../services/dropdownService";
 import { useAuth } from "../../../../context/AuthContext";
 import MonthCard from "./MonthCard";
 import UserCard from "./UserCard";
-import CustomSelect from "./CustomSelect";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import type { TrackerRow } from "../../../dashboard/types";
 import type { MonthlyBillableReportRow } from "../../services/billableReportService";
 
@@ -556,109 +564,133 @@ const BillableReport: React.FC = () => {
   const groupedMonthly = groupByMonthYear(monthlySummaryData);
 
   return (
-    <div className="w-full">
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          className={`px-6 py-2 rounded-lg font-semibold transition-all duration-150 cursor-pointer ${
-            activeToggle === "daily"
-              ? "bg-blue-600 text-white shadow-md"
-              : "bg-white text-blue-600 border border-blue-200 hover:bg-blue-50"
-          }`}
-          onClick={() => setActiveToggle("daily")}
-        >
-          Daily Report
-        </button>
-        <button
-          className={`px-6 py-2 rounded-lg font-semibold transition-all duration-150 cursor-pointer ${
-            activeToggle === "monthly"
-              ? "bg-blue-600 text-white shadow-md"
-              : "bg-white text-blue-600 border border-blue-200 hover:bg-blue-50"
-          }`}
-          onClick={() => setActiveToggle("monthly")}
-        >
-          Monthly Report
-        </button>
+    <div className="w-full space-y-6">
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
+        <div className="flex gap-2">
+          <Button
+            variant={activeToggle === "daily" ? "default" : "ghost"}
+            className={`flex-1 h-11 font-medium text-sm transition-all ${
+              activeToggle === "daily" 
+                ? "bg-blue-600 text-white shadow-sm" 
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            onClick={() => setActiveToggle("daily")}
+          >
+            Daily Report
+          </Button>
+          <Button
+            variant={activeToggle === "monthly" ? "default" : "ghost"}
+            className={`flex-1 h-11 font-medium text-sm transition-all ${
+              activeToggle === "monthly" 
+                ? "bg-blue-600 text-white shadow-sm" 
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            onClick={() => setActiveToggle("monthly")}
+          >
+            Monthly Report
+          </Button>
+        </div>
       </div>
 
       {activeToggle === "daily" && (
         <div className="space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 bg-white rounded-xl shadow-sm border border-slate-100">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-sm font-semibold text-slate-700">
-                Date Range:
-              </span>
-              <input
-                type="date"
-                className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-500 bg-white shadow-sm transition"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-              <span className="text-slate-500">to</span>
-              <input
-                type="date"
-                className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-500 bg-white shadow-sm transition"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-              <span className="text-sm font-semibold text-slate-700 ml-4">
-                Month:
-              </span>
-              <input
-                type="month"
-                className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-500 bg-white shadow-sm transition"
-                value={monthFilter}
-                onChange={(e) => setMonthFilter(e.target.value)}
-                style={{ minWidth: 120 }}
-              />
+          {/* Filters Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-5">Filters & Actions</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Date Range */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Start Date
+                </label>
+                <Input
+                  type="date"
+                  className="h-11 border-gray-300"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  End Date
+                </label>
+                <Input
+                  type="date"
+                  className="h-11 border-gray-300"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+              
+              {/* Month Filter */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Filter by Month
+                </label>
+                <Input
+                  type="month"
+                  className="h-11 border-gray-300"
+                  value={monthFilter}
+                  onChange={(e) => setMonthFilter(e.target.value)}
+                />
+              </div>
+              
+              {/* Team Filter (non-agents only) */}
               {!isAgent && (
-                <>
-                  <span className="text-sm font-semibold text-slate-700 ml-4">
-                    Team:
-                  </span>
-                  <CustomSelect
-                    value={teamFilter}
-                    onChange={setTeamFilter}
-                    options={[
-                      { label: "All Teams", value: "" },
-                      ...teamOptions.map((t) => ({
-                        label: t.label,
-                        value: t.label,
-                      })),
-                    ]}
-                    placeholder="Select Team"
-                    className="w-48"
-                  />
-                </>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Filter by Team
+                  </label>
+                  <Select value={teamFilter} onValueChange={setTeamFilter}>
+                    <SelectTrigger className="h-11 border-gray-300">
+                      <SelectValue placeholder="All Teams" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_all">All Teams</SelectItem>
+                      {teamOptions.map((t) => (
+                        <SelectItem key={t.label} value={t.label}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
-              <button
-                className="px-3 py-2 rounded-lg bg-linear-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white text-sm font-semibold border border-green-700 shadow-sm transition"
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t border-gray-200">
+              <Button
+                variant="default"
+                className="bg-green-600 hover:bg-green-700 h-11 px-6"
                 onClick={handleExportAllUsers}
-                type="button"
               >
-                Export All
-              </button>
-              <button
-                className="px-3 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm font-semibold border border-gray-400 shadow-sm transition"
+                Export All Data
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 px-6 border-gray-300"
                 onClick={() => {
                   setStartDate("");
                   setEndDate("");
                   setMonthFilter("");
                   setTeamFilter("");
                 }}
-                type="button"
               >
-                Clear Filters
-              </button>
+                Clear All Filters
+              </Button>
             </div>
           </div>
 
           {loadingDaily ? (
-            <div className="py-12 text-center text-blue-700 font-semibold">
-              Loading daily report...
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 py-16 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 font-medium">Loading daily report...</p>
             </div>
           ) : errorDaily ? (
-            <div className="py-12 text-center text-red-600 font-semibold">
-              {errorDaily}
+            <div className="bg-white rounded-xl shadow-sm border border-red-200 py-16 text-center">
+              <p className="text-red-600 font-semibold">{errorDaily}</p>
             </div>
           ) : filteredDailyData.length > 0 ? (
             <div className="space-y-4">
@@ -703,8 +735,9 @@ const BillableReport: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="py-12 text-center text-gray-400">
-              No data available
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 py-16 text-center">
+              <p className="text-gray-500 text-lg">No data available for selected filters</p>
+              <p className="text-gray-400 text-sm mt-2">Try adjusting your filter criteria</p>
             </div>
           )}
         </div>
@@ -712,38 +745,48 @@ const BillableReport: React.FC = () => {
 
       {activeToggle === "monthly" && (
         <div className="space-y-6">
-          <div className="flex flex-wrap items-center gap-4 mb-6">
-            <label className="font-semibold text-blue-700">Month:</label>
-            <input
-              type="month"
-              className="border border-blue-300 rounded px-3 py-1 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-500 bg-white shadow-sm transition"
-              value={monthlyMonth}
-              onChange={(e) => setMonthlyMonth(e.target.value)}
-              style={{ minWidth: 120 }}
-            />
-            <button
-              className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs font-semibold border border-gray-400 shadow-sm transition"
-              onClick={() => setMonthlyMonth("")}
-              type="button"
-            >
-              Clear Filters
-            </button>
-            <div className="flex-1" />
-            <button
-              onClick={handleExportMonthlyTable}
-              className="px-3 py-1 rounded bg-linear-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white text-xs font-semibold border border-green-700 shadow-sm transition"
-            >
-              Export All
-            </button>
+          {/* Filters Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-5">Filters & Actions</h3>
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Filter by Month
+                </label>
+                <Input
+                  type="month"
+                  className="h-11 w-48 border-gray-300"
+                  value={monthlyMonth}
+                  onChange={(e) => setMonthlyMonth(e.target.value)}
+                />
+              </div>
+              <div className="flex items-end gap-3">
+                <Button
+                  variant="outline"
+                  className="h-11 px-6 border-gray-300"
+                  onClick={() => setMonthlyMonth("")}
+                >
+                  Clear Filter
+                </Button>
+                <Button
+                  variant="default"
+                  className="bg-green-600 hover:bg-green-700 h-11 px-6"
+                  onClick={handleExportMonthlyTable}
+                >
+                  Export All Data
+                </Button>
+              </div>
+            </div>
           </div>
 
           {loadingMonthly ? (
-            <div className="py-12 text-center text-blue-700 font-semibold">
-              Loading monthly report...
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 py-16 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 font-medium">Loading monthly report...</p>
             </div>
           ) : errorMonthly ? (
-            <div className="py-12 text-center text-red-600 font-semibold">
-              {errorMonthly}
+            <div className="bg-white rounded-xl shadow-sm border border-red-200 py-16 text-center">
+              <p className="text-red-600 font-semibold">{errorMonthly}</p>
             </div>
           ) : Object.keys(groupedMonthly).length > 0 ? (
             <div className="space-y-4">
@@ -762,8 +805,9 @@ const BillableReport: React.FC = () => {
               })}
             </div>
           ) : (
-            <div className="py-12 text-center text-gray-400">
-              No data available
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 py-16 text-center">
+              <p className="text-gray-500 text-lg">No monthly data available</p>
+              <p className="text-gray-400 text-sm mt-2">Try selecting a different month</p>
             </div>
           )}
         </div>

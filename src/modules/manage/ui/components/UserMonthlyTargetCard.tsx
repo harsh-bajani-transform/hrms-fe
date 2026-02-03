@@ -1,7 +1,23 @@
 import React, { useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
-import { Download, ChevronDown, Calendar } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { Download, ChevronDown, Calendar, User } from "lucide-react";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface Agent {
   id: number;
@@ -21,31 +37,80 @@ interface MonthData {
 
 const monthsData: MonthData[] = [
   {
-    key: '2025-12',
-    label: 'DEC 2025',
-    range: [dayjs('2025-12-01'), dayjs('2025-12-31')],
+    key: "2025-12",
+    label: "DEC 2025",
+    range: [dayjs("2025-12-01"), dayjs("2025-12-31")],
     agents: [
-      { id: 1, userName: 'John Doe', workingDays: 22, dailyRequiredHours: 8, monthlyTotalTarget: 176, monthlyAchievedTarget: 150 },
-      { id: 2, userName: 'Jane Smith', workingDays: 20, dailyRequiredHours: 7, monthlyTotalTarget: 140, monthlyAchievedTarget: 120 },
-      { id: 3, userName: 'Alex Johnson', workingDays: 21, dailyRequiredHours: 8, monthlyTotalTarget: 168, monthlyAchievedTarget: 160 },
+      {
+        id: 1,
+        userName: "John Doe",
+        workingDays: 22,
+        dailyRequiredHours: 8,
+        monthlyTotalTarget: 176,
+        monthlyAchievedTarget: 150,
+      },
+      {
+        id: 2,
+        userName: "Jane Smith",
+        workingDays: 20,
+        dailyRequiredHours: 7,
+        monthlyTotalTarget: 140,
+        monthlyAchievedTarget: 120,
+      },
+      {
+        id: 3,
+        userName: "Alex Johnson",
+        workingDays: 21,
+        dailyRequiredHours: 8,
+        monthlyTotalTarget: 168,
+        monthlyAchievedTarget: 160,
+      },
     ],
   },
   {
-    key: '2026-01',
-    label: 'JAN 2026',
-    range: [dayjs('2026-01-01'), dayjs('2026-01-31')],
+    key: "2026-01",
+    label: "JAN 2026",
+    range: [dayjs("2026-01-01"), dayjs("2026-01-31")],
     agents: [
-      { id: 4, userName: 'Emily Clark', workingDays: 21, dailyRequiredHours: 8, monthlyTotalTarget: 168, monthlyAchievedTarget: 140 },
-      { id: 5, userName: 'Michael Brown', workingDays: 22, dailyRequiredHours: 7, monthlyTotalTarget: 154, monthlyAchievedTarget: 130 },
+      {
+        id: 4,
+        userName: "Emily Clark",
+        workingDays: 21,
+        dailyRequiredHours: 8,
+        monthlyTotalTarget: 168,
+        monthlyAchievedTarget: 140,
+      },
+      {
+        id: 5,
+        userName: "Michael Brown",
+        workingDays: 22,
+        dailyRequiredHours: 7,
+        monthlyTotalTarget: 154,
+        monthlyAchievedTarget: 130,
+      },
     ],
   },
   {
-    key: '2026-02',
-    label: 'FEB 2026',
-    range: [dayjs('2026-02-01'), dayjs('2026-02-28')],
+    key: "2026-02",
+    label: "FEB 2026",
+    range: [dayjs("2026-02-01"), dayjs("2026-02-28")],
     agents: [
-      { id: 6, userName: 'Sophia Lee', workingDays: 20, dailyRequiredHours: 8, monthlyTotalTarget: 160, monthlyAchievedTarget: 120 },
-      { id: 7, userName: 'David Kim', workingDays: 19, dailyRequiredHours: 7, monthlyTotalTarget: 133, monthlyAchievedTarget: 110 },
+      {
+        id: 6,
+        userName: "Sophia Lee",
+        workingDays: 20,
+        dailyRequiredHours: 8,
+        monthlyTotalTarget: 160,
+        monthlyAchievedTarget: 120,
+      },
+      {
+        id: 7,
+        userName: "David Kim",
+        workingDays: 19,
+        dailyRequiredHours: 7,
+        monthlyTotalTarget: 133,
+        monthlyAchievedTarget: 110,
+      },
     ],
   },
 ];
@@ -67,22 +132,37 @@ type EditingCell = {
 const UserMonthlyTargetCard: React.FC = () => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     const state: Record<string, boolean> = {};
-    monthsData.forEach(m => { state[m.key] = true; });
+    monthsData.forEach((m) => {
+      state[m.key] = true;
+    });
     return state;
   });
 
-  const [dateRanges, setDateRanges] = useState<Record<string, [Dayjs, Dayjs]>>(() => {
-    const obj: Record<string, [Dayjs, Dayjs]> = {};
-    monthsData.forEach(m => { obj[m.key] = m.range; });
-    return obj;
-  });
+  const [dateRanges, setDateRanges] = useState<Record<string, [Dayjs, Dayjs]>>(
+    () => {
+      const obj: Record<string, [Dayjs, Dayjs]> = {};
+      monthsData.forEach((m) => {
+        obj[m.key] = m.range;
+      });
+      return obj;
+    },
+  );
 
   const [editState, setEditState] = useState<EditState>({});
-  const [editingCell, setEditingCell] = useState<EditingCell>({ monthKey: null, agentId: null, field: null });
+  const [editingCell, setEditingCell] = useState<EditingCell>({
+    monthKey: null,
+    agentId: null,
+    field: null,
+  });
 
-  const handleCellDoubleClick = (monthKey: string, agentId: number, field: string, value: number) => {
+  const handleCellDoubleClick = (
+    monthKey: string,
+    agentId: number,
+    field: string,
+    value: number,
+  ) => {
     setEditingCell({ monthKey, agentId, field });
-    setEditState(prev => ({
+    setEditState((prev) => ({
       ...prev,
       [monthKey]: {
         ...(prev[monthKey] || {}),
@@ -94,9 +174,14 @@ const UserMonthlyTargetCard: React.FC = () => {
     }));
   };
 
-  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>, monthKey: string, agentId: number, field: string) => {
+  const handleEditChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    monthKey: string,
+    agentId: number,
+    field: string,
+  ) => {
     const value = Number(e.target.value);
-    setEditState(prev => ({
+    setEditState((prev) => ({
       ...prev,
       [monthKey]: {
         ...(prev[monthKey] || {}),
@@ -112,12 +197,8 @@ const UserMonthlyTargetCard: React.FC = () => {
     setEditingCell({ monthKey: null, agentId: null, field: null });
   };
 
-  const handleToggle = (key: string) => {
-    setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
   const handleRangeChange = (key: string, range: [Dayjs, Dayjs]) => {
-    setDateRanges(prev => ({ ...prev, [key]: range }));
+    setDateRanges((prev) => ({ ...prev, [key]: range }));
   };
 
   const handleExportExcel = (monthLabel: string) => {
@@ -126,126 +207,200 @@ const UserMonthlyTargetCard: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
-      <div className="mb-2">
-        <h2 className="text-2xl font-bold text-indigo-700 tracking-tight">User Monthly Targets</h2>
-        <p className="text-slate-500 text-sm">Review and manage monthly production goals for agents.</p>
+      <div className="mb-2 ">
+        <h2 className="text-2xl flex items-center gap-2 font-bold text-blue-600 tracking-tight">
+          <User /> User Monthly Targets
+        </h2>
+        <p className="text-slate-500 text-sm">
+          Review and manage monthly production goals for agents.
+        </p>
       </div>
-      {monthsData.map(month => (
-        <div key={month.key} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300">
-          <div className="flex flex-col md:flex-row md:items-center justify-between px-6 py-4 bg-slate-50 border-b border-slate-100 gap-4">
-            <div className="flex items-center gap-3">
+      <Accordion
+        type="multiple"
+        value={Object.entries(expanded)
+          .filter(([_, v]) => v)
+          .map(([k]) => k)}
+        onValueChange={(val) => {
+          const newState: Record<string, boolean> = {};
+          monthsData.forEach((m) => {
+            newState[m.key] = val.includes(m.key);
+          });
+          setExpanded(newState);
+        }}
+        className="space-y-6"
+      >
+        {monthsData.map((month) => (
+          <AccordionItem
+            key={month.key}
+            value={month.key}
+            className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 border-none"
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between px-6 py-4 bg-slate-50 border-b border-slate-100 gap-4">
+              <div className="flex items-center gap-3">
                 <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
-                    <Calendar className="w-5 h-5" />
+                  <Calendar className="w-5 h-5" />
                 </div>
-                <span className="font-bold text-lg text-slate-800 tracking-tight">{month.label}</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200">
-                <div className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-slate-500 uppercase">
-                  <span>From</span>
-                  <input
-                    className="bg-transparent text-slate-700 font-semibold outline-none cursor-pointer"
-                    type="date"
-                    value={(dateRanges[month.key]?.[0] ?? month.range[0]).format('YYYY-MM-DD')}
-                    min={month.range[0].format('YYYY-MM-DD')}
-                    max={month.range[1].format('YYYY-MM-DD')}
-                    onChange={e => handleRangeChange(month.key, [dayjs(e.target.value), (dateRanges[month.key]?.[1] ?? month.range[1])])}
-                  />
-                </div>
-                <div className="w-px h-4 bg-slate-200" />
-                <div className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-slate-500 uppercase">
-                  <span>To</span>
-                  <input
-                    className="bg-transparent text-slate-700 font-semibold outline-none cursor-pointer"
-                    type="date"
-                    value={(dateRanges[month.key]?.[1] ?? month.range[1]).format('YYYY-MM-DD')}
-                    min={month.range[0].format('YYYY-MM-DD')}
-                    max={month.range[1].format('YYYY-MM-DD')}
-                    onChange={e => handleRangeChange(month.key, [(dateRanges[month.key]?.[0] ?? month.range[0]), dayjs(e.target.value)])}
-                  />
-                </div>
+                <span className="font-bold text-lg text-slate-800 tracking-tight">
+                  {month.label}
+                </span>
               </div>
-              <button
-                onClick={() => handleExportExcel(month.label)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition-all"
-              >
-                <Download className="w-4 h-4" />
-                <span>Export</span>
-              </button>
-              <button
-                onClick={() => handleToggle(month.key)}
-                className={`p-2 rounded-full hover:bg-slate-200 transition-all text-slate-500 ${expanded[month.key] ? '' : 'rotate-180'}`}
-              >
-                <ChevronDown className="w-5 h-5" />
-              </button>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200">
+                  <div className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-slate-500 uppercase">
+                    <span>From</span>
+                    <Input
+                      className=" w-28 bg-transparent border-none p-0 text-slate-700 font-semibold cursor-pointer shadow-none"
+                      type="date"
+                      value={(
+                        dateRanges[month.key]?.[0] ?? month.range[0]
+                      ).format("YYYY-MM-DD")}
+                      min={month.range[0].format("YYYY-MM-DD")}
+                      max={month.range[1].format("YYYY-MM-DD")}
+                      onChange={(e) =>
+                        handleRangeChange(month.key, [
+                          dayjs(e.target.value),
+                          dateRanges[month.key]?.[1] ?? month.range[1],
+                        ])
+                      }
+                    />
+                  </div>
+                  <div className="w-px h-4 bg-slate-200" />
+                  <div className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-slate-500 uppercase">
+                    <span>To</span>
+                    <Input
+                      className="w-28 bg-transparent border-none p-0 text-slate-700 font-semibold cursor-pointer shadow-none"
+                      type="date"
+                      value={(
+                        dateRanges[month.key]?.[1] ?? month.range[1]
+                      ).format("YYYY-MM-DD")}
+                      min={month.range[0].format("YYYY-MM-DD")}
+                      max={month.range[1].format("YYYY-MM-DD")}
+                      onChange={(e) =>
+                        handleRangeChange(month.key, [
+                          dateRanges[month.key]?.[0] ?? month.range[0],
+                          dayjs(e.target.value),
+                        ])
+                      }
+                    />
+                  </div>
+                </div>
+                <Button
+                  variant="default"
+                  onClick={() => handleExportExcel(month.label)}
+                  className="bg-emerald-600 hover:bg-emerald-700 px-4"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Export</span>
+                </Button>
+                <AccordionTrigger className="p-2 rounded-full hover:bg-slate-200 transition-all text-slate-500 hover:no-underline" />
+              </div>
             </div>
-          </div>
-          {expanded[month.key] && (
-            <div className="p-0 overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50">
-                  <tr className="border-b border-slate-100">
-                    <th className="px-6 py-4 text-left font-semibold text-slate-500 uppercase tracking-wider text-[11px]">User Name</th>
-                    <th className="px-6 py-4 text-center font-semibold text-slate-500 uppercase tracking-wider text-[11px]">Working Days</th>
-                    <th className="px-6 py-4 text-center font-semibold text-slate-500 uppercase tracking-wider text-[11px]">Daily Required</th>
-                    <th className="px-6 py-4 text-center font-semibold text-slate-500 uppercase tracking-wider text-[11px]">Progress / Target</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
+            <AccordionContent className="p-0 pt-0">
+              <Table>
+                <TableHeader className="bg-slate-50">
+                  <TableRow className="border-b border-slate-100">
+                    <TableHead className="px-6 py-4 text-left font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
+                      User Name
+                    </TableHead>
+                    <TableHead className="px-6 py-4 text-center font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
+                      Working Days
+                    </TableHead>
+                    <TableHead className="px-6 py-4 text-center font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
+                      Daily Required
+                    </TableHead>
+                    <TableHead className="px-6 py-4 text-center font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
+                      Progress / Target
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="divide-y divide-slate-100">
                   {month.agents.map((agent) => (
-                    <tr key={agent.id} className="hover:bg-slate-50 transition-colors group">
-                      <td className="px-6 py-4 text-slate-800 font-semibold whitespace-nowrap">
+                    <TableRow
+                      key={agent.id}
+                      className="hover:bg-slate-50 transition-colors group"
+                    >
+                      <TableCell className="px-6 py-4 text-slate-800 font-semibold whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500">
-                                {agent.userName.split(' ').map(n => n[0]).join('')}
-                            </div>
-                            {agent.userName}
+                          <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 border border-slate-200">
+                            {agent.userName
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </div>
+                          {agent.userName}
                         </div>
-                      </td>
-                      <td
+                      </TableCell>
+                      <TableCell
                         className="px-6 py-4 text-center text-slate-700 font-medium cursor-pointer"
-                        onDoubleClick={() => handleCellDoubleClick(month.key, agent.id, 'workingDays', agent.workingDays)}
+                        onDoubleClick={() =>
+                          handleCellDoubleClick(
+                            month.key,
+                            agent.id,
+                            "workingDays",
+                            agent.workingDays,
+                          )
+                        }
                       >
-                        {editingCell.monthKey === month.key && editingCell.agentId === agent.id && editingCell.field === 'workingDays' ? (
-                          <input
+                        {editingCell.monthKey === month.key &&
+                        editingCell.agentId === agent.id &&
+                        editingCell.field === "workingDays" ? (
+                          <Input
                             type="number"
-                            className="border border-indigo-300 rounded px-2 py-1 w-16 text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 text-center"
-                            value={editState[month.key]?.[agent.id]?.workingDays ?? agent.workingDays}
+                            className="h-8 border-indigo-300 rounded px-2 w-16 text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 text-center"
+                            value={
+                              editState[month.key]?.[agent.id]?.workingDays ??
+                              agent.workingDays
+                            }
                             autoFocus
-                            onChange={e => handleEditChange(e, month.key, agent.id, 'workingDays')}
+                            onChange={(e) =>
+                              handleEditChange(
+                                e,
+                                month.key,
+                                agent.id,
+                                "workingDays",
+                              )
+                            }
                             onBlur={handleEditSave}
-                            onKeyDown={e => { if (e.key === 'Enter') handleEditSave(); }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleEditSave();
+                            }}
                           />
                         ) : (
                           agent.workingDays
                         )}
-                      </td>
-                      <td className="px-6 py-4 text-center text-slate-600">
+                      </TableCell>
+                      <TableCell className="px-6 py-4 text-center text-slate-600">
                         {agent.dailyRequiredHours}h
-                      </td>
-                      <td className="px-6 py-4 text-center">
+                      </TableCell>
+                      <TableCell className="px-6 py-4 text-center">
                         <div className="flex flex-col items-center">
                           <div className="flex items-center gap-1.5 font-bold text-slate-800">
-                            <span className="text-indigo-600">{agent.monthlyAchievedTarget}</span>
-                            <span className="text-slate-300 font-normal">/</span>
+                            <span className="text-indigo-600">
+                              {agent.monthlyAchievedTarget}
+                            </span>
+                            <span className="text-slate-300 font-normal">
+                              /
+                            </span>
                             <span>{agent.monthlyTotalTarget}</span>
                           </div>
                           <div className="w-24 h-1 bg-slate-100 rounded-full mt-2 overflow-hidden">
                             <div
                               className="h-full bg-indigo-500 rounded-full"
-                              style={{ width: `${Math.min(100, (agent.monthlyAchievedTarget / agent.monthlyTotalTarget) * 100)}%` }}
+                              style={{
+                                width: `${Math.min(100, (agent.monthlyAchievedTarget / agent.monthlyTotalTarget) * 100)}%`,
+                              }}
                             />
                           </div>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      ))}
+                </TableBody>
+              </Table>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
     </div>
   );
 };

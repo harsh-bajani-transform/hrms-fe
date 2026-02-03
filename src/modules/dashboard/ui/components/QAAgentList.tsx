@@ -7,7 +7,7 @@ import {
   FileText,
   Users as UsersIcon,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import api from "../../../../services/api";
 import { useAuth } from "../../../../context/AuthContext";
 import { log, logError } from "../../../../config/environment";
@@ -149,28 +149,32 @@ const QAAgentList: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto py-8">
-      <div className="mb-8 flex items-center gap-3">
-        <UsersIcon className="w-8 h-8 text-blue-600" />
-        <h2 className="text-3xl font-extrabold text-blue-800 tracking-tight drop-shadow-sm">
-          Agent File Report
-        </h2>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <UsersIcon className="w-6 h-6 text-blue-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Agent File Report
+          </h2>
+        </div>
       </div>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <span className="loader mb-4"></span>
-          <span className="text-blue-600 font-semibold text-lg animate-pulse">
-            Loading...
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent mb-4"></div>
+          <span className="text-gray-600 font-medium">
+            Loading agents...
           </span>
         </div>
       ) : agents.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8 text-center">
-          <UsersIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">No assigned agents found</p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <UsersIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-500 font-medium text-lg">No assigned agents found</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {agents.map((agent) => {
             if (agent.user_id === undefined) return null;
             const isExpanded = expandedAgents[agent.user_id];
@@ -179,11 +183,11 @@ const QAAgentList: React.FC = () => {
             return (
               <div
                 key={agent.user_id}
-                className="mb-4 rounded-2xl shadow-lg bg-linear-to-br from-blue-50 via-white to-slate-50 border border-slate-200 hover:shadow-2xl transition-shadow duration-300"
+                className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
               >
                 {/* Agent Card Header */}
                 <div
-                  className="flex items-center justify-between px-8 py-5 cursor-pointer select-none border-b border-slate-100 bg-linear-to-r from-blue-100/60 to-white/80 rounded-t-2xl"
+                  className="flex items-center justify-between px-6 py-5 cursor-pointer select-none bg-gradient-to-r from-blue-50 to-white border-b border-gray-200 hover:bg-blue-50 transition-colors"
                   onClick={() => {
                     if (agent.user_id !== undefined) {
                       toggleAgent(agent.user_id);

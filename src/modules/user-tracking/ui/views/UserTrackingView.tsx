@@ -1,11 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Search, Users } from 'lucide-react'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 
 import { useAuth } from '../../../../context/AuthContext'
 import { fetchUserList, updatePermission } from '../../services/userTrackingService'
 
 import type { Id } from '../../../dashboard/types'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 type PermissionFlag = 0 | 1
 
@@ -193,7 +201,7 @@ const UserTrackingView = () => {
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
+              <Input
                 type="text"
                 placeholder="Search by name, email, or role..."
                 value={searchQuery}
@@ -204,16 +212,17 @@ const UserTrackingView = () => {
           </div>
 
           {/* Role Filter */}
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="all">All Roles</option>
-            {uniqueRoles.map(role => (
-              <option key={role} value={role}>{role}</option>
-            ))}
-          </select>
+          <Select value={roleFilter} onValueChange={(value) => setRoleFilter(value)}>
+            <SelectTrigger className="w-full sm:w-48 bg-gray-50 border-gray-300 rounded-lg">
+              <SelectValue placeholder="All Roles" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Roles</SelectItem>
+              {uniqueRoles.map(role => (
+                <SelectItem key={role} value={role}>{role}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

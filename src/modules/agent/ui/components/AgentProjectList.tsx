@@ -1,6 +1,33 @@
 import React, { useState, useEffect, useMemo } from "react";
 import mammoth from "mammoth";
-import { Download, Eye, EyeOff } from "lucide-react";
+import {
+  Download,
+  Eye,
+  EyeOff,
+  Briefcase,
+  FileText,
+  Layout,
+  Calendar as CalendarIcon,
+  Plus,
+} from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 // Types for our component
 // Types moved to ../../types.ts
@@ -292,8 +319,8 @@ const AgentProjectList: React.FC = () => {
 
   // Add dummy task for today
   const handleAddDummyTask = (projectId: number) => {
-    setProjects((prev) =>
-      prev.map((proj) =>
+    setProjects((prev: Project[]) =>
+      prev.map((proj: Project) =>
         proj.id === projectId
           ? {
               ...proj,
@@ -318,16 +345,19 @@ const AgentProjectList: React.FC = () => {
   useEffect(() => {
     if (!expanded) return;
 
-    const project = projects.find((p) => p.id === expanded);
+    const project = projects.find((p: Project) => p.id === expanded);
     // If no project, or no instruction file, or already loaded, skip
     if (!project || !project.instructionFile || docxHtml[expanded]) return;
 
     fetch(project.instructionFile)
       .then((res) => res.arrayBuffer())
       .then((arrayBuffer) => mammoth.convertToHtml({ arrayBuffer }))
-      .then((result) => {
+      .then((result: { value: string }) => {
         console.log("[Mammoth HTML Output]", result.value);
-        setDocxHtml((prev) => ({ ...prev, [expanded]: result.value }));
+        setDocxHtml((prev: Record<number, string>) => ({
+          ...prev,
+          [expanded]: result.value,
+        }));
       })
       .catch((error: unknown) => {
         console.error("Failed to load or convert docx:", error);
@@ -335,247 +365,280 @@ const AgentProjectList: React.FC = () => {
   }, [expanded, projects, docxHtml]);
 
   return (
-    <div className="max-w-6xl mx-auto py-10 px-2 sm:px-6">
-      <h2 className="text-3xl font-extrabold mb-8 text-blue-800 tracking-tight text-center drop-shadow-sm">
-        Agent Project List
-      </h2>
-      <div className="flex flex-col gap-8 items-center">
-        {sortedProjects.map((project) => {
-          const todaysTasks = filterTasksByDate(project.tasks, dateFilter);
-          const isExpanded = expanded === project.id;
+    <div className="max-w-6xl mx-auto py-10 px-4 space-y-8">
+      <div className="text-center space-y-2">
+        <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
+          Project Overview
+        </h2>
+        <p className="text-slate-500 max-w-2xl mx-auto">
+          Review your assigned projects, instructions, and track daily tasks.
+        </p>
+      </div>
 
-          return (
-            <div
-              key={project.id}
-              className="bg-white rounded-2xl shadow-xl border border-blue-100 hover:shadow-blue-200 transition-shadow duration-200 w-full"
-              style={{ minHeight: "90px", maxWidth: "1000px" }}
-            >
-              {/* Header row */}
-              <div
-                className="flex items-center justify-between px-8 py-4 cursor-pointer min-h-[90px]"
-                onClick={() => setExpanded(isExpanded ? null : project.id)}
+      <div className="space-y-4">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full space-y-4"
+          value={expanded?.toString() || ""}
+          onValueChange={(val: string) => setExpanded(val ? Number(val) : null)}
+        >
+          {sortedProjects.map((project: Project) => {
+            const todaysTasks = filterTasksByDate(project.tasks, dateFilter);
+            const isProjectExpanded = expanded === project.id;
+
+            return (
+              <AccordionItem
+                key={project.id}
+                value={String(project.id)}
+                className="border-none"
               >
-                <div className="flex items-center gap-6">
-                  <div className="bg-blue-700 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold shadow-md">
-                    {project.name[0]}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-blue-800 mb-1">
-                      {project.name}
-                    </h3>
-                    <span className="text-xs text-blue-400 font-semibold uppercase tracking-wider">
-                      Project
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-8 ml-auto pr-4">
-                  <div className="flex gap-2 items-center">
-                    <span className="font-semibold text-blue-700">PPRT :</span>
-                    {project.pprtFile ? (
-                      <DownloadIconLink url={project.pprtFile} />
-                    ) : (
-                      <span className="text-gray-400">No file</span>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2 items-center">
-                    <span className="font-semibold text-blue-700">
-                      Project Instruction:
-                    </span>
-                    {project.instructionFile ? (
-                      <>
-                        <button
-                          className="inline-flex items-center justify-center text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 group-hover:bg-blue-100 rounded-full p-2 shadow-sm mr-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
-
-                            // Use the same processing as DocxPreview for popup
-                            function fixTableHeadings(h: string) {
-                              return h.replace(
-                                /(<table[\s\S]*?<\/table>)(\s*<(h[1-6])[^>]*>.*?<\/\3>)/gi,
-                                "$2$1",
-                              );
-                            }
-                            function addImageStyling(h: string) {
-                              return h.replace(
-                                /<img /g,
-                                '<img class="project-docx-img" ',
-                              );
-                            }
-
-                            const raw = docxHtml[project.id] || "";
-                            const processedHtml = addImageStyling(
-                              fixTableHeadings(raw),
-                            );
-
-                            const style = `
-                              <style>
-                                body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f6ff; margin: 0; padding: 2em; }
-                                .project-docx-html { background: #f8fafc; border: 1px solid #c7d2fe; border-radius: 0.75em; padding: 2em; max-width: 900px; margin: 2em auto; }
-                                .project-docx-html h1 { font-size: 2.25rem; color: #1e40af; margin-bottom: 0.75em; margin-top: 0.5em; font-weight: bold; }
-                                .project-docx-html h2 { font-size: 1.5rem; color: #2563eb; margin-bottom: 0.6em; margin-top: 1.2em; font-weight: 600; }
-                                .project-docx-html h3 { font-size: 1.2rem; color: #2563eb; margin-bottom: 0.5em; margin-top: 1em; font-weight: 500; }
-                                .project-docx-html p { margin-bottom: 0.7em; color: #1e293b; }
-                                .project-docx-html table { border-collapse: collapse; width: 100%; margin: 1em 0; background: #fff; }
-                                .project-docx-html th, .project-docx-html td { border: 1px solid #2563eb; padding: 0.5em 1em; text-align: left; }
-                                .project-docx-html th { background: #dbeafe; color: #1e40af; font-weight: bold; }
-                                .project-docx-html tr:nth-child(even) td { background: #f1f5f9; }
-                                .project-docx-html ul, .project-docx-html ol { margin-left: 2em; margin-bottom: 1em; padding-left: 1.5em; }
-                                .project-docx-html ul { list-style-type: disc; }
-                                .project-docx-html ol { list-style-type: decimal; }
-                                .project-docx-html ul ul, .project-docx-html ol ul { list-style-type: circle; }
-                                .project-docx-html ol ol, .project-docx-html ul ol { list-style-type: lower-latin; }
-                                .project-docx-html li { margin-bottom: 0.3em; color: #1e293b; }
-                                .project-docx-html li > ul, .project-docx-html li > ol { margin-top: 0.2em; margin-bottom: 0.2em; }
-                                .project-docx-html a { color: #2563eb; text-decoration: underline; word-break: break-all; }
-                                .project-docx-html img, .project-docx-img { max-width: 100%; height: auto; display: block; margin: 1em auto; box-shadow: 0 2px 8px rgba(30,64,175,0.08); border-radius: 0.5em; }
-                              </style>
-                            `;
-
-                            const win = window.open("", "_blank");
-                            if (win) {
-                              win.document.write(
-                                `<!DOCTYPE html><html><head><title>Project Instruction Preview</title>${style}</head><body><div class="project-docx-html">${processedHtml}</div></body></html>`,
-                              );
-                              win.document.close();
-                            }
-                          }}
-                          type="button"
-                          disabled={!docxHtml[project.id]}
-                          title={
-                            !docxHtml[project.id]
-                              ? "Preview not loaded yet"
-                              : "Project Instruction Preview"
-                          }
-                          aria-label="Project Instruction Preview"
-                        >
-                          <Eye className="w-5 h-5" aria-hidden="true" />
-                        </button>
-                        <DownloadIconLink url={project.instructionFile} />
-                      </>
-                    ) : (
-                      <span className="text-gray-400">No file</span>
-                    )}
-                    <TaskCountIcon count={todaysTasks.length} />
-                  </div>
-                </div>
-
-                <button className="text-blue-700 hover:text-blue-900 focus:outline-none ml-4">
-                  {isExpanded ? (
-                    <EyeOff className="w-7 h-7" />
-                  ) : (
-                    <Eye className="w-7 h-7" />
-                  )}
-                </button>
-              </div>
-
-              {/* Collapsible Content */}
-              {isExpanded && (
-                <div className="mt-6 px-8 pb-8">
-                  {/* Project Instruction HTML view */}
-                  {project.instructionFile && (
-                    <DocxPreview html={docxHtml[project.id] || ""} />
-                  )}
-
-                  <div className="flex items-center gap-4 mb-4 mt-6">
-                    <h4 className="text-blue-700 font-bold text-lg">
-                      Assigned Tasks
-                    </h4>
-                    <input
-                      type="date"
-                      className="border border-blue-200 rounded px-2 py-1 text-blue-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
-                      value={dateFilter}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) => setDateFilter(e.target.value)}
-                      style={{ minWidth: 120 }}
-                    />
-                    <button
-                      className="ml-2 px-3 py-1 bg-blue-600 text-white rounded shadow hover:bg-blue-700 text-sm font-semibold"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddDummyTask(project.id);
-                      }}
-                      type="button"
-                    >
-                      Add Dummy Task
-                    </button>
-                  </div>
-
-                  {todaysTasks.length === 0 ? (
-                    <div className="text-gray-400 text-base">
-                      No tasks assigned for this date.
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto rounded-lg border border-blue-50 bg-blue-50">
-                      <table className="min-w-full text-base">
-                        <thead>
-                          <tr className="bg-blue-100 text-blue-800">
-                            <th className="px-4 py-3 text-left font-semibold">
-                              Task Name
-                            </th>
-                            <th className="px-4 py-3 text-left font-semibold">
-                              Target/Hr
-                            </th>
-                            <th className="px-4 py-3 text-left font-semibold">
-                              Status
-                            </th>
-                            <th className="px-4 py-3 text-left font-semibold">
-                              Due Date
-                            </th>
-                            <th className="px-4 py-3 text-left font-semibold">
-                              Priority
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {todaysTasks.map((task) => (
-                            <tr
-                              key={task.id}
-                              className="hover:bg-blue-200/40 transition"
+                <Card
+                  className={`overflow-hidden transition-all duration-300 border-slate-200 ${isProjectExpanded ? "ring-2 ring-blue-500/20 shadow-xl" : "hover:shadow-md"}`}
+                >
+                  <CardHeader className="p-0">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between p-6 gap-6">
+                      <div className="flex items-center gap-5">
+                        <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-100">
+                          {project.name[0]}
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl font-bold text-slate-900">
+                            {project.name}
+                          </CardTitle>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge
+                              variant="secondary"
+                              className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-none px-2 py-0 text-[10px] uppercase tracking-wider font-bold"
                             >
-                              <td className="px-4 py-3 font-medium text-blue-900 whitespace-nowrap">
-                                {task.name}
-                              </td>
-                              <td className="px-4 py-3">{task.target}</td>
-                              <td className="px-4 py-3">
-                                <span
-                                  className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-                                    task.status === "Completed"
-                                      ? "bg-green-200 text-green-800"
-                                      : task.status === "In Progress"
-                                        ? "bg-yellow-100 text-yellow-800"
-                                        : "bg-blue-100 text-blue-800"
-                                  }`}
-                                >
-                                  {task.status}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3">{task.due}</td>
-                              <td className="px-4 py-3">
-                                <span
-                                  className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-                                    task.priority === "High"
-                                      ? "bg-red-200 text-red-800"
-                                      : task.priority === "Medium"
-                                        ? "bg-yellow-200 text-yellow-800"
-                                        : "bg-green-100 text-green-800"
-                                  }`}
-                                >
-                                  {task.priority}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                              Project
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-4 md:ml-auto">
+                        <div className="flex items-center gap-3 pr-4 border-r border-slate-100">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                            PPRT
+                          </span>
+                          {project.pprtFile ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-9 w-9 p-0 rounded-full bg-slate-50 hover:bg-blue-50 text-blue-600"
+                              asChild
+                            >
+                              <a
+                                href={project.pprtFile}
+                                download
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <Download className="w-4 h-4" />
+                              </a>
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-slate-300 font-mediumitalic">
+                              Empty
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3 pr-4 border-r border-slate-100">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                            Guide
+                          </span>
+                          {project.instructionFile ? (
+                            <div className="flex gap-1.5">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-9 w-9 p-0 rounded-full bg-slate-50 hover:bg-blue-50 text-blue-600"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Open popup logic from original component
+                                  const raw = docxHtml[project.id] || "";
+                                  const win = window.open("", "_blank");
+                                  if (win) {
+                                    win.document
+                                      .write(`<!DOCTYPE html><html><head><title>Guide</title>
+                                      <style>body{font-family:sans-serif;padding:2rem;line-height:1.6;color:#334155;max-width:800px;margin:0 auto;background:#f8fafc}</style>
+                                      </head><body><div style="background:white;padding:3rem;border-radius:1rem;box-shadow:0 4px 6px -1px rgb(0 0 0/0.1)">${raw}</div></body></html>`);
+                                    win.document.close();
+                                  }
+                                }}
+                                disabled={!docxHtml[project.id]}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-9 w-9 p-0 rounded-full bg-slate-50 hover:bg-blue-50 text-blue-600"
+                                asChild
+                              >
+                                <a href={project.instructionFile} download>
+                                  <Download className="w-4 h-4" />
+                                </a>
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-slate-300 font-mediumitalic">
+                              Empty
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <AccordionTrigger className="hover:no-underline py-0">
+                            <Badge className="bg-emerald-50! text-emerald-700! border-emerald-100! px-3 py-1 text-xs font-bold gap-2">
+                              <Layout className="w-3.5 h-3.5" />
+                              {todaysTasks.length}{" "}
+                              {todaysTasks.length === 1 ? "Task" : "Tasks"}{" "}
+                              Today
+                            </Badge>
+                          </AccordionTrigger>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
+                  </CardHeader>
+
+                  <AccordionContent>
+                    <CardContent className="pt-0 px-6 pb-6 animate-in slide-in-from-top-2 duration-300">
+                      <div className="space-y-8 mt-4 border-t border-slate-100 pt-8">
+                        {/* Project Instruction HTML view */}
+                        {project.instructionFile && (
+                          <div className="space-y-3">
+                            <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2 px-1">
+                              <FileText className="w-4 h-4 text-blue-600" />
+                              Project Instructions
+                            </h4>
+                            <DocxPreview html={docxHtml[project.id] || ""} />
+                          </div>
+                        )}
+
+                        <div className="space-y-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
+                            <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                              <CalendarIcon className="w-4 h-4 text-blue-600" />
+                              Assigned Tasks
+                            </h4>
+                            <div className="flex items-center gap-3">
+                              <Input
+                                type="date"
+                                className="h-9 w-40 font-semibold text-slate-700 border-slate-200"
+                                value={dateFilter}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) => setDateFilter(e.target.value)}
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-9 border-indigo-200 text-blue-600 hover:bg-blue-50 font-bold"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddDummyTask(project.id);
+                                }}
+                              >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Quick Add
+                              </Button>
+                            </div>
+                          </div>
+
+                          {todaysTasks.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-12 rounded-xl bg-slate-50 border border-slate-100 border-dashed text-slate-400">
+                              <CalendarIcon className="w-8 h-8 opacity-20 mb-2" />
+                              <p className="text-sm font-medium">
+                                No tasks assigned for this date.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white">
+                              <Table>
+                                <TableHeader className="bg-slate-50/80">
+                                  <TableRow className="hover:bg-transparent border-slate-200">
+                                    <TableHead className="font-bold text-slate-700 h-11">
+                                      Task Name
+                                    </TableHead>
+                                    <TableHead className="font-bold text-slate-700 h-11 text-center">
+                                      Target/Hr
+                                    </TableHead>
+                                    <TableHead className="font-bold text-slate-700 h-11">
+                                      Status
+                                    </TableHead>
+                                    <TableHead className="font-bold text-slate-700 h-11">
+                                      Priority
+                                    </TableHead>
+                                    <TableHead className="font-bold text-slate-700 h-11 text-right pr-6">
+                                      Due Date
+                                    </TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {todaysTasks.map((task) => (
+                                    <TableRow
+                                      key={task.id}
+                                      className="border-slate-100 hover:bg-slate-50/50 transition-colors"
+                                    >
+                                      <TableCell className="py-4 font-semibold text-slate-900">
+                                        {task.name}
+                                      </TableCell>
+                                      <TableCell className="py-4 text-center">
+                                        <Badge
+                                          variant="outline"
+                                          className="font-bold text-slate-600 border-slate-200"
+                                        >
+                                          {task.target}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell className="py-4">
+                                        <Badge
+                                          variant={
+                                            task.status === "Completed"
+                                              ? "success"
+                                              : task.status === "In Progress"
+                                                ? "warning"
+                                                : "secondary"
+                                          }
+                                          className="font-bold text-[10px] py-0.5"
+                                        >
+                                          {task.status}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell className="py-4">
+                                        <Badge
+                                          variant={
+                                            task.priority === "High"
+                                              ? "destructive"
+                                              : task.priority === "Medium"
+                                                ? "warning"
+                                                : "secondary"
+                                          }
+                                          className="font-bold text-[10px] py-0.5"
+                                        >
+                                          {task.priority}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell className="py-4 text-right pr-6 text-slate-500 font-medium text-xs">
+                                        {task.due}
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </AccordionContent>
+                </Card>
+              </AccordionItem>
+            );
+          })}
+        </Accordion>
       </div>
     </div>
   );

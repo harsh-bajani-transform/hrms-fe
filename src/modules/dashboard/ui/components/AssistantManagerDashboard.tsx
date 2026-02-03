@@ -8,6 +8,8 @@ import {
   Download,
   Filter,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "../../../../context/AuthContext";
 import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 import api from "../../../../services/api";
@@ -140,7 +142,7 @@ const AssistantManagerDashboard: FC = () => {
               })),
           });
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error(
           "[AssistantManagerDashboard] Error fetching dashboard:",
           err,
@@ -174,126 +176,141 @@ const AssistantManagerDashboard: FC = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-10">
+    <div className="space-y-6 max-w-7xl mx-auto pb-10">
       {/* Filter Bar */}
-      <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-4">
-        <div className="flex items-center gap-2 text-slate-700 font-semibold">
-          <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-          <span className="text-sm sm:text-base">Organization Analytics</span>
-        </div>
-        <div className="w-full grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-2 lg:flex lg:flex-row lg:gap-4 lg:w-auto">
-          {/* Start Date */}
-          <div className="col-span-2 sm:col-span-1 bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-row items-center gap-3">
-            <label className="text-xs text-slate-500 uppercase font-bold">
-              FROM
-            </label>
-            <input
-              className="flex-1 bg-white border border-slate-300 text-slate-700 text-sm rounded px-2 py-1.5 outline-none"
-              type="date"
-              value={dateRange.start}
-              onChange={(e) => handleDateRangeChange("start", e.target.value)}
-              aria-label="Start date"
-            />
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <Filter className="w-5 h-5 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Organization Analytics</h3>
           </div>
-          {/* End Date */}
-          <div className="col-span-2 sm:col-span-1 bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-row items-center gap-3">
-            <label className="text-xs text-slate-500 uppercase font-bold">
-              TO
-            </label>
-            <input
-              className="flex-1 bg-white border border-slate-300 text-slate-700 text-sm rounded px-2 py-1.5 outline-none"
-              type="date"
-              value={dateRange.end}
-              onChange={(e) => handleDateRangeChange("end", e.target.value)}
-              aria-label="End date"
-            />
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Start Date */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                From:
+              </label>
+              <Input
+                className="h-9 w-auto border-gray-300"
+                type="date"
+                value={dateRange.start}
+                onChange={(e) => handleDateRangeChange("start", e.target.value)}
+                aria-label="Start date"
+              />
+            </div>
+            {/* End Date */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                To:
+              </label>
+              <Input
+                className="h-9 w-auto border-gray-300"
+                type="date"
+                value={dateRange.end}
+                onChange={(e) => handleDateRangeChange("end", e.target.value)}
+                aria-label="End date"
+              />
+            </div>
+            {/* Clear Filter Button */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDateRange({ start: "", end: "" })}
+              className="h-9 px-6 border-gray-300"
+            >
+              Clear Filters
+            </Button>
           </div>
-          {/* Clear Filter Button */}
-          <button
-            type="button"
-            onClick={() => setDateRange({ start: "", end: "" })}
-            className="col-span-2 sm:col-span-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg px-4 py-2 transition-colors"
-          >
-            Clear
-          </button>
         </div>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <div className="bg-white rounded-xl shadow p-6 flex flex-col items-start border border-slate-100">
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="w-5 h-5 text-blue-500" />
-            <span className="font-semibold">Total Agents</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 bg-blue-50 rounded-lg">
+              <Users className="w-5 h-5 text-blue-600" />
+            </div>
+            <span className="font-semibold text-gray-900">Total Agents</span>
           </div>
-          <div className="text-2xl font-bold">{stats.totalAgents}</div>
-          <div className="text-xs text-slate-400 mt-1">Assigned agents</div>
+          <div className="text-3xl font-bold text-gray-900">{stats.totalAgents}</div>
+          <div className="text-sm text-gray-500 mt-1">Assigned agents</div>
         </div>
-        <div className="bg-white rounded-xl shadow p-6 flex flex-col items-start border border-slate-100">
-          <div className="flex items-center gap-2 mb-2">
-            <FileText className="w-5 h-5 text-blue-500" />
-            <span className="font-semibold">Pending QC Files</span>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 bg-orange-50 rounded-lg">
+              <FileText className="w-5 h-5 text-orange-600" />
+            </div>
+            <span className="font-semibold text-gray-900">Pending QC Files</span>
           </div>
-          <div className="text-2xl font-bold">{stats.qcPending}</div>
-          <div className="text-xs text-slate-400 mt-1">Files to review</div>
+          <div className="text-3xl font-bold text-gray-900">{stats.qcPending}</div>
+          <div className="text-sm text-gray-500 mt-1">Files to review</div>
         </div>
-        <div className="bg-white rounded-xl shadow p-6 flex flex-col items-start border border-slate-100">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-5 h-5 text-blue-500" />
-            <span className="font-semibold">Total Billable Hours</span>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 bg-green-50 rounded-lg">
+              <Clock className="w-5 h-5 text-green-600" />
+            </div>
+            <span className="font-semibold text-gray-900">Total Billable Hours</span>
           </div>
-          <div className="text-2xl font-bold">
+          <div className="text-3xl font-bold text-gray-900">
             {stats.billableHours.toFixed(2)}
           </div>
-          <div className="text-xs text-slate-400 mt-1">Billable hours</div>
+          <div className="text-sm text-gray-500 mt-1">Billable hours</div>
         </div>
-        <div className="bg-white rounded-xl shadow p-6 flex flex-col items-start border border-slate-100">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-5 h-5 text-blue-500" />
-            <span className="font-semibold">Avg QC Score</span>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 bg-purple-50 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-purple-600" />
+            </div>
+            <span className="font-semibold text-gray-900">Avg QC Score</span>
           </div>
-          <div className="text-2xl font-bold">{stats.avgQcScore}</div>
-          <div className="text-xs text-slate-400 mt-1">Average QC score</div>
+          <div className="text-3xl font-bold text-gray-900">{stats.avgQcScore}</div>
+          <div className="text-sm text-gray-500 mt-1">Average QC score</div>
         </div>
       </div>
 
       {/* Latest QC Done Files */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="bg-blue-600 px-6 py-4 flex items-center gap-4 justify-start">
-          <div className="flex items-center justify-center w-12 h-12 bg-blue-500/20 rounded-lg">
-            <FileText className="w-7 h-7 text-white" />
-          </div>
-          <div className="flex flex-col justify-center text-left">
-            <h2 className="text-lg sm:text-xl font-bold text-white leading-tight">
-              Latest QC Done Files
-            </h2>
-            <p className="text-xs sm:text-sm text-blue-100 mt-0.5">
-              Files recently reviewed for quality check
-            </p>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-white/10 rounded-lg">
+              <FileText className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">
+                Latest QC Done Files
+              </h2>
+              <p className="text-sm text-blue-100 mt-0.5">
+                Files recently reviewed for quality check
+              </p>
+            </div>
           </div>
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="flex flex-col items-center gap-2">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="text-gray-500">Loading QC files...</span>
+          <div className="flex justify-center items-center py-16">
+            <div className="flex flex-col items-center gap-3">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
+              <span className="text-gray-600 font-medium">Loading QC files...</span>
             </div>
           </div>
         ) : stats.latestQc.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-blue-300" />
+          <div className="p-16 text-center">
+            <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-10 h-10 text-blue-300" />
             </div>
-            <p className="text-slate-600 font-medium text-lg mb-1">
+            <p className="text-gray-700 font-semibold text-lg mb-2">
               No QC files found
             </p>
-            <p className="text-slate-400 text-sm">
+            <p className="text-gray-500">
               No QC files have been reviewed in this period.
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-gray-100">
             {stats.latestQc.map((file, index) => (
               <div
                 key={file.tracker_id || index}
@@ -301,54 +318,54 @@ const AssistantManagerDashboard: FC = () => {
               >
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4 flex-1">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-                      <FileText className="w-6 h-6 text-blue-600" />
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center shrink-0">
+                      <FileText className="w-6 h-6 text-blue-700" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-3 flex-1">
                       <div>
-                        <p className="text-xs text-slate-500 mb-0.5">
+                        <p className="text-xs font-medium text-gray-500 mb-1">
                           Date/Time
                         </p>
-                        <p className="text-sm font-medium text-slate-700">
+                        <p className="text-sm font-semibold text-gray-900">
                           {file.date_time ? file.date_time.split(" ")[0] : "-"}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-gray-500">
                           {file.date_time ? file.date_time.split(" ")[1] : ""}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-500 mb-0.5">Agent</p>
-                        <p className="text-sm font-semibold text-slate-800">
+                        <p className="text-xs font-medium text-gray-500 mb-1">Agent</p>
+                        <p className="text-sm font-semibold text-gray-900">
                           {file.user_name || "-"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-500 mb-0.5">Project</p>
-                        <p className="text-sm text-slate-700">
+                        <p className="text-xs font-medium text-gray-500 mb-1">Project</p>
+                        <p className="text-sm font-medium text-gray-700">
                           {file.project_name || "-"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-500 mb-0.5">Task</p>
-                        <p className="text-sm text-slate-700">
+                        <p className="text-xs font-medium text-gray-500 mb-1">Task</p>
+                        <p className="text-sm font-medium text-gray-700">
                           {file.task_name || "-"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-500 mb-0.5">File</p>
+                        <p className="text-xs font-medium text-gray-500 mb-1">File</p>
                         {file.tracker_file ? (
                           <a
                             href={file.tracker_file}
                             download
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-semibold transition-colors"
                           >
                             <Download className="w-4 h-4" />
                             Download
                           </a>
                         ) : (
-                          <span className="text-slate-400 text-sm">—</span>
+                          <span className="text-gray-400 text-sm">—</span>
                         )}
                       </div>
                     </div>

@@ -1,18 +1,25 @@
-import { useState, useMemo } from 'react'
-import CustomSelect from './CustomSelect'
-import { useAuth } from '../../../../context/AuthContext'
-import type { MonthlyBillableReportRow } from '../../services/billableReportService'
+import { useState, useMemo } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "../../../../context/AuthContext";
+import type { MonthlyBillableReportRow } from "../../services/billableReportService";
 
-type Month = { label: string; year: string }
+type Month = { label: string; year: string };
 
-type TeamOption = { label: string; value?: string }
+type TeamOption = { label: string; value?: string };
 
 export interface MonthCardProps {
-  month: Month
-  users: MonthlyBillableReportRow[]
-  onExport: (user: MonthlyBillableReportRow) => void
-  onExportMonth?: (month: Month, users: MonthlyBillableReportRow[]) => void
-  teamOptions?: TeamOption[]
+  month: Month;
+  users: MonthlyBillableReportRow[];
+  onExport: (user: MonthlyBillableReportRow) => void;
+  onExportMonth?: (month: Month, users: MonthlyBillableReportRow[]) => void;
+  teamOptions?: TeamOption[];
 }
 
 export default function MonthCard({
@@ -22,88 +29,93 @@ export default function MonthCard({
   onExportMonth,
   teamOptions = [],
 }: MonthCardProps) {
-  const [expanded, setExpanded] = useState(false)
-  const [selectedTeam, setSelectedTeam] = useState('')
-  const { user } = useAuth()
+  const [expanded, setExpanded] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState("");
+  const { user } = useAuth();
 
-  const isAgent = Number(user?.role_id) === 6 || user?.role_name === 'agent'
+  const isAgent = Number(user?.role_id) === 6 || user?.role_name === "agent";
 
   const teams = useMemo((): Array<{ label: string; value: string }> => {
     if (teamOptions.length > 0) {
       return [
-        { label: 'All Teams', value: '' },
+        { label: "All Teams", value: "" },
         ...teamOptions.map((t) => ({ label: t.label, value: t.label })),
-      ]
+      ];
     }
 
     const unique = Array.from(
       new Set(users.map((u) => u.team_name).filter(Boolean)),
-    ) as string[]
+    ) as string[];
 
     return [
-      { label: 'All Teams', value: '' },
+      { label: "All Teams", value: "" },
       ...unique.map((team) => ({ label: team, value: team })),
-    ]
-  }, [users, teamOptions])
+    ];
+  }, [users, teamOptions]);
 
-  const filteredUsers = !isAgent && selectedTeam
-    ? users.filter((u) => u.team_name === selectedTeam)
-    : users
+  const filteredUsers =
+    !isAgent && selectedTeam
+      ? users.filter((u) => u.team_name === selectedTeam)
+      : users;
 
   return (
-    <div className="relative bg-linear-to-br from-blue-50 via-white to-slate-100 border-l-8 border-blue-500 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300 mb-6">
+    <div className="relative bg-white border-l-4 border-blue-600 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 mb-6 overflow-hidden">
       <div
-        className="flex items-center gap-4 px-8 py-5 select-none rounded-t-2xl bg-white/80 backdrop-blur border-b border-blue-100"
+        className="flex items-center gap-4 px-6 py-5 select-none bg-gradient-to-r from-blue-50 to-white border-b border-gray-200"
         style={{ minHeight: 72 }}
       >
         <div className="flex flex-col justify-center">
-          <span
-            className="text-2xl font-extrabold tracking-wide text-blue-700 leading-none"
-            style={{ fontFamily: 'Inter,Segoe UI,sans-serif' }}
-          >
+          <span className="text-2xl font-bold text-blue-700 leading-none">
             {month.label}
           </span>
-          <span className="text-xs text-slate-500 font-medium mt-1">
+          <span className="text-sm text-gray-600 font-medium mt-1">
             {month.year}
           </span>
         </div>
         <div className="flex-1" />
         {!isAgent && (
-          <div className="flex items-center gap-2 w-64 mr-4">
-            <CustomSelect
-              value={selectedTeam}
-              onChange={setSelectedTeam}
-              options={teams}
-              placeholder="Filter by Team"
-            />
-            <button
-              className="px-2 py-1 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs font-semibold border border-gray-400 shadow-sm transition"
-              onClick={() => setSelectedTeam('')}
-              type="button"
+          <div className="flex items-center gap-2">
+            <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+              <SelectTrigger className="h-11 w-48 border-gray-300">
+                <SelectValue placeholder="Filter by Team" />
+              </SelectTrigger>
+              <SelectContent>
+                {teams.map((t) => (
+                  <SelectItem key={t.label} value={t.value || "_all"}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              className="h-11 px-4 border-gray-300"
+              onClick={() => setSelectedTeam("")}
             >
               Clear
-            </button>
+            </Button>
           </div>
         )}
-        <button
-          className="px-3 py-1 rounded bg-linear-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white text-xs font-semibold border border-green-700 shadow-sm transition mr-2"
+        <Button
+          variant="default"
+          size="sm"
+          className="bg-green-600 hover:bg-green-700 h-9 px-4 mr-2"
           onClick={(e) => {
-            e.stopPropagation()
-            onExportMonth?.(month, filteredUsers)
+            e.stopPropagation();
+            onExportMonth?.(month, filteredUsers);
           }}
-          type="button"
         >
           Export Month
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
           className="p-2 rounded-full hover:bg-blue-100 transition"
-          title={expanded ? 'Collapse' : 'Expand'}
-          aria-label={expanded ? 'Collapse' : 'Expand'}
+          title={expanded ? "Collapse" : "Expand"}
           onClick={(e) => {
-            e.stopPropagation()
-            setExpanded((prev) => !prev)
+            e.stopPropagation();
+            setExpanded((prev) => !prev);
           }}
-          type="button"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -115,12 +127,12 @@ export default function MonthCard({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`lucide lucide-chevron-up w-5 h-5 transition-transform duration-200 ${expanded ? '' : 'rotate-180'}`}
+            className={`lucide lucide-chevron-up w-5 h-5 transition-transform duration-200 ${expanded ? "" : "rotate-180"}`}
             aria-hidden="true"
           >
             <path d="m18 15-6-6-6 6"></path>
           </svg>
-        </button>
+        </Button>
       </div>
       {expanded && (
         <div className="p-8 bg-white/90 rounded-b-2xl">
@@ -155,34 +167,35 @@ export default function MonthCard({
                 >
                   <td className="px-4 py-3 text-black font-medium whitespace-nowrap">
                     {row.user_name}
-                    {row.team_name ? ` / ${row.team_name}` : ''}
+                    {row.team_name ? ` / ${row.team_name}` : ""}
                   </td>
                   <td className="px-4 py-3 text-center text-black">
                     {row.total_billable_hours != null
                       ? Number(row.total_billable_hours).toFixed(2)
-                      : '-'}
+                      : "-"}
                   </td>
                   <td className="px-4 py-3 text-center text-black">
-                    {row.monthly_target ?? '-'}
+                    {row.monthly_target ?? "-"}
                   </td>
                   <td className="px-4 py-3 text-center text-black">
                     {row.pending_target != null
                       ? Number(row.pending_target).toFixed(2)
-                      : '-'}
+                      : "-"}
                   </td>
                   <td className="px-4 py-3 text-center text-black">
                     {row.avg_qc_score != null
                       ? Number(row.avg_qc_score).toFixed(2)
-                      : '-'}
+                      : "-"}
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <button
-                      className="px-3 py-1 rounded bg-linear-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white text-xs font-semibold border border-green-700 shadow-sm transition"
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700 h-8 px-3"
                       onClick={() => onExport(row)}
-                      type="button"
                     >
                       Export Daily
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -191,5 +204,5 @@ export default function MonthCard({
         </div>
       )}
     </div>
-  )
+  );
 }

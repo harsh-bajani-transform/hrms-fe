@@ -10,7 +10,7 @@ import {
   Award,
   Briefcase,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import axios from "axios";
 
 import StatCard from "./StatCard";
@@ -23,6 +23,8 @@ import AgentTabsNavigation from "../../../../agent/ui/components/AgentTabsNaviga
 import type { AgentTabId } from "../../../../agent/types";
 import api from "../../../../../services/api";
 import { logError } from "../../../../../config/environment";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import type {
   ApiEnvelope,
@@ -67,7 +69,6 @@ const OverviewTab = ({
   const [dashboardData, setDashboardData] =
     useState<DashboardFilterData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<AgentTabId>("overview");
 
   const [qaStartDate, setQaStartDate] = useState<string>(getTodayDate());
   const [qaEndDate, setQaEndDate] = useState<string>(getTodayDate());
@@ -253,50 +254,47 @@ const OverviewTab = ({
 
   return (
     <div className="space-y-4 md:space-y-6 animate-fade-in">
-      {/* Agent tab navigation above counting cards */}
-      {isAgent && (
-        <AgentTabsNavigation
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-      )}
-
       {/* QA DASHBOARD FILTERS & ANALYTICS */}
       {isQA && (
-        <div className="mb-6">
-          <div className="flex flex-col md:flex-row md:items-end gap-4 mb-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Start Date
-              </label>
-              <input
-                type="date"
-                value={qaStartDate}
-                onChange={(e) => setQaStartDate(e.target.value)}
-                className="border rounded px-2 py-1 text-sm bg-white"
-              />
+        <div className="space-y-6">
+          {/* Filter Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Date Range Filter</h3>
+            <div className="flex flex-wrap items-end gap-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Start Date
+                </label>
+                <Input
+                  type="date"
+                  value={qaStartDate}
+                  onChange={(e) => setQaStartDate(e.target.value)}
+                  className="h-11 border-gray-300"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  End Date
+                </label>
+                <Input
+                  type="date"
+                  value={qaEndDate}
+                  onChange={(e) => setQaEndDate(e.target.value)}
+                  className="h-11 border-gray-300"
+                />
+              </div>
+              <Button
+                onClick={() => {
+                  setQaStartDate(getTodayDate());
+                  setQaEndDate(getTodayDate());
+                }}
+                variant="outline"
+                className="h-11 px-6"
+                type="button"
+              >
+                Reset to Today
+              </Button>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                End Date
-              </label>
-              <input
-                type="date"
-                value={qaEndDate}
-                onChange={(e) => setQaEndDate(e.target.value)}
-                className="border rounded px-2 py-1 text-sm bg-white"
-              />
-            </div>
-            <button
-              onClick={() => {
-                setQaStartDate(getTodayDate());
-                setQaEndDate(getTodayDate());
-              }}
-              className="px-3 py-1.5 text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium transition cursor-pointer"
-              type="button"
-            >
-              Today
-            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-4">
@@ -338,233 +336,230 @@ const OverviewTab = ({
             />
           </div>
 
-          <div className="overflow-x-auto bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             {qaLoading ? (
-              <div className="py-8 text-center text-blue-700 font-semibold">
-                Loading QA dashboard...
+              <div className="py-12 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600 font-medium">Loading QA dashboard...</p>
               </div>
             ) : qaTrackers.length === 0 ? (
-              <div className="py-8 text-center text-gray-500">
-                No tracker data found for this range.
+              <div className="py-12 text-center">
+                <p className="text-gray-500">No tracker data found for this range.</p>
               </div>
             ) : (
-              <table className="min-w-full divide-y divide-blue-100 text-sm">
-                <thead>
-                  <tr className="bg-blue-50">
-                    <th className="px-6 py-3 text-left font-semibold text-blue-700 uppercase tracking-wider">
-                      Date-Time
-                    </th>
-                    <th className="px-6 py-3 text-left font-semibold text-blue-700 uppercase tracking-wider">
-                      Agent
-                    </th>
-                    <th className="px-6 py-3 text-left font-semibold text-blue-700 uppercase tracking-wider">
-                      Project
-                    </th>
-                    <th className="px-6 py-3 text-left font-semibold text-blue-700 uppercase tracking-wider">
-                      Task
-                    </th>
-                    <th className="px-6 py-3 text-center font-semibold text-blue-700 uppercase tracking-wider">
-                      Billable Hours
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-blue-50">
-                  {qaTrackers.map((row, idx) => (
-                    <tr
-                      key={String(row.tracker_id ?? idx)}
-                      className="hover:bg-blue-50 transition group"
-                    >
-                      <td className="px-6 py-3 text-black font-medium whitespace-nowrap">
-                        {row.date_time ?? "-"}
-                      </td>
-                      <td className="px-6 py-3 text-black font-semibold">
-                        {row.user_name ?? "-"}
-                      </td>
-                      <td className="px-6 py-3 text-black">
-                        {row.project_name ?? "-"}
-                      </td>
-                      <td className="px-6 py-3 text-black">
-                        {row.task_name ?? "-"}
-                      </td>
-                      <td className="px-6 py-3 text-center text-black font-bold">
-                        {row.billable_hours != null
-                          ? Number(row.billable_hours).toFixed(2)
-                          : "-"}
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Date-Time
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Agent
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Project
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Task
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Billable Hours
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {qaTrackers.map((row, idx) => (
+                      <tr
+                        key={String(row.tracker_id ?? idx)}
+                        className="hover:bg-blue-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 text-sm text-gray-900 font-medium whitespace-nowrap">
+                          {row.date_time ?? "-"}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                          {row.user_name ?? "-"}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {row.project_name ?? "-"}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {row.task_name ?? "-"}
+                        </td>
+                        <td className="px-6 py-4 text-center text-sm text-blue-600 font-bold">
+                          {row.billable_hours != null
+                            ? Number(row.billable_hours).toFixed(2)
+                            : "-"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Show Billable Report tab content for agents */}
-      {isAgent && activeTab === "billable_report" ? (
-        <AgentBillableReport />
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {isAgent ? (
-              <>
-                <StatCard
-                  title="Total Billable Hours"
-                  value={agentStats.totalBillableHours.toFixed(2)}
-                  subtext="Hours logged"
-                  icon={Clock}
-                  trend="neutral"
-                  tooltip="Total billable hours tracked."
-                  className="min-w-0"
-                />
-                <StatCard
-                  title="QC Score"
-                  value={`${agentStats.qcScore}%`}
-                  subtext="Quality rating"
-                  icon={CheckCircle}
-                  trend="neutral"
-                  tooltip="Quality control score."
-                  className="min-w-0"
-                />
-                <StatCard
-                  title="Performance"
-                  value={agentStats.taskCount.toLocaleString()}
-                  subtext="Tasks assigned"
-                  icon={TrendingUp}
-                  trend="neutral"
-                  tooltip="Total tasks assigned to you."
-                  className="min-w-0"
-                />
-                <StatCard
-                  title="Projects"
-                  value={agentStats.projectCount.toLocaleString()}
-                  subtext="Active projects"
-                  icon={Award}
-                  trend="neutral"
-                  tooltip="Number of projects you're working on."
-                  className="min-w-0"
-                />
-              </>
-            ) : (
-              <>
-                <StatCard
-                  title="Production (Selected)"
-                  value={analytics?.prodCurrent.toLocaleString() ?? "0"}
-                  subtext={analytics?.trendText ?? ""}
-                  icon={Activity}
-                  trend={analytics?.trendDir ?? "neutral"}
-                  tooltip="Total production volume in range."
-                  className="min-w-0"
-                />
-                <StatCard
-                  title={`Production (${analytics?.prevRange.label ?? "Previous"})`}
-                  value={analytics?.prodPrevious.toLocaleString() ?? "0"}
-                  subtext="Vs Previous"
-                  icon={Calendar}
-                  trend="neutral"
-                  tooltip="Comparison period volume."
-                  className="min-w-0"
-                />
-                <StatCard
-                  title="MTD Progress"
-                  value={`${analytics?.goalProgress.toFixed(1) ?? "0.0"}%`}
-                  subtext={`Target: ${analytics?.effectiveGoal.toLocaleString() ?? "0"}`}
-                  icon={Target}
-                  trend="neutral"
-                  tooltip="% of Monthly Target achieved."
-                  className="min-w-0"
-                />
-                <StatCard
-                  title="Active Agents"
-                  value={analytics?.agentStats.length ?? 0}
-                  subtext="In range"
-                  icon={Users}
-                  trend="neutral"
-                  tooltip="Agent Activity count."
-                  className="min-w-0"
-                />
-              </>
-            )}
-          </div>
+      {/* Performance Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {isAgent ? (
+          <>
+            <StatCard
+              title="Total Billable Hours"
+              value={agentStats.totalBillableHours.toFixed(2)}
+              subtext="Hours logged"
+              icon={Clock}
+              trend="neutral"
+              tooltip="Total billable hours tracked."
+              className="min-w-0"
+            />
+            <StatCard
+              title="QC Score"
+              value={`${agentStats.qcScore}%`}
+              subtext="Quality rating"
+              icon={CheckCircle}
+              trend="neutral"
+              tooltip="Quality control score."
+              className="min-w-0"
+            />
+            <StatCard
+              title="Performance"
+              value={agentStats.taskCount.toLocaleString()}
+              subtext="Tasks assigned"
+              icon={TrendingUp}
+              trend="neutral"
+              tooltip="Total tasks assigned to you."
+              className="min-w-0"
+            />
+            <StatCard
+              title="Projects"
+              value={agentStats.projectCount.toLocaleString()}
+              subtext="Active projects"
+              icon={Award}
+              trend="neutral"
+              tooltip="Number of projects you're working on."
+              className="min-w-0"
+            />
+          </>
+        ) : (
+          <>
+            <StatCard
+              title="Production (Selected)"
+              value={analytics?.prodCurrent.toLocaleString() ?? "0"}
+              subtext={analytics?.trendText ?? ""}
+              icon={Activity}
+              trend={analytics?.trendDir ?? "neutral"}
+              tooltip="Total production volume in range."
+              className="min-w-0"
+            />
+            <StatCard
+              title={`Production (${analytics?.prevRange.label ?? "Previous"})`}
+              value={analytics?.prodPrevious.toLocaleString() ?? "0"}
+              subtext="Vs Previous"
+              icon={Calendar}
+              trend="neutral"
+              tooltip="Comparison period volume."
+              className="min-w-0"
+            />
+            <StatCard
+              title="MTD Progress"
+              value={`${analytics?.goalProgress.toFixed(1) ?? "0.0"}%`}
+              subtext={`Target: ${analytics?.effectiveGoal.toLocaleString() ?? "0"}`}
+              icon={Target}
+              trend="neutral"
+              tooltip="% of Monthly Target achieved."
+              className="min-w-0"
+            />
+            <StatCard
+              title="Active Agents"
+              value={analytics?.agentStats.length ?? 0}
+              subtext="In range"
+              icon={Users}
+              trend="neutral"
+              tooltip="Agent Activity count."
+              className="min-w-0"
+            />
+          </>
+        )}
+      </div>
 
-          {isAgent ? (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <Briefcase className="w-5 h-5 text-white" />
-                  <h3 className="text-lg font-semibold text-white">
-                    Project Billable Hours
-                  </h3>
-                </div>
+      {isAgent ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Briefcase className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">
+                  Project Billable Hours
+                </h3>
                 <p className="text-blue-100 text-sm mt-1">
                   Hours logged per project in selected date range
                 </p>
               </div>
+            </div>
+          </div>
 
-              <div className="p-6">
-                {loading ? (
-                  <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="text-slate-500 mt-3">
-                      Loading project data...
-                    </p>
-                  </div>
-                ) : agentProjects.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                    <p className="text-slate-500 font-medium">
-                      No project data available
-                    </p>
-                    <p className="text-slate-400 text-sm mt-1">
-                      You haven't worked on any projects yet
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {agentProjects.map((project, index) => {
-                      const billableHours = Number(
-                        project.billable_hours ??
-                          project.total_billable_hours ??
-                          0,
-                      );
-
-                      return (
-                        <div
-                          key={String(project.project_id ?? index)}
-                          className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                              <Briefcase className="w-5 h-5 text-blue-600" />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-slate-800">
-                                {project.project_name}
-                              </h4>
-                              <p className="text-xs text-slate-500">
-                                {project.project_code || "Project"}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-blue-600">
-                              {billableHours.toFixed(2)}
-                            </div>
-                            <p className="text-xs text-slate-500">Hours</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+          <div className="p-6">
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="text-slate-500 mt-3">Loading project data...</p>
               </div>
-            </div>
-          ) : (
-            <div className="w-full overflow-hidden">
-              <HourlyChart data={agentHourlyChartData} />
-            </div>
-          )}
-        </>
+            ) : agentProjects.length === 0 ? (
+              <div className="text-center py-12">
+                <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <p className="text-slate-500 font-medium">
+                  No project data available
+                </p>
+                <p className="text-slate-400 text-sm mt-1">
+                  You haven't worked on any projects yet
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {agentProjects.map((project, index) => {
+                  const billableHours = Number(
+                    project.billable_hours ?? project.total_billable_hours ?? 0,
+                  );
+
+                  return (
+                    <div
+                      key={String(project.project_id ?? index)}
+                      className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <Briefcase className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-slate-800">
+                            {project.project_name}
+                          </h4>
+                          <p className="text-xs text-slate-500">
+                            {project.project_code || "Project"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-blue-600">
+                          {billableHours.toFixed(2)}
+                        </div>
+                        <p className="text-xs text-slate-500">Hours</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="w-full overflow-hidden">
+          <HourlyChart data={agentHourlyChartData} />
+        </div>
       )}
     </div>
   );

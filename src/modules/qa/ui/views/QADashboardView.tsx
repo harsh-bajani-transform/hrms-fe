@@ -34,42 +34,53 @@ const QADashboardView: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-500">Loading dashboard...</span>
+      <div className="flex justify-center items-center py-16">
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
+          <span className="text-gray-600 font-medium">Loading dashboard...</span>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-100 text-red-700 p-4 rounded-md text-center">
-        {error}
+      <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg text-center">
+        <p className="font-medium">{error}</p>
       </div>
     );
   }
 
   if (!dashboardData) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8 text-center">
-        <p className="text-gray-500 font-medium">No dashboard data available</p>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+        <p className="text-gray-500 font-medium text-lg">No dashboard data available</p>
       </div>
     );
   }
 
   // Example: Display summary and user count if available
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-slate-800">QA Dashboard</h2>
-      {dashboardData.summary && (
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <div className="font-semibold">Summary</div>
-          <div>Total Production: {dashboardData.summary.total_production ?? '-'}</div>
-          <div>QC Score: {dashboardData.summary.qc_score ?? '-'}</div>
-          <div>User Count: {dashboardData.summary.user_count ?? '-'}</div>
-        </div>
-      )}
-      {/* Add more dashboard sections as needed */}
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">QA Dashboard</h2>
+        {dashboardData.summary && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-lg border border-blue-200">
+              <div className="text-sm font-medium text-blue-700 mb-2">Total Production</div>
+              <div className="text-3xl font-bold text-blue-900">{dashboardData.summary.total_production ?? '-'}</div>
+            </div>
+            <div className="bg-gradient-to-br from-green-50 to-green-100 p-5 rounded-lg border border-green-200">
+              <div className="text-sm font-medium text-green-700 mb-2">QC Score</div>
+              <div className="text-3xl font-bold text-green-900">{dashboardData.summary.qc_score ?? '-'}</div>
+            </div>
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-lg border border-purple-200">
+              <div className="text-sm font-medium text-purple-700 mb-2">User Count</div>
+              <div className="text-3xl font-bold text-purple-900">{dashboardData.summary.user_count ?? '-'}</div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

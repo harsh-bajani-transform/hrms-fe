@@ -6,9 +6,53 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
-import { Download, FileDown, Filter, Trash2 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import {
+  Download,
+  FileDown,
+  Filter,
+  Trash2,
+  Calendar as CalendarIcon,
+  ArrowLeft,
+  MoreHorizontal,
+  FileText,
+  PlusCircle,
+  Briefcase,
+} from "lucide-react";
+import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 import { deleteTracker, fetchTrackers } from "../../services/agentService";
 import { useAuth } from "../../../../context/AuthContext";
@@ -352,327 +396,356 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-5">
-      <div className="mb-8 flex items-center gap-3 justify-between">
-        <h2 className="text-3xl font-extrabold text-blue-800 tracking-tight drop-shadow-sm">
-          All Trackers
-        </h2>
-        <div className="flex gap-2">
-          <button
-            onClick={handleExportToExcel}
-            disabled={loading || trackers.length === 0}
-            className="bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 shadow disabled:bg-gray-400 disabled:cursor-not-allowed transition-all"
-            title="Export filtered data to Excel"
-          >
-            <FileDown className="w-4 h-4" />
-            Export to Excel
-          </button>
-          <button
-            onClick={onClose}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-xs shadow transition-all"
-          >
-            Back to Form
-          </button>
+    <div className="w-full space-y-6 animate-in fade-in duration-300">
+      {/* Page Header */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <FileText className="w-7 h-7 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Tracker History</h2>
+              <p className="text-gray-600 mt-1">View and manage your production entries</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={handleExportToExcel}
+              disabled={loading || trackers.length === 0}
+              variant="outline"
+              className="h-11 px-6 border-gray-300 bg-green-50 text-green-700 hover:bg-green-100"
+            >
+              <FileDown className="w-4 h-4 mr-2" />
+              Export Excel
+            </Button>
+            <Button
+              onClick={onClose}
+              variant="default"
+              className="h-11 px-6 bg-blue-600 hover:bg-blue-700"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Entry
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Filter Section */}
-      <div className="bg-linear-to-br from-blue-50 via-white to-indigo-50 rounded-2xl p-6 mb-6 shadow border border-blue-100">
-        <div className="flex items-center gap-2 mb-4">
-          <Filter className="w-5 h-5 text-blue-700" />
-          <h3 className="text-base font-bold text-blue-700 tracking-wide">
-            Filters
-          </h3>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <Filter className="w-5 h-5 text-blue-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">Filter Options</h3>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Start Date */}
-          <div>
-            <label className="block text-xs font-semibold text-blue-900 mb-1">
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
               Start Date
             </label>
-            <input
+            <Input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm transition-all"
+              className=" border-gray-300"
             />
           </div>
-
-          {/* End Date */}
-          <div>
-            <label className="block text-xs font-semibold text-blue-900 mb-1">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
               End Date
             </label>
-            <input
+            <Input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm transition-all"
+              className=" border-gray-300"
             />
           </div>
-
-          {/* Project Dropdown */}
-          <div>
-            <label className="block text-xs font-semibold text-blue-900 mb-1">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
               Project
             </label>
-            <select
+            <Select
               value={selectedProject}
-              onChange={(e) => {
-                setSelectedProject(e.target.value);
-                setSelectedTask(""); // Clear task when project changes
+              onValueChange={(val) => {
+                setSelectedProject(val);
+                setSelectedTask("");
               }}
-              className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm transition-all"
             >
-              <option value="">All Projects</option>
-              {projects.map((project) => (
-                <option key={project.project_id} value={project.project_id}>
-                  {project.project_name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className=" border-gray-300 w-full">
+                <SelectValue placeholder="All Projects" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Projects</SelectItem>
+                {projects.map((p) => (
+                  <SelectItem key={p.project_id} value={String(p.project_id)}>
+                    {p.project_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-
-          {/* Task Dropdown */}
-          <div>
-            <label className="block text-xs font-semibold text-blue-900 mb-1">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
               Task
             </label>
-            <select
+            <Select
               value={selectedTask}
-              onChange={(e) => setSelectedTask(e.target.value)}
-              disabled={!selectedProject}
-              className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
+              onValueChange={(val) => setSelectedTask(val)}
+              disabled={!selectedProject || selectedProject === "all"}
             >
-              <option value="">All Tasks</option>
-              {availableTasks.map((task) => (
-                <option key={task.task_id} value={task.task_id}>
-                  {task.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full border-gray-300">
+                <SelectValue placeholder="All Tasks" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tasks</SelectItem>
+                {availableTasks.map((t) => (
+                  <SelectItem key={t.task_id} value={String(t.task_id)}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
-
-        {/* Clear Filters Button */}
-        <div className="mt-2.5 flex justify-end">
-          <button
+        
+        <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+          <Button
             onClick={handleClearFilters}
-            className="px-4 py-2 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-bold shadow transition-all"
+            variant="outline"
+            className="h-11 px-6 border-gray-300"
           >
-            Clear Filters
-          </button>
+            Clear All Filters
+          </Button>
         </div>
       </div>
 
-      {error && <div className="text-red-600 mb-2">{error}</div>}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-700 text-sm font-medium">{error}</p>
+        </div>
+      )}
 
-      {/* Scrollable table container with max height for 10 rows */}
-      <div className="overflow-x-auto max-h-[600px] overflow-y-auto border border-slate-200 rounded-2xl shadow-lg bg-white">
-        <table className="min-w-full text-sm text-slate-700 table-fixed rounded-xl overflow-hidden">
-          <colgroup>
-            <col style={{ width: "16%" }} />
-            <col style={{ width: "16%" }} />
-            <col style={{ width: "16%" }} />
-            <col style={{ width: "12%" }} />
-            <col style={{ width: "12%" }} />
-            <col style={{ width: "12%" }} />
-            <col style={{ width: "9%" }} />
-            <col style={{ width: "7%" }} />
-          </colgroup>
-          <thead className="bg-linear-to-r from-blue-100 to-blue-50 sticky top-0 z-10">
-            <tr>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">
-                Date/Time
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">
+      {/* Main Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <Table>
+          <TableHeader className="bg-gray-50 border-b border-gray-200">
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="font-semibold text-gray-900 h-12">
+                Date
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900 h-12">
                 Project
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900 h-12">
                 Task
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">
+              </TableHead>
+              <TableHead className="text-center font-semibold text-gray-900 h-12">
                 Per Hour Target
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">
+              </TableHead>
+              <TableHead className="text-center font-semibold text-gray-900 h-12">
                 Production
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">
+              </TableHead>
+              <TableHead className="text-center font-semibold text-gray-900 h-12">
                 Billable Hours
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-left">
-                Task File
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-center">
+              </TableHead>
+              <TableHead className="text-center font-semibold text-gray-900 h-12">
+                File
+              </TableHead>
+              <TableHead className="text-right pr-6 font-semibold text-gray-900 h-12">
                 Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {loading ? (
-              <tr>
-                <td
-                  colSpan={8}
-                  className="text-center py-16 font-semibold text-blue-600 animate-pulse"
-                >
-                  Loading...
-                </td>
-              </tr>
+              <TableRow>
+                <TableCell colSpan={8} className="h-64 text-center">
+                  <div className="flex flex-col items-center justify-center gap-3">
+                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-gray-500 font-medium">
+                      Loading tracker data...
+                    </p>
+                  </div>
+                </TableCell>
+              </TableRow>
             ) : trackers.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={8}
-                  className="text-center py-16 text-slate-400 font-medium"
-                >
-                  No tracker data found.
-                </td>
-              </tr>
+              <TableRow>
+                <TableCell colSpan={8} className="h-64 text-center">
+                  <div className="flex flex-col items-center justify-center gap-3">
+                    <FileText className="w-12 h-12 text-gray-300" />
+                    <p className="text-gray-500 font-medium">
+                      No tracker entries found for this period
+                    </p>
+                  </div>
+                </TableCell>
+              </TableRow>
             ) : (
               trackers.map((tracker) => (
-                <tr
+                <TableRow
                   key={tracker.tracker_id}
-                  className="border-b border-slate-100 hover:bg-blue-50/60 transition-colors group"
+                  className="hover:bg-blue-50/50 transition-colors border-gray-100"
                 >
-                  <td className="px-5 py-3 align-middle whitespace-nowrap">
+                  <TableCell className="font-medium text-gray-700">
                     {tracker.date_time
                       ? format(new Date(tracker.date_time), "dd/MM/yyyy")
                       : "-"}
-                  </td>
-                  <td className="px-5 py-3 align-middle whitespace-nowrap">
-                    {tracker.project_name || getProjectName(tracker.project_id)}
-                  </td>
-                  <td className="px-5 py-3 align-middle whitespace-nowrap">
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-blue-500" />
+                      <span className="font-medium text-gray-900">
+                        {tracker.project_name ||
+                          getProjectName(tracker.project_id)}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-gray-700">
                     {tracker.task_name ||
-                      getTaskName(tracker.task_id, tracker.project_id) ||
-                      "-"}
-                  </td>
-                  {/* Always show tenure_target from tracker/view for all roles */}
-                  <td className="px-5 py-3 align-middle whitespace-nowrap">
-                    {tracker.tenure_target ?? "-"}
-                  </td>
-                  <td className="px-5 py-3 align-middle whitespace-nowrap">
-                    {tracker.production}
-                  </td>
-                  <td className="px-5 py-3 align-middle whitespace-nowrap">
-                    {tracker.billable_hours !== null &&
-                    tracker.billable_hours !== undefined
+                      getTaskName(tracker.task_id, tracker.project_id)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge
+                      variant="outline"
+                      className="font-medium border-gray-300 bg-gray-50 text-gray-700"
+                    >
+                      {tracker.tenure_target ?? "-"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge className="bg-blue-100 text-blue-700 border-blue-200 font-medium">
+                      {tracker.production}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center font-medium text-gray-700">
+                    {tracker.billable_hours != null
                       ? Number(tracker.billable_hours).toFixed(2)
                       : "0.00"}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center">
+                  </TableCell>
+                  <TableCell className="text-center">
                     {tracker.tracker_file ? (
-                      <a
-                        href={tracker.tracker_file}
-                        download
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 group-hover:bg-blue-100 rounded-full p-2 shadow-sm"
-                        title="Download file"
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 w-9 p-0 rounded-lg hover:bg-blue-100 text-blue-600"
+                        asChild
                       >
-                        <Download className="w-5 h-5" />
-                      </a>
+                        <a
+                          href={tracker.tracker_file}
+                          download
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <Download className="w-4 h-4" />
+                        </a>
+                      </Button>
                     ) : (
-                      <span className="text-slate-300">—</span>
+                      <span className="text-gray-300 text-xs">—</span>
                     )}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center">
+                  </TableCell>
+                  <TableCell className="text-right pr-6">
                     {isToday(tracker.date_time) ? (
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 rounded-full hover:bg-red-50 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => handleDelete(tracker.tracker_id)}
-                        disabled={deletingId === tracker.tracker_id}
-                        className="p-0 bg-transparent hover:bg-transparent focus:outline-none"
-                        title="Delete Tracker"
-                        aria-label="Delete Tracker"
                       >
-                        <Trash2 className="w-6 h-6 text-red-500 bg-red-100 bg-opacity-40 rounded-full p-1 transition-colors duration-200 hover:text-white hover:bg-red-500 hover:bg-opacity-100" />
-                      </button>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     ) : (
-                      <span
-                        className="text-slate-300"
-                        title="Can only delete today's entries"
-                      >
-                        —
-                      </span>
+                      <span className="text-slate-300 text-xs">—</span>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
-      {/* Totals Summary Card */}
+      {/* Totals Summary */}
       {!loading && trackers.length > 0 && (
-        <div className="mt-6 bg-linear-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 shadow-lg">
-          <h3 className="text-lg font-bold text-blue-900 mb-6 flex items-center gap-2">
-            <span className="inline-block w-2 h-2 bg-blue-600 rounded-full"></span>
-            Summary Totals
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Total Per Hour Target */}
-            <div className="bg-white rounded-xl p-6 shadow border border-blue-100 flex flex-col items-center">
-              <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
-                Total Per Hour Target
-              </p>
-              <p className="text-3xl font-extrabold text-blue-700">
-                {totals.tenureTarget.toFixed(2)}
-              </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4 duration-500 delay-150">
+          <Card className="border-blue-100 bg-blue-50/30 overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+              <CalendarIcon className="w-12 h-12 text-blue-900" />
             </div>
-
-            {/* Total Production */}
-            <div className="bg-white rounded-xl p-6 shadow border border-green-100 flex flex-col items-center">
-              <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
+            <CardHeader className="pb-2">
+              <CardDescription className="text-blue-600 font-bold uppercase tracking-widest text-[10px]">
+                Avg Hourly Target
+              </CardDescription>
+              <CardTitle className="text-3xl font-bold text-blue-900">
+                {totals.tenureTarget.toFixed(1)}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="border-emerald-100 bg-emerald-50/30 overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+              <PlusCircle className="w-12 h-12 text-emerald-900" />
+            </div>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-emerald-600 font-bold uppercase tracking-widest text-[10px]">
                 Total Production
-              </p>
-              <p className="text-3xl font-extrabold text-green-700">
-                {totals.production.toFixed(2)}
-              </p>
+              </CardDescription>
+              <CardTitle className="text-3xl font-bold text-emerald-900">
+                {totals.production.toFixed(0)}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="border-slate-100 bg-slate-50/50 overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+              <Briefcase className="w-12 h-12 text-slate-900" />
             </div>
-
-            {/* Total Billable Hours */}
-            <div className="bg-white rounded-xl p-6 shadow border border-purple-100 flex flex-col items-center">
-              <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
+            <CardHeader className="pb-2">
+              <CardDescription className="text-slate-600 font-bold uppercase tracking-widest text-[10px]">
                 Total Billable Hours
-              </p>
-              <p className="text-3xl font-extrabold text-purple-700">
+              </CardDescription>
+              <CardTitle className="text-3xl font-bold text-slate-900">
                 {totals.billableHours.toFixed(2)}
-              </p>
-            </div>
-          </div>
+              </CardTitle>
+            </CardHeader>
+          </Card>
         </div>
       )}
 
-      {/* Delete confirmation modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full pointer-events-auto">
-            <h3 className="text-lg font-bold mb-4 text-slate-800">
-              Confirm Delete
-            </h3>
-            <p className="mb-6 text-slate-600">
-              Are you sure you want to delete this tracker entry?
-            </p>
-            <div className="flex justify-end gap-4">
-              <button
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded font-semibold"
-                onClick={() => setDeleteConfirm(null)}
-                disabled={deletingId != null}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-semibold"
-                onClick={() => void confirmDelete()}
-                disabled={deletingId != null}
-              >
-                {deletingId != null ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Delete Confirmation */}
+      <Dialog
+        open={!!deleteConfirm}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+      >
+        <DialogContent className="max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this production entry? This action
+              cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteConfirm(null)}
+              disabled={deletingId != null}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => void confirmDelete()}
+              disabled={deletingId != null}
+              className="gap-2"
+            >
+              {deletingId != null && (
+                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              )}
+              Delete Entry
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

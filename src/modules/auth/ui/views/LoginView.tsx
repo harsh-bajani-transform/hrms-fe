@@ -1,11 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { User as UserIcon, Lock, LogIn, Loader2 } from 'lucide-react'
+import { Mail, Lock, LogIn, Loader2, ShieldCheck } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 import { loginUser } from '../../services/authService'
 import { useAuth, type User } from '../../../../context/AuthContext'
 import { useDeviceInfo } from '../../../../hooks/useDeviceInfo'
 import { log, logError } from '../../../../config/environment'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 const isValidEmail = (email: string): boolean =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -134,80 +139,122 @@ const LoginView = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-100">
-      <div className="w-full max-w-[400px] bg-white rounded-2xl shadow-xl">
-        <div className="bg-[#1e40af] p-8 text-center">
-          <h1 className="text-3xl font-bold text-white mb-3">Welcome Back</h1>
-          <p className="text-blue-100 font-medium">Sign in to TFS Ops Tracker</p>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-linear-to-br from-blue-50 via-white to-blue-50">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-grid-slate-100 mask-[linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
+      
+      <div className="w-full max-w-md relative">
+        {/* Logo/Brand Section */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-lg mb-4">
+            <ShieldCheck className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">TFS Ops Tracker</h1>
+          <p className="text-gray-600">Welcome back! Please sign in to continue.</p>
         </div>
 
-        <div className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Email
-              </label>
-              <div className="relative">
-                <UserIcon className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
-                <input
-                  type="email"
-                  value={username}
-                  onChange={(e) => handleUsernameChange(e.target.value)}
-                  placeholder="Enter email"
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 bg-gray-50 ${usernameError || backendUsernameError ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-blue-500'}`}
-                />
+        {/* Login Card */}
+        <Card className="shadow-xl border-0 backdrop-blur-sm bg-white/95">
+          <CardHeader className="space-y-1 pb-6">
+            <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
+            <CardDescription className="text-center text-base">
+              Enter your credentials to access your account
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+              {/* Email Field */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  Email Address
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400 pointer-events-none" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={username}
+                    onChange={(e) => handleUsernameChange(e.target.value)}
+                    placeholder="you@company.com"
+                    className={`h-11 pl-10 pr-4 text-base ${
+                      usernameError || backendUsernameError
+                        ? 'border-red-500 focus-visible:ring-red-500'
+                        : ''
+                    }`}
+                    disabled={isLoading}
+                  />
+                </div>
+                {(usernameError || backendUsernameError) && (
+                  <p className="text-sm text-red-600 flex items-start gap-1">
+                    <span className="mt-0.5">•</span>
+                    <span>{usernameError || backendUsernameError}</span>
+                  </p>
+                )}
               </div>
-              {usernameError && (
-                <p className="text-red-600 text-sm mt-1">{usernameError}</p>
-              )}
-              {!usernameError && backendUsernameError && (
-                <p className="text-red-600 text-sm mt-1">
-                  {backendUsernameError}
-                </p>
-              )}
-            </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => handlePasswordChange(e.target.value)}
-                  placeholder="••••••••"
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 bg-gray-50 tracking-widest ${passwordError || backendPasswordError ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-blue-500'}`}
-                />
+              {/* Password Field */}
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400 pointer-events-none" />
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
+                    placeholder="Enter your password"
+                    className={`h-11 pl-10 pr-4 text-base ${
+                      passwordError || backendPasswordError
+                        ? 'border-red-500 focus-visible:ring-red-500'
+                        : ''
+                    }`}
+                    disabled={isLoading}
+                  />
+                </div>
+                {(passwordError || backendPasswordError) && (
+                  <p className="text-sm text-red-600 flex items-start gap-1">
+                    <span className="mt-0.5">•</span>
+                    <span>{passwordError || backendPasswordError}</span>
+                  </p>
+                )}
               </div>
-              {passwordError && (
-                <p className="text-red-600 text-sm mt-1">{passwordError}</p>
-              )}
-              {!passwordError && backendPasswordError && (
-                <p className="text-red-600 text-sm mt-1">
-                  {backendPasswordError}
-                </p>
-              )}
-            </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`w-full flex justify-center items-center py-3 rounded-lg text-white gap-2 cursor-pointer ${isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-700 hover:bg-blue-800'}`}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Signing In...
-                </>
-              ) : (
-                <>
-                  <LogIn className="h-4 w-4" /> Sign In
-                </>
-              )}
-            </button>
-          </form>
-        </div>
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium text-base shadow-sm mt-6"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing In...
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Sign In
+                  </>
+                )}
+              </Button>
+            </form>
+
+            {/* Additional Info */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <p className="text-xs text-center text-gray-500">
+                Having trouble signing in? Contact your administrator for assistance.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <p className="text-center text-sm text-gray-500 mt-6">
+          © {new Date().getFullYear()} TransForm Solutions. All rights reserved.
+        </p>
       </div>
     </div>
   )

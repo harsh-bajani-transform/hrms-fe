@@ -27,9 +27,9 @@ const StatCard = ({
   return (
     <div
       className={`
-        bg-white p-4 md:p-5 lg:p-6 rounded-xl shadow-sm border min-w-0
-        ${alert ? 'border-red-200 bg-red-50' : 'border-slate-100'}
-        flex flex-row items-center justify-between gap-4 relative group ${className}
+        bg-white p-5 md:p-6 rounded-xl shadow-sm border min-w-0
+        ${alert ? 'border-red-300 bg-gradient-to-br from-red-50 to-red-100' : 'border-gray-200'}
+        flex flex-row items-center justify-between gap-4 relative group hover:shadow-md transition-all duration-200 ${className}
       `}
     >
       <div className="flex-1 min-w-0">
@@ -52,14 +52,14 @@ const StatCard = ({
         </div>
 
         <h3
-          className={`text-xl sm:text-2xl font-bold truncate ${alert ? 'text-red-700' : 'text-slate-800'}`}
+          className={`text-2xl sm:text-3xl font-bold truncate ${alert ? 'text-red-700' : 'text-gray-900'}`}
         >
           {value}
         </h3>
 
         {subtext && (
           <p
-            className={`text-xs mt-1.5 md:mt-2 truncate ${trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-500' : 'text-slate-400'}`}
+            className={`text-xs sm:text-sm mt-1.5 md:mt-2 truncate font-medium ${trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-gray-500'}`}
           >
             {subtext}
           </p>
@@ -67,10 +67,10 @@ const StatCard = ({
       </div>
 
       <div
-        className={`p-2 sm:p-2.5 md:p-3 rounded-lg shrink-0 self-center
-                ${alert ? 'bg-red-100 text-red-600' : trend === 'up' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'}`}
+        className={`p-3 sm:p-3.5 md:p-4 rounded-xl shrink-0 self-center shadow-sm
+                ${alert ? 'bg-gradient-to-br from-red-100 to-red-200 text-red-700' : trend === 'up' ? 'bg-gradient-to-br from-green-100 to-green-200 text-green-700' : 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700'}`}
       >
-        <CardIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-5 md:h-5" />
+        <CardIcon className="w-5 h-5 sm:w-6 sm:h-6" />
       </div>
     </div>
   )
