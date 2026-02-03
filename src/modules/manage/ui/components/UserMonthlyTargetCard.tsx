@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
-import { Download, ChevronDown, Calendar } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { Download, ChevronDown, Calendar, User } from "lucide-react";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -207,9 +207,9 @@ const UserMonthlyTargetCard: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
-      <div className="mb-2">
-        <h2 className="text-2xl font-bold text-indigo-700 tracking-tight">
-          User Monthly Targets
+      <div className="mb-2 ">
+        <h2 className="text-2xl flex items-center gap-2 font-bold text-blue-600 tracking-tight">
+          <User /> User Monthly Targets
         </h2>
         <p className="text-slate-500 text-sm">
           Review and manage monthly production goals for agents.
@@ -249,7 +249,7 @@ const UserMonthlyTargetCard: React.FC = () => {
                   <div className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-slate-500 uppercase">
                     <span>From</span>
                     <Input
-                      className="h-7 w-28 bg-transparent border-none p-0 text-slate-700 font-semibold cursor-pointer shadow-none"
+                      className=" w-28 bg-transparent border-none p-0 text-slate-700 font-semibold cursor-pointer shadow-none"
                       type="date"
                       value={(
                         dateRanges[month.key]?.[0] ?? month.range[0]
@@ -268,7 +268,7 @@ const UserMonthlyTargetCard: React.FC = () => {
                   <div className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-slate-500 uppercase">
                     <span>To</span>
                     <Input
-                      className="h-7 w-28 bg-transparent border-none p-0 text-slate-700 font-semibold cursor-pointer shadow-none"
+                      className="w-28 bg-transparent border-none p-0 text-slate-700 font-semibold cursor-pointer shadow-none"
                       type="date"
                       value={(
                         dateRanges[month.key]?.[1] ?? month.range[1]
@@ -286,9 +286,8 @@ const UserMonthlyTargetCard: React.FC = () => {
                 </div>
                 <Button
                   variant="default"
-                  size="sm"
                   onClick={() => handleExportExcel(month.label)}
-                  className="bg-emerald-600 hover:bg-emerald-700 h-9 px-4"
+                  className="bg-emerald-600 hover:bg-emerald-700 px-4"
                 >
                   <Download className="w-4 h-4" />
                   <span>Export</span>

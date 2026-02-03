@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
@@ -271,32 +271,32 @@ const AgentBillableReport = () => {
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 space-y-8 animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <div className="space-y-1">
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+          <h2 className="text-2xl font-semibold text-gray-900">
             Performance Reports
           </h2>
-          <p className="text-slate-500 font-medium">
+          <p className="text-gray-500 font-medium">
             View and export your daily and monthly billable performance
             summaries.
           </p>
         </div>
 
-        <div className="flex bg-slate-100/80 p-1.5 rounded-2xl w-fit shadow-inner border border-slate-200">
+        <div className="flex bg-white p-2 rounded-xl w-fit border border-gray-200">
           <Button
             variant={activeToggle === "daily" ? "default" : "ghost"}
-            className={`px-8 h-10 rounded-xl font-black transition-all duration-300 ${activeToggle === "daily" ? "bg-blue-600 text-white shadow-lg border-none" : "text-slate-500 hover:text-blue-600"}`}
+            className={`px-4 h-11 rounded-lg font-semibold transition-all duration-300 ${activeToggle === "daily" ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"}`}
             onClick={() => setActiveToggle("daily")}
           >
-            <Clock className="w-4.5 h-4.5 mr-2" />
+            <Clock className="w-4 h-4 mr-2" />
             Daily View
           </Button>
           <Button
             variant={activeToggle === "monthly" ? "default" : "ghost"}
-            className={`px-8 h-10 rounded-xl font-black transition-all duration-300 ${activeToggle === "monthly" ? "bg-blue-600 text-white shadow-lg border-none" : "text-slate-500 hover:text-blue-600"}`}
+            className={`px-4 h-11 rounded-lg font-semibold transition-all duration-300 ${activeToggle === "monthly" ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"}`}
             onClick={() => setActiveToggle("monthly")}
           >
-            <BarChart3 className="w-4.5 h-4.5 mr-2" />
+            <BarChart3 className="w-4 h-4 mr-2" />
             Monthly View
           </Button>
         </div>
@@ -304,65 +304,62 @@ const AgentBillableReport = () => {
 
       {/* Daily Report View */}
       {activeToggle === "daily" && (
-        <Card className="border-none shadow-2xl overflow-hidden rounded-3xl min-h-[500px] bg-white">
-          <CardHeader className="border-b border-slate-100 bg-slate-50/40 p-8">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+        <Card className="shadow-sm border-gray-200 overflow-hidden rounded-xl min-h-125 bg-white">
+          <CardHeader className="border-b border-gray-200 bg-gray-50 p-8">
+            <div className="flex flex-col gap-8">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
                   <Calendar className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-black text-slate-900">
+                  <CardTitle className="text-xl font-semibold text-gray-900">
                     Daily Billable Hours
                   </CardTitle>
-                  <CardDescription className="font-medium text-slate-500">
+                  <CardDescription className="font-medium text-gray-500">
                     Breakdown of billable time per day
                   </CardDescription>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex items-center gap-4 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
+              <div className="flex flex-wrap items-center gap-6 w-full">
+                <div className="flex flex-row items-center gap-4 bg-white p-2 rounded-xl border border-gray-200 shadow-sm w-auto">
                   <div className="flex items-center gap-2 px-2">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest lb-1">
+                    <span className="text-sm font-medium text-gray-700">
                       From
                     </span>
                     <Input
                       type="date"
-                      className="h-10 w-40 bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold rounded-xl"
+                      className="w-full bg-gray-50 border-gray-200 focus:border-blue-400 transition-all rounded-lg"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
                   </div>
-                  <div className="flex items-center gap-2 px-2 sm:border-l border-slate-100">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest lb-1">
+                  <div className="flex items-center gap-2 px-2 sm:border-l border-gray-200">
+                    <span className="text-sm font-medium text-gray-700">
                       To
                     </span>
                     <Input
                       type="date"
-                      className="h-10 w-40 bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold rounded-xl"
+                      className="w-full bg-gray-50 border-gray-200 focus:border-blue-400 transition-all rounded-lg"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                     />
                   </div>
-                  <div className="flex items-center gap-2 px-2 lg:border-l border-slate-100">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest lb-1">
+                  <div className="flex items-center gap-2 px-2 lg:border-l border-gray-200">
+                    <span className="text-sm font-medium text-gray-700">
                       Month
                     </span>
                     <Input
                       type="month"
-                      className="h-10 w-40 bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold rounded-xl"
+                      className="w-full bg-gray-50 border-gray-200 focus:border-blue-400 transition-all rounded-lg"
                       value={monthFilter}
                       onChange={(e) => setMonthFilter(e.target.value)}
                     />
                   </div>
-                </div>
-
                 <div className="flex items-center gap-3 ml-auto lg:ml-0">
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="h-10 px-5 font-black text-slate-500 hover:bg-slate-50 rounded-xl"
+                    className=" px-5 font-semibold text-gray-600 hover:bg-gray-50 rounded-lg border-gray-200"
                     onClick={() => {
                       setStartDate("");
                       setEndDate("");
@@ -373,13 +370,15 @@ const AgentBillableReport = () => {
                   </Button>
                   <Button
                     variant="default"
-                    className="bg-emerald-600 hover:bg-emerald-700 font-black gap-2 h-10 px-6 shadow-lg shadow-emerald-100 rounded-xl transition-all active:scale-95"
+                    className="bg-emerald-600 hover:bg-emerald-700 font-semibold gap-2 px-6 shadow-sm rounded-lg transition-all"
                     onClick={handleExportDailyExcel}
                   >
-                    <FileDown className="w-4.5 h-4.5" />
+                    <FileDown className="w-4 h-4" />
                     Export
                   </Button>
                 </div>
+                </div>
+
               </div>
             </div>
           </CardHeader>
@@ -388,7 +387,7 @@ const AgentBillableReport = () => {
             {loadingDaily ? (
               <div className="py-32 text-center">
                 <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-                <p className="text-slate-500 font-medium">
+                <p className="text-gray-500 font-medium">
                   Analyzing daily performance...
                 </p>
               </div>
@@ -405,21 +404,21 @@ const AgentBillableReport = () => {
               </div>
             ) : (
               <Table>
-                <TableHeader className="bg-slate-50">
+                <TableHeader className="bg-gray-50">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="px-6 font-bold text-slate-900 h-12">
+                    <TableHead className="px-6 font-semibold text-gray-700 h-12">
                       Date
                     </TableHead>
-                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                    <TableHead className="text-center font-semibold text-gray-700 h-12">
                       Assigned (Hrs)
                     </TableHead>
-                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                    <TableHead className="text-center font-semibold text-gray-700 h-12">
                       Worked (Hrs)
                     </TableHead>
-                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                    <TableHead className="text-center font-semibold text-gray-700 h-12">
                       QC Score
                     </TableHead>
-                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                    <TableHead className="text-center font-semibold text-gray-700 h-12">
                       Daily Target (Hrs)
                     </TableHead>
                   </TableRow>
@@ -429,20 +428,20 @@ const AgentBillableReport = () => {
                     filteredDailyData.map((row, idx) => (
                       <TableRow
                         key={idx}
-                        className="group hover:bg-slate-50/50 transition-colors border-slate-100"
+                        className="group hover:bg-blue-50 transition-colors border-gray-200"
                       >
-                        <td className="px-6 py-4 font-semibold text-slate-900">
+                        <td className="px-6 py-4 font-medium text-gray-900">
                           {row.work_date
                             ? dayjs(row.work_date).format("DD-MM-YYYY")
                             : row.date_time
                               ? dayjs(row.date_time).format("DD-MM-YYYY")
                               : "-"}
                         </td>
-                        <td className="px-6 py-4 text-center text-slate-400 font-mediumitalic">
+                        <td className="px-6 py-4 text-center text-gray-400 font-medium italic">
                           —
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <Badge className="bg-blue-50! text-blue-700! border-blue-100! font-bold text-sm">
+                          <Badge className="bg-blue-50 text-blue-700 border-blue-200 font-semibold text-sm">
                             {row.cumulative_billable_hours_till_day != null
                               ? Number(
                                   row.cumulative_billable_hours_till_day,
@@ -450,13 +449,13 @@ const AgentBillableReport = () => {
                               : "-"}
                           </Badge>
                         </td>
-                        <td className="px-6 py-4 text-center text-slate-400 font-mediumitalic">
+                        <td className="px-6 py-4 text-center text-gray-400 font-medium italic">
                           —
                         </td>
                         <td className="px-6 py-4 text-center">
                           <Badge
                             variant="outline"
-                            className="font-bold border-slate-200 text-slate-600"
+                            className="font-semibold border-gray-200 text-gray-600"
                           >
                             {row.daily_required_hours != null
                               ? Number(row.daily_required_hours).toFixed(2)
@@ -468,9 +467,9 @@ const AgentBillableReport = () => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={5} className="h-64 text-center">
-                        <div className="flex flex-col items-center justify-center gap-3 text-slate-300">
-                          <Clock className="w-12 h-12 opacity-20" />
-                          <p className="text-slate-400 font-medium">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                          <Clock className="w-12 h-12 text-gray-300" />
+                          <p className="text-gray-500 font-medium">
                             No performance data found for this period.
                           </p>
                         </div>
@@ -486,49 +485,55 @@ const AgentBillableReport = () => {
 
       {/* Monthly Report View */}
       {activeToggle === "monthly" && (
-        <Card className="border-slate-200 shadow-xl overflow-hidden min-h-[500px]">
-          <CardHeader className="border-b border-slate-100 bg-slate-50/50">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-blue-600" />
+        <Card className="shadow-sm border-gray-200 overflow-hidden rounded-xl min-h-125 bg-white">
+          <CardHeader className="border-b border-gray-200 bg-gray-50 p-8">
+            <div className="flex flex-col gap-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="w-6 h-6 text-blue-600" />
+                </div>
                 <div>
-                  <CardTitle className="text-lg font-bold text-slate-900">
+                  <CardTitle className="text-xl font-semibold text-gray-900">
                     Monthly Summary
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="font-medium text-gray-500">
                     Aggregate monthly billable performance
                   </CardDescription>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
-                    Filter Month
-                  </span>
-                  <Input
-                    type="month"
-                    className="h-9 w-40 bg-white border-slate-200"
-                    value={monthlyMonth}
-                    onChange={(e) => setMonthlyMonth(e.target.value)}
-                  />
+              <div className="flex flex-wrap items-center gap-6 w-full">
+                <div className="flex flex-row items-center gap-4 bg-white p-2 rounded-xl border border-gray-200 shadow-sm w-auto">
+                  <div className="flex items-center gap-2 px-2">
+                    <span className="text-sm font-medium text-gray-700">
+                      Filter Month
+                    </span>
+                    <Input
+                      type="month"
+                      className="w-full bg-gray-50 border-gray-200 focus:border-blue-400 transition-all rounded-lg"
+                      value={monthlyMonth}
+                      onChange={(e) => setMonthlyMonth(e.target.value)}
+                    />
+                  </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-9 font-bold text-slate-500"
-                  onClick={() => setMonthlyMonth("")}
-                >
-                  Reset
-                </Button>
-                <Button
-                  variant="default"
-                  className="bg-emerald-600 hover:bg-emerald-700 font-bold gap-2 h-9 shadow-md"
-                  onClick={handleExportMonthlyTable}
-                >
-                  <FileDown className="w-4 h-4" />
-                  Export All
-                </Button>
+                <div className="flex items-center gap-3 ml-auto lg:ml-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-11 px-5 font-semibold text-gray-600 hover:bg-gray-50 rounded-lg border-gray-200"
+                    onClick={() => setMonthlyMonth("")}
+                  >
+                    Reset
+                  </Button>
+                  <Button
+                    variant="default"
+                    className="bg-emerald-600 hover:bg-emerald-700 font-semibold gap-2 h-11 px-6 shadow-sm rounded-lg transition-all"
+                    onClick={handleExportMonthlyTable}
+                  >
+                    <FileDown className="w-4 h-4" />
+                    Export All
+                  </Button>
+                </div>
               </div>
             </div>
           </CardHeader>
@@ -537,7 +542,7 @@ const AgentBillableReport = () => {
             {loadingMonthly ? (
               <div className="py-32 text-center">
                 <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-                <p className="text-slate-500 font-medium">
+                <p className="text-gray-500 font-medium">
                   Generating monthly insights...
                 </p>
               </div>
@@ -550,24 +555,24 @@ const AgentBillableReport = () => {
               </div>
             ) : (
               <Table>
-                <TableHeader className="bg-slate-50">
+                <TableHeader className="bg-gray-50">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="px-6 font-bold text-slate-900 h-12">
+                    <TableHead className="px-6 font-semibold text-gray-700 h-12">
                       Year & Month
                     </TableHead>
-                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                    <TableHead className="text-center font-semibold text-gray-700 h-12">
                       Hours Delivered
                     </TableHead>
-                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                    <TableHead className="text-center font-semibold text-gray-700 h-12">
                       Monthly Goal
                     </TableHead>
-                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                    <TableHead className="text-center font-semibold text-gray-700 h-12">
                       Pending
                     </TableHead>
-                    <TableHead className="text-center font-bold text-slate-900 h-12">
+                    <TableHead className="text-center font-semibold text-gray-700 h-12">
                       Avg QC Score
                     </TableHead>
-                    <TableHead className="text-right pr-6 font-bold text-slate-900 h-12">
+                    <TableHead className="text-right pr-6 font-semibold text-gray-700 h-12">
                       Full Report
                     </TableHead>
                   </TableRow>
@@ -577,13 +582,13 @@ const AgentBillableReport = () => {
                     monthlySummaryData.map((row, idx) => (
                       <TableRow
                         key={idx}
-                        className="group hover:bg-slate-50/50 transition-colors border-slate-100"
+                        className="group hover:bg-blue-50 transition-colors border-gray-200"
                       >
-                        <td className="px-6 py-4 font-bold text-slate-900">
+                        <td className="px-6 py-4 font-semibold text-gray-900">
                           {row.month_year}
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <Badge className="bg-blue-50! text-blue-700! border-blue-100! font-bold text-sm">
+                          <Badge className="bg-blue-50 text-blue-700 border-blue-200 font-semibold text-sm">
                             {row.total_billable_hours ||
                             row.total_billable_hours_month
                               ? Number(
@@ -593,13 +598,13 @@ const AgentBillableReport = () => {
                               : "-"}
                           </Badge>
                         </td>
-                        <td className="px-6 py-4 text-center font-bold text-slate-600">
+                        <td className="px-6 py-4 text-center font-medium text-gray-600">
                           {row.monthly_target ?? row.monthly_goal ?? "-"}
                         </td>
                         <td className="px-6 py-4 text-center">
                           <Badge
                             variant="outline"
-                            className={`font-bold border-slate-200 ${Number(row.pending_target) > 0 ? "text-amber-600 bg-amber-50" : "text-emerald-600 bg-emerald-50"}`}
+                            className={`font-semibold ${Number(row.pending_target) > 0 ? "text-amber-600 bg-amber-50 border-amber-200" : "text-emerald-600 bg-emerald-50 border-emerald-200"}`}
                           >
                             {row.pending_target
                               ? Number(row.pending_target).toFixed(2)
@@ -610,25 +615,25 @@ const AgentBillableReport = () => {
                           {row.avg_qc_score != null ? (
                             <Badge
                               variant="secondary"
-                              className="bg-slate-100 text-slate-900 font-bold border-none"
+                              className="bg-gray-100 text-gray-900 font-semibold"
                             >
                               {row.avg_qc_score}
                             </Badge>
                           ) : (
-                            <span className="text-slate-300">—</span>
+                            <span className="text-gray-400">—</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-right pr-6">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-8 border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-bold gap-2"
+                            className="h-11 border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-semibold gap-2 rounded-lg"
                             onClick={() =>
                               row.month_year &&
                               void handleExportMonthDailyExcel(row.month_year)
                             }
                           >
-                            <Download className="w-3.5 h-3.5" />
+                            <Download className="w-4 h-4" />
                             Excel
                           </Button>
                         </td>
@@ -637,9 +642,9 @@ const AgentBillableReport = () => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={6} className="h-64 text-center">
-                        <div className="flex flex-col items-center justify-center gap-3 text-slate-300">
-                          <TrendingUp className="w-12 h-12 opacity-20" />
-                          <p className="text-slate-400 font-medium">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                          <TrendingUp className="w-12 h-12 text-gray-300" />
+                          <p className="text-gray-500 font-medium">
                             No monthly performance data available.
                           </p>
                         </div>

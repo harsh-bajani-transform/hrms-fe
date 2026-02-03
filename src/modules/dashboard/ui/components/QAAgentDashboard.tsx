@@ -8,7 +8,7 @@ import {
   TrendingUp,
   Activity,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import api from "../../../../services/api";
 import { useAuth } from "../../../../context/AuthContext";
@@ -162,21 +162,16 @@ const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
     iconBgColor,
     iconColor,
   }) => (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium text-slate-500">{title}</h3>
-          <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center">
-            <span className="text-slate-400 text-xs">?</span>
-          </div>
-        </div>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
         <div className={`${iconBgColor} p-2.5 rounded-lg`}>
           {Icon && <Icon className={`w-5 h-5 ${iconColor}`} />}
         </div>
       </div>
       <div>
-        <p className="text-3xl font-bold text-slate-800 mb-1">{value}</p>
-        <p className="text-sm text-slate-400">{subtitle}</p>
+        <p className="text-3xl font-bold text-gray-900 mb-1">{value}</p>
+        <p className="text-sm text-gray-500">{subtitle}</p>
       </div>
     </div>
   );

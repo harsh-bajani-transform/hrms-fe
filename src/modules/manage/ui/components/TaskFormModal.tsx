@@ -8,7 +8,7 @@ import {
   X,
   PlusCircle,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -166,12 +166,6 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5 text-white/70" />
-          </button>
         </div>
 
         <form
@@ -216,8 +210,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             {/* TASK NAME */}
             <div className="md:col-span-2 space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <ClipboardList className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <ClipboardList className="w-3.5 h-3.5" />
                 Task Title
               </label>
               <Input
@@ -227,14 +221,14 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="e.g. Data Analysis"
-                className={`h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
             </div>
 
             {/* PROJECT */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <FileText className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" />
                 Project
               </label>
               <Select
@@ -244,7 +238,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 }
               >
                 <SelectTrigger
-                  className={`h-11 w-full bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.projectId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={`h-11 w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.projectId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 >
                   <SelectValue placeholder="Select Project" />
                 </SelectTrigger>
@@ -263,8 +257,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
             {/* ASSIGN TO */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <Users className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5" />
                 Assignee
               </label>
               <Select
@@ -274,7 +268,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 }
               >
                 <SelectTrigger
-                  className={`h-11 w-full bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.assignedTo ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={`h-11 w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.assignedTo ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 >
                   <SelectValue placeholder="Select User" />
                 </SelectTrigger>
@@ -293,8 +287,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
             {/* START DATE */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <Calendar className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5" />
                 Start Date
               </label>
               <Input
@@ -304,14 +298,14 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, startDate: e.target.value })
                 }
-                className={`h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.startDate ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.startDate ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
             </div>
 
             {/* END DATE */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <Calendar className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5" />
                 End Date
               </label>
               <Input
@@ -321,14 +315,14 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, endDate: e.target.value })
                 }
-                className={`h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.endDate ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.endDate ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
             </div>
 
             {/* DESCRIPTION */}
             <div className="md:col-span-2 space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <FileText className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" />
                 Task Description
               </label>
               <textarea
@@ -339,7 +333,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 }
                 rows={3}
                 placeholder="Detail the expectations..."
-                className="w-full p-4 text-sm rounded-xl bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-blue-400 focus:ring-blue-100 transition-all outline-hidden resize-none"
+                className="w-full p-4 text-sm rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-400 focus:ring-blue-100 transition-all outline-hidden resize-none"
               />
             </div>
           </div>

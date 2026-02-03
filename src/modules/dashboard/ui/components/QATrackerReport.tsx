@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Download, Filter, FileDown, Users as UsersIcon } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import api from "../../../../services/api";
 import { useAuth } from "../../../../context/AuthContext";
@@ -223,14 +223,14 @@ const QATrackerReport: React.FC = () => {
   return (
     <div className="space-y-10 max-w-6xl mx-auto py-8">
       <div className="mb-8 flex items-center gap-3">
-        <UsersIcon className="w-9 h-9 text-blue-700" />
-        <h2 className="text-3xl font-extrabold text-blue-800 tracking-tight drop-shadow-sm">
+        <UsersIcon className="w-9 h-9 text-blue-600" />
+        <h2 className="text-3xl font-semibold text-blue-600">
           QA Tracker Report
         </h2>
       </div>
 
       {/* Filter Section */}
-      <div className="bg-linear-to-br from-blue-50 via-white to-indigo-50 rounded-2xl p-6 mb-6 shadow border border-blue-100">
+      <div className="rounded-2xl p-6 mb-6 shadow border bg-white">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-blue-700" />
@@ -296,7 +296,7 @@ const QATrackerReport: React.FC = () => {
               onValueChange={setSelectedAgent}
               disabled={loadingAgents}
             >
-              <SelectTrigger className="h-9">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="All Agents" />
               </SelectTrigger>
               <SelectContent>

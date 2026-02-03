@@ -6,7 +6,7 @@ import React, {
   useMemo,
 } from "react";
 import { Settings, Users, Briefcase, Lock } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useAuth } from "../../../../context/AuthContext";
 import UsersManagement from "../components/UsersManagement";
 import ProjectsManagement from "../components/ProjectsManagement";
@@ -136,57 +136,89 @@ const ManageView: React.FC = () => {
 
   if (!canManageUsers && !canManageProjects && !isAssistantManager) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500">
-        <Lock className="w-16 h-16 mb-4 opacity-20" />
-        <div className="text-lg font-semibold">
-          You do not have permission to access this page.
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-white rounded-xl shadow-sm border border-gray-200 p-12">
+        <div className="p-6 bg-red-50 rounded-full mb-6">
+          <Lock className="w-12 h-12 text-red-600" />
         </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Access Restricted
+        </h2>
+        <p className="text-gray-600 text-center max-w-md">
+          You do not have permission to access this management area. Please contact your administrator if you believe this is an error.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-            Management
-          </h1>
-          <p className="text-slate-500 mt-1">
-            Manage users, projects, and tracking settings.
-          </p>
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Page Header */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <Settings className="w-7 h-7 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Management Center
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Manage users, projects, and system settings
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-8 bg-slate-100/50 p-1.5 rounded-xl w-fit">
-        <Button
-          variant={activeTab === "users" ? "default" : "ghost"}
-          className={`flex items-center gap-2 px-6 h-10 rounded-lg font-semibold text-sm transition-all ${activeTab === "users" ? "bg-blue-600 text-white shadow-md border-none" : "text-slate-600 hover:text-blue-600 hover:bg-white"}`}
-          onClick={() => setActiveTab("users")}
-        >
-          <Users className="w-4 h-4" /> Users
-        </Button>
-        <Button
-          variant={activeTab === "projects" ? "default" : "ghost"}
-          className={`flex items-center gap-2 px-6 h-10 rounded-lg font-semibold text-sm transition-all ${activeTab === "projects" ? "bg-blue-600 text-white shadow-md border-none" : "text-slate-600 hover:text-blue-600 hover:bg-white"}`}
-          onClick={() => setActiveTab("projects")}
-        >
-          <Briefcase className="w-4 h-4" /> Projects
-        </Button>
-        <Button
-          variant={activeTab === "tracking" ? "default" : "ghost"}
-          className={`flex items-center gap-2 px-6 h-10 rounded-lg font-semibold text-sm transition-all ${activeTab === "tracking" ? "bg-blue-600 text-white shadow-md border-none" : "text-slate-600 hover:text-blue-600 hover:bg-white"}`}
-          onClick={() => setActiveTab("tracking")}
-        >
-          <Settings className="w-4 h-4" /> User Tracking
-        </Button>
-        <Button
-          variant={activeTab === "monthly_target" ? "default" : "ghost"}
-          className={`flex items-center gap-2 px-6 h-10 rounded-lg font-semibold text-sm transition-all ${activeTab === "monthly_target" ? "bg-blue-600 text-white shadow-md border-none" : "text-slate-600 hover:text-blue-600 hover:bg-white"}`}
-          onClick={() => setActiveTab("monthly_target")}
-        >
-          <Briefcase className="w-4 h-4" /> Monthly Target
-        </Button>
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={activeTab === "users" ? "default" : "ghost"}
+            className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
+              activeTab === "users" 
+                ? "bg-blue-600 text-white shadow-sm" 
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            onClick={() => setActiveTab("users")}
+          >
+            <Users className="w-4 h-4" /> Users Management
+          </Button>
+          <Button
+            variant={activeTab === "projects" ? "default" : "ghost"}
+            className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
+              activeTab === "projects" 
+                ? "bg-blue-600 text-white shadow-sm" 
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            onClick={() => setActiveTab("projects")}
+          >
+            <Briefcase className="w-4 h-4" /> Projects Management
+          </Button>
+          <Button
+            variant={activeTab === "tracking" ? "default" : "ghost"}
+            className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
+              activeTab === "tracking" 
+                ? "bg-blue-600 text-white shadow-sm" 
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            onClick={() => setActiveTab("tracking")}
+          >
+            <Settings className="w-4 h-4" /> User Tracking
+          </Button>
+          <Button
+            variant={activeTab === "monthly_target" ? "default" : "ghost"}
+            className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
+              activeTab === "monthly_target" 
+                ? "bg-blue-600 text-white shadow-sm" 
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            onClick={() => setActiveTab("monthly_target")}
+          >
+            <Briefcase className="w-4 h-4" /> Monthly Target
+          </Button>
+        </div>
       </div>
 
       {activeTab === "users" && (

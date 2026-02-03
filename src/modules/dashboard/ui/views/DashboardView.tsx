@@ -1,6 +1,6 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { useSearch, useNavigate } from "@tanstack/react-router";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 import { fetchDashboardData } from "../../services/dashboardService";
 import { fetchProjectsList } from "../../services/projectService";

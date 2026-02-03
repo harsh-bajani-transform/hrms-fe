@@ -9,7 +9,7 @@ import {
   Shield,
   User,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -106,11 +106,11 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
       {/* Search and Actions */}
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
             type="text"
             placeholder="Search users by name or email..."
-            className="w-full pl-10 h-10"
+            className="w-full pl-10 h-11"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -118,7 +118,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
         {canManageUsers && (
           <Button
             onClick={() => setShowAddModal(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 h-10 px-4"
+            className="bg-blue-600 hover:bg-blue-700 h-11 px-4"
           >
             <UserPlus className="w-4 h-4" />
             Add New User
@@ -127,20 +127,20 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
       </div>
 
       {/* Users Table */}
-      <div className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 border-b border-slate-100">
-              <TableHead className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <TableRow className="bg-gray-50 border-b border-gray-200">
+              <TableHead className="px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
                 User
               </TableHead>
-              <TableHead className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <TableHead className="px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
                 Role & Designation
               </TableHead>
-              <TableHead className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <TableHead className="px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
                 Status
               </TableHead>
-              <TableHead className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
+              <TableHead className="px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-right">
                 Actions
               </TableHead>
             </TableRow>
@@ -164,7 +164,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
               <TableRow>
                 <TableCell
                   colSpan={4}
-                  className="px-6 py-12 text-center text-slate-400"
+                  className="px-6 py-12 text-center text-gray-400"
                 >
                   <div className="flex flex-col items-center gap-2">
                     <User className="w-8 h-8 opacity-20" />
@@ -176,18 +176,18 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
               filteredUsers.map((u) => (
                 <TableRow
                   key={u.user_id}
-                  className="hover:bg-slate-50/50 transition-colors group"
+                  className="hover:bg-blue-50 transition-colors group"
                 >
                   <TableCell className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs border border-indigo-100 uppercase">
+                      <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-semibold text-xs border border-blue-200 uppercase">
                         {u.user_name?.substring(0, 2)}
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-slate-800">
+                        <div className="text-sm font-semibold text-gray-900">
                           {u.user_name}
                         </div>
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-gray-500">
                           {u.user_email}
                         </div>
                       </div>
@@ -195,11 +195,11 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
                   </TableCell>
                   <TableCell className="px-6 py-4">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-                        <Shield className="w-3 h-3 text-indigo-500" />
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+                        <Shield className="w-3 h-3 text-blue-600" />
                         {u.role_name || "AGENT"}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-gray-500">
                         {u.designation_name || "—"}
                       </div>
                     </div>
@@ -210,7 +210,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
                       className={`cursor-pointer ${
                         u.is_active === 1
                           ? "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100"
-                          : "bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200"
+                          : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                       }`}
                       onClick={() => canManageUsers && handleToggleStatus(u)}
                     >
@@ -232,7 +232,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => setEditingUser(u)}
-                          className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                          className="text-gray-400 hover:text-blue-600 hover:bg-blue-50"
                           title="Edit User"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -241,7 +241,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => handleDelete(u)}
-                          className="text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                          className="text-gray-400 hover:text-rose-600 hover:bg-rose-50"
                           disabled={isDeleting === u.user_id}
                           title="Delete User"
                         >

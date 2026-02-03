@@ -76,15 +76,11 @@ const TabsNavigation = ({
   const visibleTabs = tabs.filter((tab) => tab.alwaysVisible || tab.visible)
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full bg-white rounded-xl p-4 shadow-sm border border-gray-200">
       {/* Horizontal draggable/scrollable + equal spacing on large screens */}
       <div
         ref={tabsRef}
-        className="
-          flex overflow-x-auto pb-2 px-1 scroll-smooth scrollbar-hide snap-x snap-mandatory
-          w-full gap-2
-          lg:justify-between
-        "
+        className="flex flex-row overflow-x-auto pb-2 px-1 scroll-smooth scrollbar-hide snap-x snap-mandatory w-full gap-2 lg:gap-3"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {visibleTabs.map((tab) => {
@@ -96,36 +92,21 @@ const TabsNavigation = ({
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`
-                grow lg:grow-0
-                px-4 sm:px-4 py-3 sm:py-3 rounded-lg text-sm font-semibold
-                flex items-center justify-center gap-1.5 sm:gap-2
-                transition-all whitespace-nowrap snap-start cursor-pointer
-                bg-white shadow border border-slate-200
-                ${isActive ? 'bg-blue-600! text-white border-blue-600! shadow-md' : 'text-slate-600 hover:text-blue-600 hover:border-slate-300'}
+                shrink-0
+                px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg text-sm font-medium
+                flex items-center justify-center gap-2
+                transition-all duration-200 whitespace-nowrap snap-start cursor-pointer
+                ${isActive 
+                  ? 'bg-blue-600 text-white shadow-md scale-105' 
+                  : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 hover:shadow-sm'}
               `}
               title={tab.label}
             >
-              <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span className="hidden xs:inline">{tab.label}</span>
-              <span className="xs:hidden">{tab.label}</span>
+              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-600'}`} />
+              <span className="hidden sm:inline">{tab.label}</span>
             </button>
           )
         })}
-      </div>
-
-      {/* Mobile Dropdown */}
-      <div className="sm:hidden mt-2">
-        <select
-          value={activeTab}
-          onChange={(e) => setActiveTab(e.target.value)}
-          className="w-full p-2 border border-slate-300 rounded-lg bg-white text-slate-700 text-sm font-medium cursor-pointer"
-        >
-          {visibleTabs.map((tab) => (
-            <option key={tab.id} value={tab.id}>
-              {tab.label}
-            </option>
-          ))}
-        </select>
       </div>
     </div>
   )

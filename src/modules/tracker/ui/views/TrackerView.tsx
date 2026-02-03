@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useAuth } from "../../../../context/AuthContext";
 import { addTrackerEntry } from "../../services/trackerService";
 import TrackerTable from "../components/TrackerTable";
@@ -207,130 +207,126 @@ const TrackerView: React.FC = () => {
           />
         ) : null
       ) : (
-        <div className="space-y-6 max-w-6xl mx-auto">
+        <div className="space-y-6 max-w-5xl mx-auto">
           {/* Data Entry Form */}
-          <div className="flex flex-col items-center justify-center min-h-[80vh] w-full">
-            <div className="w-full max-w-5xl rounded-t-lg bg-blue-700 flex flex-col sm:flex-row items-center justify-between px-12 py-6 mb-0" style={{ minWidth: 700 }}>
-            <div className="flex items-center gap-2 text-white">
-              <span className="text-2xl">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-plus w-6 h-6" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>
-              </span>
-              <div>
-                <div className="font-bold text-xl leading-tight">New Production Entry</div>
-                <div className="text-sm opacity-80">Log output as <span className="font-semibold">{user?.user_name || user?.name || "-"}</span></div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            {/* Header */}
+            <div className="bg-linear-to-r from-blue-600 to-blue-700 px-8 py-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3 text-white">
+                  <div className="p-2 bg-white/10 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold">New Production Entry</h2>
+                    <p className="text-blue-100 text-sm mt-0.5">Logged in as <span className="font-semibold">{user?.user_name || user?.name || "-"}</span></p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-white/10 rounded-lg px-4 py-2">
+                  <span className="text-white text-sm font-medium">Entry Date:</span>
+                  <span className="text-white font-semibold">{entryDate}</span>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 mt-4 sm:mt-0">
-              <span className="text-white text-sm font-semibold">DATE</span>
-              <input
-                type="text"
-                className="rounded px-2 py-1 text-sm border-0 focus:ring-2 focus:ring-blue-300 bg-white font-semibold"
-                value={entryDate}
-                readOnly
-                style={{ color: '#1e293b', fontWeight: 600, cursor: 'not-allowed', width: '110px', minWidth: '0' }}
-                tabIndex={-1}
-              />
-            </div>
-          </div>
-          <form
-            className="bg-white rounded-b-lg shadow-lg p-12 w-full max-w-5xl flex flex-col gap-10"
-            style={{ minWidth: 700 }}
-            onSubmit={handleSubmit}
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col w-full max-w-85 mx-auto">
-                  <label className="text-sm font-semibold text-slate-600 flex items-center gap-1 mb-1">
+
+            {/* Form */}
+            <form className="p-8 space-y-8" onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Project Selection */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
                     Project Name <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className="w-full h-12 min-h-12 bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-base text-blue-700 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-200 placeholder:font-semibold placeholder:text-slate-600 placeholder:text-xs"
+                    className="w-full h-11 bg-white border border-gray-300 rounded-lg px-4 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={selectedProject}
                     onChange={e => setSelectedProject(e.target.value)}
                     onBlur={() => handleBlur('selectedProject')}
                     disabled={loadingProjects}
                     aria-invalid={!!errors.selectedProject}
                   >
-                    <option value="" className="font-semibold text-slate-600 text-xs">Select Project</option>
+                    <option value="">Select Project</option>
                     {projects.map((p) => (
-                      <option key={p.project_id} value={p.project_id} className="font-normal text-slate-700 text-base">{p.project_name}</option>
+                      <option key={p.project_id} value={p.project_id}>{p.project_name}</option>
                     ))}
                   </select>
                   {touched.selectedProject && errors.selectedProject && (
-                    <span className="text-xs text-red-600 mt-1">{errors.selectedProject}</span>
+                    <span className="text-xs text-red-600">{errors.selectedProject}</span>
                   )}
                 </div>
-                <div className="flex flex-col w-full max-w-85 mx-auto">
-                  <label className="text-sm font-semibold text-slate-600 flex items-center gap-1 mb-1">
+
+                {/* Task Selection */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
                     Task Name <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className="w-full h-12 min-h-12 bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-base text-blue-700 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-200 placeholder:font-semibold placeholder:text-slate-600 placeholder:text-xs"
+                    className="w-full h-11 bg-white border border-gray-300 rounded-lg px-4 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                     value={selectedTask}
                     onChange={e => setSelectedTask(e.target.value)}
                     onBlur={() => handleBlur('selectedTask')}
                     disabled={!selectedProject || loadingTasks}
                     aria-invalid={!!errors.selectedTask}
                   >
-                    <option value="" className="font-semibold text-slate-600 text-xs">Select Task</option>
+                    <option value="">Select Task</option>
                     {tasks.map((t) => (
-                      <option key={t.task_id} value={t.task_id} className="font-normal text-slate-700 text-base">{t.task_name || t.label}</option>
+                      <option key={t.task_id} value={t.task_id}>{t.task_name || t.label}</option>
                     ))}
                   </select>
                   {touched.selectedTask && errors.selectedTask && (
-                    <span className="text-xs text-red-600 mt-1">{errors.selectedTask}</span>
+                    <span className="text-xs text-red-600">{errors.selectedTask}</span>
                   )}
                 </div>
-              </div>
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col w-full max-w-85 mx-auto">
-                  <label className="text-sm font-semibold text-slate-600 flex items-center gap-1 mb-1">
+
+                {/* Base Target (Read-only) */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
                     Base Target <span className="text-red-500">*</span>
                   </label>
-                  <div className="flex items-center bg-blue-50 border border-blue-100 rounded-lg px-4 py-2 text-base text-blue-700 font-semibold gap-2 min-h-12 h-12">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-blue-400"><rect width="14" height="10" x="5" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    <span className="text-blue-700 font-semibold">{baseTargetLoading ? 'Loading...' : (baseTarget ? baseTarget : '-')}</span>
+                  <div className="flex items-center h-11 bg-blue-50 border border-blue-200 rounded-lg px-4 text-blue-700 font-semibold gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-blue-500"><rect width="14" height="10" x="5" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <span>{baseTargetLoading ? 'Loading...' : (baseTarget ? baseTarget : '-')}</span>
                   </div>
                   {touched.baseTarget && errors.baseTarget && (
-                    <span className="text-xs text-red-600 mt-1">{errors.baseTarget}</span>
+                    <span className="text-xs text-red-600">{errors.baseTarget}</span>
                   )}
                 </div>
-                <div className="flex flex-col w-full max-w-85 mx-auto">
-                  <label className="text-sm font-semibold text-slate-600 flex items-center gap-1 mb-1">
+
+                {/* Production Target */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
                     Production Target <span className="text-red-500">*</span>
                   </label>
-                  <div className="flex items-center bg-blue-50 border border-blue-100 rounded-lg px-4 py-2 text-base text-blue-700 font-semibold gap-2 min-h-12 h-12">
-                    <input
-                      type="number"
-                      min="0"
-                      className="bg-transparent outline-none border-none w-full h-full text-blue-700 font-semibold text-base px-0 placeholder:font-semibold placeholder:text-slate-600 placeholder:text-xs"
-                      value={productionTarget}
-                      onChange={e => setProductionTarget(e.target.value)}
-                      onBlur={() => handleBlur('productionTarget')}
-                      placeholder="Enter value"
-                      style={{ minWidth: 0 }}
-                      aria-invalid={!!errors.productionTarget}
-                    />
-                  </div>
+                  <input
+                    type="number"
+                    min="0"
+                    className="w-full h-11 bg-white border border-gray-300 rounded-lg px-4 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={productionTarget}
+                    onChange={e => setProductionTarget(e.target.value)}
+                    onBlur={() => handleBlur('productionTarget')}
+                    placeholder="Enter production value"
+                    aria-invalid={!!errors.productionTarget}
+                  />
                   {touched.productionTarget && errors.productionTarget && (
-                    <span className="text-xs text-red-600 mt-1">{errors.productionTarget}</span>
+                    <span className="text-xs text-red-600">{errors.productionTarget}</span>
                   )}
                 </div>
               </div>
-            </div>
-            <div className="flex justify-center mt-2 mb-2">
-              <div className="w-full max-w-85 mx-auto">
-                <label className="text-sm font-semibold text-slate-600 flex items-center gap-1 mb-1">Project Files</label>
+
+              {/* File Upload */}
+              <div className="md:col-span-2 space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Project Files (Optional)
+                </label>
                 <div
-                  className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 min-h-11 h-11 cursor-pointer group"
+                  className="flex items-center justify-between bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
                   onClick={() => document.getElementById('custom-file-upload')?.click()}
-                  style={{ transition: 'border 0.2s' }}
                 >
-                  <div className="flex items-center gap-2 text-slate-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-slate-400"><path d="M16 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"/><rect width="8" height="8" x="14" y="2" rx="2"/><path d="M8 12h4m-2-2v4"/></svg>
-                    <span className="font-medium select-none">{file ? file.name : 'Select project files'}</span>
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-gray-400"><path d="M16 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"/><rect width="8" height="8" x="14" y="2" rx="2"/><path d="M8 12h4m-2-2v4"/></svg>
+                    <span className="font-medium">{file ? file.name : 'Select project files'}</span>
                   </div>
-                  <span className="text-blue-600 font-semibold text-sm group-hover:underline select-none">Browse</span>
+                  <span className="text-blue-600 font-semibold text-sm hover:underline">Browse</span>
                   <input
                     id="custom-file-upload"
                     type="file"
@@ -340,25 +336,26 @@ const TrackerView: React.FC = () => {
                   />
                 </div>
               </div>
-            </div>
-            <div className="flex gap-4 justify-center mt-4">
-              <button
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                disabled={submitting}
-              >
-                {submitting ? "Submitting..." : "Submit"}
-              </button>
-              <button
-                type="button"
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2"
-                onClick={handleViewAll}
-              >
-                View All Data
-              </button>
-            </div>
-          </form>
-        </div>
+
+              {/* Action Buttons */}
+              <div className="md:col-span-2 flex gap-4 justify-end pt-4">
+                <button
+                  type="button"
+                  onClick={handleViewAll}
+                  className="h-11 px-8 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold text-sm transition-colors"
+                >
+                  View All Entries
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="h-11 px-8 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {submitting ? "Submitting..." : "Submit Entry"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </>

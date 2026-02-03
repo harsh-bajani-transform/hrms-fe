@@ -40,17 +40,23 @@ const FilterBar = ({
   return (
     <div
       className="
-        bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100
-        flex flex-col gap-4
+        bg-white p-4 sm:p-6 rounded-xl shadow-md border border-slate-200
+        flex flex-col gap-6
         lg:flex-row lg:items-center lg:justify-between
+        transition-shadow hover:shadow-lg
       "
     >
       {/* TITLE */}
-      <div className="flex items-center gap-2 text-slate-700 font-semibold">
-        <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-        <span className="text-sm sm:text-base">
-          {isAgent ? "My Analytics" : "Organization Analytics"}
-        </span>
+      <div className="flex items-center gap-3 text-gray-900">
+        <div className="p-2 bg-blue-50 rounded-lg">
+          <Filter className="w-5 h-5 text-blue-600" />
+        </div>
+        <div>
+          <h3 className="text-base sm:text-lg font-semibold">
+            {isAgent ? "My Analytics" : "Organization Analytics"}
+          </h3>
+          <p className="text-xs text-gray-500 mt-0.5">Filter and analyze data</p>
+        </div>
       </div>
 
       {/* FILTER AREA */}
@@ -65,87 +71,84 @@ const FilterBar = ({
       >
         {/* TASK - Hidden for agents and QA */}
         {!isAgent && !isQA && (
-          <Select value={selectedTask} onValueChange={setSelectedTask}>
-            <SelectTrigger className="h-9 w-full lg:w-[180px]">
-              <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
-              <SelectValue placeholder="Select Task" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Tasks</SelectItem>
-              {allTasks.map((task) => (
-                <SelectItem key={task} value={task}>
-                  {task}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-gray-600 ml-1">Task Type</label>
+            <Select value={selectedTask} onValueChange={setSelectedTask}>
+              <SelectTrigger className="h-11 w-full lg:w-50 bg-white border-gray-300">
+                <Clock className="w-4 h-4 mr-2 text-gray-500" />
+                <SelectValue placeholder="All Tasks" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Tasks</SelectItem>
+                {allTasks.map((task) => (
+                  <SelectItem key={task} value={task}>
+                    {task}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         )}
 
         {/* PREV PERIOD - Hidden for agents and QA */}
         {!isAgent && !isQA && (
-          <Select value={comparisonMode} onValueChange={setComparisonMode}>
-            <SelectTrigger className="h-9 w-full lg:w-[180px]">
-              <Activity className="w-4 h-4 mr-2 text-muted-foreground" />
-              <SelectValue placeholder="Select Period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="previous_period">Prev Period</SelectItem>
-              <SelectItem value="prev_week">Last Week</SelectItem>
-              <SelectItem value="prev_month">Last Month</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-gray-600 ml-1">Comparison</label>
+            <Select value={comparisonMode} onValueChange={setComparisonMode}>
+              <SelectTrigger className="h-11 w-full lg:w-50 bg-white border-gray-300">
+                <Activity className="w-4 h-4 mr-2 text-gray-500" />
+                <SelectValue placeholder="Select Period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="previous_period">Previous Period</SelectItem>
+                <SelectItem value="prev_week">Last Week</SelectItem>
+                <SelectItem value="prev_month">Last Month</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         )}
 
         {/* FROM DATE */}
-        <div
-          className="
-            col-span-2 sm:col-span-1
-            bg-slate-50 p-3 rounded-lg border border-slate-200
-            flex flex-row items-center gap-3
-          "
-        >
-          <label className="text-xs text-slate-500 uppercase font-bold">
-            FROM
+        <div className="col-span-2 sm:col-span-1 space-y-1.5">
+          <label className="text-xs font-medium text-gray-600 ml-1">
+            From Date
           </label>
           <Input
             type="date"
             value={dateRange.start}
             onChange={(e) => handleDateRangeChange("start", e.target.value)}
-            className="flex-1 h-8 bg-white"
+            className=" bg-white border-gray-300"
           />
         </div>
 
         {/* TO DATE */}
-        <div
-          className="
-            col-span-2 sm:col-span-1
-            bg-slate-50 p-3 rounded-lg border border-slate-200
-            flex flex-row items-center gap-3
-          "
-        >
-          <label className="text-xs text-slate-500 uppercase font-bold">
-            TO
+        <div className="col-span-2 sm:col-span-1 space-y-1.5">
+          <label className="text-xs font-medium text-gray-600 ml-1">
+            To Date
           </label>
-          <Input
-            type="date"
-            value={dateRange.end}
-            onChange={(e) => handleDateRangeChange("end", e.target.value)}
-            className="flex-1 h-8 bg-white"
-          />
-          {(dateRange.start || dateRange.end) && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                handleDateRangeChange("start", "");
-                handleDateRangeChange("end", "");
-              }}
-              title="Clear date filter"
-            >
-              Clear
-            </Button>
-          )}
+          <div className="flex gap-2">
+            <Input
+              type="date"
+              value={dateRange.end}
+              onChange={(e) => handleDateRangeChange("end", e.target.value)}
+              className="bg-white border-gray-300 flex-1"
+            />
+            {(dateRange.start || dateRange.end) && (
+              <Button
+                type="button"
+                variant="outline"
+                size="default"
+                onClick={() => {
+                  handleDateRangeChange("start", "");
+                  handleDateRangeChange("end", "");
+                }}
+                className="h-11 px-4 border-gray-300 hover:bg-gray-50"
+                title="Clear date filter"
+              >
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

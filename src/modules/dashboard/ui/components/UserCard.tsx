@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../../../context/AuthContext";
 import * as XLSX from "xlsx";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import type { Id, TrackerRow } from "../../types";
 
 interface UserCardUser {
@@ -80,23 +80,23 @@ export default function UserCard({
 
   if (isAgent) {
     return (
-      <div className="mb-6">
-        <table className="min-w-full text-sm rounded-xl overflow-hidden shadow">
-          <thead className="bg-blue-50">
+      <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table className="min-w-full text-sm">
+          <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 text-left font-semibold text-blue-700">
+              <th className="px-4 py-3 text-left font-semibold text-gray-900">
                 Date-Time
               </th>
-              <th className="px-4 py-3 text-center font-semibold text-blue-700">
+              <th className="px-4 py-3 text-center font-semibold text-gray-900">
                 Assign Hours
               </th>
-              <th className="px-4 py-3 text-center font-semibold text-blue-700">
+              <th className="px-4 py-3 text-center font-semibold text-gray-900">
                 Worked Hours
               </th>
-              <th className="px-4 py-3 text-center font-semibold text-blue-700">
+              <th className="px-4 py-3 text-center font-semibold text-gray-900">
                 QC Score
               </th>
-              <th className="px-4 py-3 text-center font-semibold text-blue-700">
+              <th className="px-4 py-3 text-center font-semibold text-gray-900">
                 Daily Required Hours
               </th>
             </tr>

@@ -44,9 +44,9 @@ const AgentTabsNavigation = ({
   setActiveTab,
 }: AgentTabsNavigationProps) => {
   return (
-    <div className="relative w-full">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
       <div
-        className="flex overflow-x-auto pb-2 px-1 scroll-smooth scrollbar-hide snap-x snap-mandatory w-full gap-2 lg:justify-between"
+        className="flex overflow-x-auto scroll-smooth scrollbar-hide gap-2"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {tabs.map((tab) => {
@@ -58,18 +58,23 @@ const AgentTabsNavigation = ({
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               disabled={tab.disabled}
-              className={
-                `grow lg:grow-0 px-4 sm:px-4 py-3 sm:py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-all whitespace-nowrap snap-start ` +
-                (isActive
-                  ? "bg-white shadow-md border border-blue-600 text-blue-600"
-                  : "bg-white shadow border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-slate-300")
-              }
+              className={`
+                flex-shrink-0 px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg text-sm font-medium
+                flex items-center justify-center gap-2
+                transition-all duration-200 whitespace-nowrap
+                ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-md scale-105"
+                    : tab.disabled
+                      ? "bg-gray-50 text-gray-400 border border-gray-200 cursor-not-allowed"
+                      : "bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 hover:shadow-sm"
+                }
+              `}
               title={tab.label}
               type="button"
             >
-              <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span className="hidden xs:inline">{tab.label}</span>
-              <span className="xs:hidden">{tab.label}</span>
+              <Icon className={`w-4 h-4 ${isActive ? "text-white" : tab.disabled ? "text-gray-400" : "text-gray-600"}`} />
+              <span className="hidden sm:inline">{tab.label}</span>
             </button>
           );
         })}

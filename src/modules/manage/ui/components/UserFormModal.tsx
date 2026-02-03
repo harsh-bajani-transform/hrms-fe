@@ -14,7 +14,7 @@ import {
   MapPin,
   PlusCircle,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -219,12 +219,6 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5 text-white/70" />
-          </button>
         </div>
 
         <form
@@ -272,8 +266,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             {/* FULL NAME */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <User className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5" />
                 Full Name
               </label>
               <Input
@@ -283,10 +277,10 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="e.g. John Doe"
-                className={`h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
               {errors.name && (
-                <p className="text-[10px] text-red-500 font-bold mt-1 px-1">
+                <p className="text-xs text-red-500 font-medium mt-1 px-1">
                   {errors.name}
                 </p>
               )}
@@ -294,8 +288,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 
             {/* EMAIL */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <Mail className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5" />
                 Email Address
               </label>
               <Input
@@ -307,10 +301,10 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                 }
                 disabled={isEditMode}
                 placeholder="john@example.com"
-                className={`h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.email ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.email ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
               {errors.email && (
-                <p className="text-[10px] text-red-500 font-bold mt-1 px-1">
+                <p className="text-xs text-red-500 font-medium mt-1 px-1">
                   {errors.email}
                 </p>
               )}
@@ -318,8 +312,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 
             {/* PHONE */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <Phone className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5" />
                 Contact Number
               </label>
               <Input
@@ -329,14 +323,14 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   setFormData({ ...formData, phone: e.target.value })
                 }
                 placeholder="+91 98765 43210"
-                className={`h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.phone ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.phone ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
             </div>
 
             {/* ROLE */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <Shield className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5" />
                 Permission Role
               </label>
               <Select
@@ -346,7 +340,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                 }
               >
                 <SelectTrigger
-                  className={`h-11 w-full bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.roleId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={`h-11 w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.roleId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 >
                   <SelectValue placeholder="Select Role" />
                 </SelectTrigger>
@@ -365,8 +359,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 
             {visibility.pm && (
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                  <Shield className="w-3 h-3" />
+                <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5" />
                   Project Manager
                 </label>
                 <Select
@@ -375,7 +369,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                     setFormData({ ...formData, projectManagerId: val })
                   }
                 >
-                  <SelectTrigger className="h-11 w-full bg-slate-50/50 border-slate-200">
+                  <SelectTrigger className="h-11 w-full bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Select PM" />
                   </SelectTrigger>
                   <SelectContent>
@@ -394,8 +388,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 
             {visibility.am && (
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                  <Users className="w-3 h-3" />
+                <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5" />
                   Assistant Manager
                 </label>
                 <Select
@@ -404,7 +398,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                     setFormData({ ...formData, assistantManagerId: val })
                   }
                 >
-                  <SelectTrigger className="h-11 w-full bg-slate-50/50 border-slate-200">
+                  <SelectTrigger className="h-11 w-full bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Select AM" />
                   </SelectTrigger>
                   <SelectContent>
@@ -423,8 +417,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 
             {visibility.qa && (
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                  <Shield className="w-3 h-3" />
+                <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5" />
                   Quality Analyst
                 </label>
                 <Select
@@ -433,7 +427,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                     setFormData({ ...formData, qaId: val })
                   }
                 >
-                  <SelectTrigger className="h-11 w-full bg-slate-50/50 border-slate-200">
+                  <SelectTrigger className="h-11 w-full bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Select QA" />
                   </SelectTrigger>
                   <SelectContent>
@@ -452,8 +446,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 
             {/* DESIGNATION */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <Briefcase className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Briefcase className="w-3.5 h-3.5" />
                 Designation
               </label>
               <Select
@@ -463,7 +457,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                 }
               >
                 <SelectTrigger
-                  className={`h-11 w-full bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.designationId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={`h-11 w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.designationId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 >
                   <SelectValue placeholder="Select Designation" />
                 </SelectTrigger>
@@ -482,8 +476,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 
             {/* TEAM/DEPT */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <Users className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5" />
                 Department
               </label>
               <Select
@@ -492,7 +486,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   setFormData({ ...formData, teamId: val })
                 }
               >
-                <SelectTrigger className="h-11 w-full bg-slate-50/50 border-slate-200">
+                <SelectTrigger className="h-11 w-full bg-gray-50 border-gray-200">
                   <SelectValue placeholder="Select Department" />
                 </SelectTrigger>
                 <SelectContent>
@@ -510,8 +504,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 
             {/* PASSWORD */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <Eye className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5" />
                 {isEditMode ? "New Password (Optional)" : "Password"}
               </label>
               <div className="relative">
@@ -527,12 +521,12 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                       ? "Leave blank to keep current"
                       : "Minimum 6 characters"
                   }
-                  className={`h-11 pr-10 bg-slate-50/50 border-slate-200 focus:bg-white transition-all ${errors.password ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={`h-11 pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.password ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -545,8 +539,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 
             {/* TENURE */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <Briefcase className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Briefcase className="w-3.5 h-3.5" />
                 Tenure (Years)
               </label>
               <Input
@@ -558,14 +552,14 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   setFormData({ ...formData, tenure: e.target.value })
                 }
                 placeholder="e.g. 1.5"
-                className="h-11 bg-slate-50/50 border-slate-200"
+                className="h-11 bg-gray-50 border-gray-200"
               />
             </div>
 
             {/* ADDRESS */}
             <div className="md:col-span-2 space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
-                <MapPin className="w-3 h-3" />
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5" />
                 Residency Address
               </label>
               <textarea
@@ -576,7 +570,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                 }
                 rows={2}
                 placeholder="Full address details..."
-                className="w-full p-4 text-sm rounded-xl bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-blue-400 focus:ring-blue-100 transition-all outline-hidden resize-none"
+                className="w-full p-4 text-sm rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-400 focus:ring-blue-100 transition-all outline-hidden resize-none"
               />
             </div>
           </div>

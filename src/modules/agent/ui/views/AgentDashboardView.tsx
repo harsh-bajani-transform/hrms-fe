@@ -5,7 +5,7 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { fetchDropdowns, addTracker } from "../../services/agentService";
 import { fileToBase64 } from "../../../../lib/fileToBase64";
 import { useAuth } from "../../../../context/AuthContext";
@@ -25,6 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import {
   PlusCircle,
   Calendar as CalendarIcon,
@@ -306,47 +307,48 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
           ) : (
             <div className="space-y-8 max-w-6xl mx-auto">
               <div className="flex justify-center py-4">
-                <Card className="w-full max-w-2xl shadow-2xl border-none overflow-hidden rounded-3xl animate-in zoom-in-95 duration-300">
-                  <div className="h-2 bg-blue-600 w-full" />
-                  <CardHeader className="bg-slate-50/70 border-b border-slate-100 px-8 py-8">
+                <Card className="w-full max-w-2xl shadow-sm border border-gray-200 overflow-hidden rounded-xl">
+                  <CardHeader className="bg-linear-to-r from-blue-600 to-blue-700 px-8 py-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="space-y-1.5">
-                        <CardTitle className="text-2xl font-black text-slate-900 flex items-center gap-2.5">
-                          <PlusCircle className="w-6 h-6 text-blue-600" />
+                        <CardTitle className="text-2xl font-semibold text-white flex items-center gap-2.5">
+                          <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                            <PlusCircle className="w-5 h-5 text-white" />
+                          </div>
                           New Production Entry
                         </CardTitle>
-                        <p className="text-slate-500 text-sm font-medium">
+                        <p className="text-blue-100 text-sm font-medium">
                           Logging output as{" "}
-                          <span className="text-blue-600 font-bold">
+                          <span className="text-white font-semibold">
                             {user?.user_name || user?.name || "-"}
                           </span>
                         </p>
                       </div>
                       <Badge
                         variant="outline"
-                        className="flex items-center gap-2 px-4 py-2 bg-white shadow-sm border-slate-200 text-slate-700 h-fit"
+                        className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border-white/20 text-white h-fit"
                       >
-                        <CalendarIcon className="w-4 h-4 text-blue-600" />
-                        <span className="font-black text-sm">{entryDate}</span>
+                        <CalendarIcon className="w-4 h-4" />
+                        <span className="font-semibold text-sm">{entryDate}</span>
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="p-8">
-                    <form onSubmit={handleSubmit} className="space-y-10">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                         {/* Left Column */}
-                        <div className="space-y-8">
-                          <div className="space-y-2.5">
-                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                        <div className="space-y-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="project-select" className="text-sm font-medium text-gray-700">
                               Project Name{" "}
                               <span className="text-rose-500">*</span>
-                            </label>
+                            </Label>
                             <Select
                               value={selectedProject}
                               onValueChange={(val) => setSelectedProject(val)}
                             >
                               <SelectTrigger
-                                className={`h-12 w-full text-base font-semibold ${touched.selectedProject && errors.selectedProject ? "border-destructive ring-destructive/20" : "border-slate-200 focus:border-blue-400 focus:ring-blue-100"}`}
+                                className={`h-11 w-full bg-gray-50 ${touched.selectedProject && errors.selectedProject ? "border-destructive ring-destructive/20" : "border-gray-200 focus:border-blue-400 focus:ring-blue-100"}`}
                               >
                                 <SelectValue placeholder="Select Project" />
                               </SelectTrigger>
@@ -363,23 +365,23 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
                             </Select>
                             {touched.selectedProject &&
                               errors.selectedProject && (
-                                <p className="text-[10px] text-rose-500 font-black uppercase tracking-wider ml-1">
+                                <p className="text-xs text-rose-500 font-medium">
                                   {errors.selectedProject}
                                 </p>
                               )}
                           </div>
 
-                          <div className="space-y-2.5">
-                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                          <div className="space-y-2">
+                            <Label htmlFor="task-select" className="text-sm font-medium text-gray-700">
                               Task Name <span className="text-rose-500">*</span>
-                            </label>
+                            </Label>
                             <Select
                               value={selectedTask}
                               onValueChange={(val) => setSelectedTask(val)}
                               disabled={!selectedProject || loadingTasks}
                             >
                               <SelectTrigger
-                                className={`h-12 w-full text-base font-semibold ${touched.selectedTask && errors.selectedTask ? "border-destructive ring-destructive/20" : "border-slate-200 focus:border-blue-400 focus:ring-blue-100"}`}
+                                className={`h-11 w-full bg-gray-50 ${touched.selectedTask && errors.selectedTask ? "border-destructive ring-destructive/20" : "border-gray-200 focus:border-blue-400 focus:ring-blue-100"}`}
                               >
                                 <SelectValue placeholder="Select Task" />
                               </SelectTrigger>
@@ -395,7 +397,7 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
                               </SelectContent>
                             </Select>
                             {touched.selectedTask && errors.selectedTask && (
-                              <p className="text-[10px] text-rose-500 font-black uppercase tracking-wider ml-1">
+                              <p className="text-xs text-rose-500 font-medium">
                                 {errors.selectedTask}
                               </p>
                             )}
@@ -403,39 +405,41 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
                         </div>
 
                         {/* Right Column */}
-                        <div className="space-y-8">
-                          <div className="space-y-2.5">
-                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                        <div className="space-y-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="base-target" className="text-sm font-medium text-gray-700">
                               Base Target
-                            </label>
+                            </Label>
                             <div className="relative">
                               <Input
+                                id="base-target"
                                 type="text"
                                 readOnly
                                 disabled
                                 value={
                                   baseTargetLoading ? "" : baseTarget || "-"
                                 }
-                                className="h-12 bg-slate-50/50 border-slate-200 text-slate-700 font-black text-lg shadow-inner cursor-not-allowed pr-10"
+                                className=" bg-gray-100 border-gray-200 text-gray-700 font-medium cursor-not-allowed pr-10"
                               />
                               {baseTargetLoading && (
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                  <div className="w-5 h-5 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+                                  <div className="w-4 h-4 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
                                 </div>
                               )}
                             </div>
                           </div>
 
-                          <div className="space-y-2.5">
-                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                          <div className="space-y-2">
+                            <Label htmlFor="production-target" className="text-sm font-medium text-gray-700">
                               Production Target{" "}
                               <span className="text-rose-500">*</span>
-                            </label>
+                            </Label>
                             <Input
+                              id="production-target"
                               type="number"
                               min="0"
                               placeholder="Enter value"
-                              className={`h-12 text-lg font-black transition-all ${touched.productionTarget && errors.productionTarget ? "border-destructive ring-destructive/20" : "border-slate-200 focus:border-blue-400 focus:ring-blue-100"}`}
+                              className={`bg-gray-50 ${touched.productionTarget && errors.productionTarget ? "border-destructive ring-destructive/20" : "border-gray-200 focus:border-blue-400 focus:ring-blue-100"}`}
                               value={productionTarget}
                               onChange={(e) =>
                                 setProductionTarget(e.target.value)
@@ -444,7 +448,7 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
                             />
                             {touched.productionTarget &&
                               errors.productionTarget && (
-                                <p className="text-[10px] text-rose-500 font-black uppercase tracking-wider ml-1">
+                                <p className="text-xs text-rose-500 font-medium">
                                   {errors.productionTarget}
                                 </p>
                               )}
@@ -453,27 +457,27 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
                       </div>
 
                       {/* File Upload Area */}
-                      <div className="space-y-2.5 pt-2">
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                      <div className="space-y-2 pt-2">
+                        <Label htmlFor="tracker-file" className="text-sm font-medium text-gray-700">
                           Project Files
-                        </label>
+                        </Label>
                         <div
-                          className="group relative flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-10 hover:border-blue-400 hover:bg-blue-50/40 transition-all cursor-pointer bg-slate-50/30"
+                          className="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-8 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer bg-gray-50"
                           onClick={() =>
                             document.getElementById("tracker-file")?.click()
                           }
                         >
-                          <div className="flex flex-col items-center gap-4">
-                            <div className="w-14 h-14 bg-white shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                              <Upload className="w-7 h-7 text-blue-600" />
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="w-12 h-12 bg-white shadow-sm border border-gray-200 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+                              <Upload className="w-6 h-6 text-blue-600" />
                             </div>
                             <div className="text-center">
-                              <p className="text-base font-bold text-slate-800">
+                              <p className="text-base font-semibold text-gray-800">
                                 {file
                                   ? file.name
                                   : "Choose a file or drag & drop"}
                               </p>
-                              <p className="text-xs text-slate-400 font-medium mt-1 uppercase tracking-tighter">
+                              <p className="text-xs text-gray-500 font-medium mt-1">
                                 PDF, Image, Excel (Max 5MB)
                               </p>
                             </div>
@@ -488,27 +492,27 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
                         </div>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row gap-5 pt-6">
+                      <div className="flex flex-col sm:flex-row gap-4 pt-6">
                         <Button
                           type="submit"
-                          className="flex-1 h-14 text-lg font-black shadow-xl shadow-blue-200 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-2xl transition-all active:scale-95"
+                          className="flex-1 h-11 font-semibold shadow-sm hover:shadow-md bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all"
                           disabled={submitting}
                         >
                           {submitting ? (
-                            <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
                           ) : (
-                            <PlusCircle className="w-6 h-6 mr-2" />
+                            <PlusCircle className="w-4 h-4 mr-2" />
                           )}
                           Submit Entry
                         </Button>
                         <Button
                           type="button"
                           variant="outline"
-                          className="flex-1 h-14 text-lg font-black bg-white border-slate-200 text-slate-600 hover:bg-slate-50 rounded-2xl transition-all active:scale-95 shadow-sm"
+                          className="flex-1 h-11 font-semibold bg-white border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl transition-all shadow-sm"
                           onClick={handleViewAll}
                         >
                           View Recent History
-                          <ChevronRight className="w-5 h-5 ml-2" />
+                          <ChevronRight className="w-4 h-4 ml-2" />
                         </Button>
                       </div>
                     </form>

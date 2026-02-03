@@ -59,27 +59,24 @@ export default function MonthCard({
       : users;
 
   return (
-    <div className="relative bg-linear-to-br from-blue-50 via-white to-slate-100 border-l-8 border-blue-500 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300 mb-6">
+    <div className="relative bg-white border-l-4 border-blue-600 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 mb-6 overflow-hidden">
       <div
-        className="flex items-center gap-4 px-8 py-5 select-none rounded-t-2xl bg-white/80 backdrop-blur border-b border-blue-100"
+        className="flex items-center gap-4 px-6 py-5 select-none bg-gradient-to-r from-blue-50 to-white border-b border-gray-200"
         style={{ minHeight: 72 }}
       >
         <div className="flex flex-col justify-center">
-          <span
-            className="text-2xl font-extrabold tracking-wide text-blue-700 leading-none"
-            style={{ fontFamily: "Inter,Segoe UI,sans-serif" }}
-          >
+          <span className="text-2xl font-bold text-blue-700 leading-none">
             {month.label}
           </span>
-          <span className="text-xs text-slate-500 font-medium mt-1">
+          <span className="text-sm text-gray-600 font-medium mt-1">
             {month.year}
           </span>
         </div>
         <div className="flex-1" />
         {!isAgent && (
-          <div className="flex items-center gap-2 w-64 mr-4">
+          <div className="flex items-center gap-2">
             <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-              <SelectTrigger className="h-9">
+              <SelectTrigger className="h-11 w-48 border-gray-300">
                 <SelectValue placeholder="Filter by Team" />
               </SelectTrigger>
               <SelectContent>
@@ -92,8 +89,7 @@ export default function MonthCard({
             </Select>
             <Button
               variant="outline"
-              size="sm"
-              className="h-9 px-3"
+              className="h-11 px-4 border-gray-300"
               onClick={() => setSelectedTeam("")}
             >
               Clear

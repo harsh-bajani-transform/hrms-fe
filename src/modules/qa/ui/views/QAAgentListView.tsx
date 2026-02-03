@@ -7,7 +7,7 @@ import {
   FileText,
   Users as UsersIcon,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useAuth } from "../../../../context/AuthContext";
 import {
   fetchDashboardData,
@@ -200,25 +200,30 @@ const QAAgentListView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <UsersIcon className="w-6 h-6 text-blue-600" />
-        <h2 className="text-2xl font-bold text-slate-800">Agent List</h2>
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <UsersIcon className="w-6 h-6 text-blue-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">Agent List</h2>
+        </div>
       </div>
+
       {loading ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="flex flex-col items-center gap-2">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="text-gray-500">Loading agents...</span>
+        <div className="flex justify-center items-center py-16">
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
+            <span className="text-gray-600 font-medium">Loading agents...</span>
           </div>
         </div>
       ) : agents.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8 text-center">
-          <UsersIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">No assigned agents found</p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <UsersIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-500 font-medium text-lg">No assigned agents found</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {agents.map((agent) => {
             const agentId =
               agent.user_id !== undefined ? String(agent.user_id) : undefined;
@@ -227,31 +232,32 @@ const QAAgentListView: React.FC = () => {
             return (
               <div
                 key={agentId}
-                className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden"
+                className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
               >
                 <div
                   onClick={() => toggleAgent(agentId)}
-                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                  className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-blue-700 font-bold text-sm">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md">
+                      <span className="text-white font-bold text-lg">
                         {agent.user_name
                           ? agent.user_name.charAt(0).toUpperCase()
                           : "-"}
                       </span>
                     </div>
                     <div>
-                      <h3 className="text-base font-semibold text-slate-800">
+                      <h3 className="text-lg font-semibold text-gray-900">
                         {agent.user_name || "-"}
                       </h3>
+                      <p className="text-sm text-gray-500">{trackers.length} tracker entries</p>
                     </div>
                   </div>
-                  <button className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                     {isExpanded ? (
-                      <ChevronUp className="w-5 h-5 text-slate-600" />
+                      <ChevronUp className="w-6 h-6 text-gray-600" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-slate-600" />
+                      <ChevronDown className="w-6 h-6 text-gray-600" />
                     )}
                   </button>
                 </div>

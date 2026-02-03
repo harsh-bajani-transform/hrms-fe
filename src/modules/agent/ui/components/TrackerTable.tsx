@@ -18,7 +18,7 @@ import {
   PlusCircle,
   Briefcase,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import {
   Table,
@@ -396,167 +396,165 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
-            Production History
-          </h2>
-          <p className="text-slate-500">
-            Track and manage your daily production entries and targets.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-bold gap-2 h-10 shadow-sm"
-            onClick={handleExportToExcel}
-            disabled={loading || trackers.length === 0}
-          >
-            <FileDown className="w-4 h-4 text-emerald-600" />
-            Export Excel
-          </Button>
-          <Button
-            variant="default"
-            className="bg-blue-600 hover:bg-blue-700 font-bold gap-2 h-10 shadow-md text-white border-none"
-            onClick={onClose}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Entry
-          </Button>
+    <div className="w-full space-y-6 animate-in fade-in duration-300">
+      {/* Page Header */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <FileText className="w-7 h-7 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Tracker History</h2>
+              <p className="text-gray-600 mt-1">View and manage your production entries</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={handleExportToExcel}
+              disabled={loading || trackers.length === 0}
+              variant="outline"
+              className="h-11 px-6 border-gray-300 bg-green-50 text-green-700 hover:bg-green-100"
+            >
+              <FileDown className="w-4 h-4 mr-2" />
+              Export Excel
+            </Button>
+            <Button
+              onClick={onClose}
+              variant="default"
+              className="h-11 px-6 bg-blue-600 hover:bg-blue-700"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Entry
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Filter Section */}
-      <Card className="border-slate-200 shadow-sm overflow-hidden bg-slate-50/50">
-        <CardHeader className="pb-4 border-b border-slate-100 bg-white">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-blue-600" />
-            <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-900">
-              Search Filters
-            </CardTitle>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <Filter className="w-5 h-5 text-blue-600" />
           </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1">
-                Start Date
-              </label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="h-10 bg-white border-slate-200 focus:ring-blue-500"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1">
-                End Date
-              </label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="h-10 bg-white border-slate-200 focus:ring-blue-500"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1">
-                Project
-              </label>
-              <Select
-                value={selectedProject}
-                onValueChange={(val) => {
-                  setSelectedProject(val);
-                  setSelectedTask("");
-                }}
-              >
-                <SelectTrigger className="h-10 w-full bg-white border-slate-200">
-                  <SelectValue placeholder="All Projects" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Projects</SelectItem>
-                  {projects.map((p) => (
-                    <SelectItem key={p.project_id} value={String(p.project_id)}>
-                      {p.project_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1">
-                Task
-              </label>
-              <Select
-                value={selectedTask}
-                onValueChange={(val) => setSelectedTask(val)}
-                disabled={!selectedProject || selectedProject === "all"}
-              >
-                <SelectTrigger className="h-10 w-full bg-white border-slate-200">
-                  <SelectValue placeholder="All Tasks" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Tasks</SelectItem>
-                  {availableTasks.map((t) => (
-                    <SelectItem key={t.task_id} value={String(t.task_id)}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <h3 className="text-lg font-semibold text-gray-900">Filter Options</h3>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Start Date
+            </label>
+            <Input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className=" border-gray-300"
+            />
           </div>
-          <div className="mt-6 flex justify-end">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-slate-500 hover:text-slate-900 font-bold"
-              onClick={handleClearFilters}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              End Date
+            </label>
+            <Input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className=" border-gray-300"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Project
+            </label>
+            <Select
+              value={selectedProject}
+              onValueChange={(val) => {
+                setSelectedProject(val);
+                setSelectedTask("");
+              }}
             >
-              Clear All Filters
-            </Button>
+              <SelectTrigger className=" border-gray-300 w-full">
+                <SelectValue placeholder="All Projects" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Projects</SelectItem>
+                {projects.map((p) => (
+                  <SelectItem key={p.project_id} value={String(p.project_id)}>
+                    {p.project_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Task
+            </label>
+            <Select
+              value={selectedTask}
+              onValueChange={(val) => setSelectedTask(val)}
+              disabled={!selectedProject || selectedProject === "all"}
+            >
+              <SelectTrigger className="w-full border-gray-300">
+                <SelectValue placeholder="All Tasks" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tasks</SelectItem>
+                {availableTasks.map((t) => (
+                  <SelectItem key={t.task_id} value={String(t.task_id)}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+          <Button
+            onClick={handleClearFilters}
+            variant="outline"
+            className="h-11 px-6 border-gray-300"
+          >
+            Clear All Filters
+          </Button>
+        </div>
+      </div>
 
       {error && (
-        <Badge
-          variant="destructive"
-          className="w-full flex justify-center py-2 rounded-lg text-sm font-medium"
-        >
-          {error}
-        </Badge>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-700 text-sm font-medium">{error}</p>
+        </div>
       )}
 
       {/* Main Table */}
-      <Card className="border-slate-200 shadow-xl overflow-hidden min-h-[400px]">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <Table>
-          <TableHeader className="bg-slate-50 border-b border-slate-200">
+          <TableHeader className="bg-gray-50 border-b border-gray-200">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="w-[120px] font-bold text-slate-900 h-12">
+              <TableHead className="font-semibold text-gray-900 h-12">
                 Date
               </TableHead>
-              <TableHead className="font-bold text-slate-900 h-12">
+              <TableHead className="font-semibold text-gray-900 h-12">
                 Project
               </TableHead>
-              <TableHead className="font-bold text-slate-900 h-12">
+              <TableHead className="font-semibold text-gray-900 h-12">
                 Task
               </TableHead>
-              <TableHead className="text-center font-bold text-slate-900 h-12">
+              <TableHead className="text-center font-semibold text-gray-900 h-12">
                 Per Hour Target
               </TableHead>
-              <TableHead className="text-center font-bold text-slate-900 h-12">
+              <TableHead className="text-center font-semibold text-gray-900 h-12">
                 Production
               </TableHead>
-              <TableHead className="text-center font-bold text-slate-900 h-12">
+              <TableHead className="text-center font-semibold text-gray-900 h-12">
                 Billable Hours
               </TableHead>
-              <TableHead className="text-center font-bold text-slate-900 h-12">
+              <TableHead className="text-center font-semibold text-gray-900 h-12">
                 File
               </TableHead>
-              <TableHead className="text-right pr-6 font-bold text-slate-900 h-12">
+              <TableHead className="text-right pr-6 font-semibold text-gray-900 h-12">
                 Action
               </TableHead>
             </TableRow>
@@ -567,8 +565,8 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
                 <TableCell colSpan={8} className="h-64 text-center">
                   <div className="flex flex-col items-center justify-center gap-3">
                     <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-slate-500 font-medium">
-                      Fetching records...
+                    <p className="text-gray-500 font-medium">
+                      Loading tracker data...
                     </p>
                   </div>
                 </TableCell>
@@ -576,10 +574,10 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
             ) : trackers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="h-64 text-center">
-                  <div className="flex flex-col items-center justify-center gap-3 text-slate-300">
-                    <FileText className="w-12 h-12 opacity-20" />
-                    <p className="text-slate-400 font-medium">
-                      No tracker entries found for this period.
+                  <div className="flex flex-col items-center justify-center gap-3">
+                    <FileText className="w-12 h-12 text-gray-300" />
+                    <p className="text-gray-500 font-medium">
+                      No tracker entries found for this period
                     </p>
                   </div>
                 </TableCell>
@@ -588,40 +586,40 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
               trackers.map((tracker) => (
                 <TableRow
                   key={tracker.tracker_id}
-                  className="group hover:bg-slate-50/80 transition-colors border-slate-100"
+                  className="hover:bg-blue-50/50 transition-colors border-gray-100"
                 >
-                  <TableCell className="font-medium text-slate-600">
+                  <TableCell className="font-medium text-gray-700">
                     {tracker.date_time
                       ? format(new Date(tracker.date_time), "dd/MM/yyyy")
                       : "-"}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-blue-500/50" />
-                      <span className="font-semibold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-blue-500" />
+                      <span className="font-medium text-gray-900">
                         {tracker.project_name ||
                           getProjectName(tracker.project_id)}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-slate-600 min-w-[150px]">
+                  <TableCell className="text-gray-700">
                     {tracker.task_name ||
                       getTaskName(tracker.task_id, tracker.project_id)}
                   </TableCell>
                   <TableCell className="text-center">
                     <Badge
                       variant="outline"
-                      className="font-bold border-slate-200 bg-slate-50 text-slate-700"
+                      className="font-medium border-gray-300 bg-gray-50 text-gray-700"
                     >
                       {tracker.tenure_target ?? "-"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">
-                    <Badge className="bg-blue-50! text-blue-700! border-blue-100! font-bold">
+                    <Badge className="bg-blue-100 text-blue-700 border-blue-200 font-medium">
                       {tracker.production}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-center font-bold text-slate-700">
+                  <TableCell className="text-center font-medium text-gray-700">
                     {tracker.billable_hours != null
                       ? Number(tracker.billable_hours).toFixed(2)
                       : "0.00"}
@@ -631,7 +629,7 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 rounded-full hover:bg-blue-50 text-blue-600"
+                        className="h-9 w-9 p-0 rounded-lg hover:bg-blue-100 text-blue-600"
                         asChild
                       >
                         <a
@@ -644,7 +642,7 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
                         </a>
                       </Button>
                     ) : (
-                      <span className="text-slate-300 text-xs">—</span>
+                      <span className="text-gray-300 text-xs">—</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right pr-6">
@@ -666,7 +664,7 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
             )}
           </TableBody>
         </Table>
-      </Card>
+      </div>
 
       {/* Totals Summary */}
       {!loading && trackers.length > 0 && (

@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Download, Filter, FileDown, Users as UsersIcon } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import * as XLSX from 'xlsx';
 import { useAuth } from "../../../../context/AuthContext";
 import { fetchDashboardData, fetchDropdownData } from "../../../dashboard/services/dashboardService";
+import { Button } from "@/components/ui/button";
 
 // Helper to get today's date in YYYY-MM-DD format
 const getTodayDate = (): string => {
@@ -249,55 +250,60 @@ const QATrackerReportView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <UsersIcon className="w-6 h-6 text-blue-600" />
-          <h2 className="text-2xl font-bold text-slate-800">Tracker Report</h2>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <UsersIcon className="w-6 h-6 text-blue-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Tracker Report</h2>
+          </div>
+          <Button
+            onClick={handleExportToExcel}
+            disabled={loading || trackers.length === 0}
+            className="h-11 px-6 bg-green-600 hover:bg-green-700"
+          >
+            <FileDown className="w-4 h-4 mr-2" />
+            Export to Excel
+          </Button>
         </div>
-        <button
-          onClick={handleExportToExcel}
-          disabled={loading || trackers.length === 0}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
-          title="Export filtered data to Excel"
-        >
-          <FileDown className="w-4 h-4" />
-          Export to Excel
-        </button>
       </div>
 
       {/* Filter Section */}
-      <div className="bg-blue-50 rounded-lg p-3 mb-4">
-        <div className="flex items-center gap-1.5 mb-2">
-          <Filter className="w-4 h-4 text-blue-700" />
-          <h3 className="text-sm font-semibold text-blue-700">Filters</h3>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <Filter className="w-5 h-5 text-blue-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">Filter Options</h3>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Start Date */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
               Start Date <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           {/* End Date */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
               End Date <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
