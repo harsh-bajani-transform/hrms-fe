@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Search, Users } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  flexRender,
+  createColumnHelper,
+  type ColumnDef,
+} from '@tanstack/react-table'
 
 import { useAuth } from '../../../../context/AuthContext'
 import { fetchUserList, updatePermission } from '../../services/userTrackingService'
@@ -14,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DataTablePagination } from '@/components/ui/pagination'
 
 type PermissionFlag = 0 | 1
 
@@ -32,8 +41,7 @@ interface PermissionUser {
 
 type PermissionType = 'user' | 'project'
 
-const asRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null
+const columnHelper = createColumnHelper<PermissionUser>()
 
 const UserTrackingView = () => {
   const { user } = useAuth()
@@ -43,67 +51,6 @@ const UserTrackingView = () => {
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [updatingPermission, setUpdatingPermission] = useState<string | null>(null)
-
-  const loadUsers = useCallback(async (): Promise<void> => {
-    const rawUserId = user?.user_id
-    if (rawUserId == null) {
-      setUsers([])
-      setLoading(false)
-      return
-    }
-
-    const numericUserId = Number(rawUserId)
-    if (!Number.isFinite(numericUserId)) {
-      setUsers([])
-      setLoading(false)
-      return
-    }
-
-    try {
-      setLoading(true)
-
-      const response: unknown = await fetchUserList(numericUserId)
-
-      if (asRecord(response) && response.status === 200) {
-        setUsers(Array.isArray(response.data) ? (response.data as PermissionUser[]) : [])
-      } else {
-        toast.error('Failed to load users')
-      }
-    } catch (error: unknown) {
-      console.error('Error fetching users:', error)
-      toast.error('Error loading users')
-      setUsers([])
-    } finally {
-      setLoading(false)
-    }
-  }, [user?.user_id])
-
-  // Fetch users on mount + when logged-in user changes
-  useEffect(() => {
-    void loadUsers()
-  }, [loadUsers])
-
-  // Get unique roles for filter
-  const uniqueRoles = useMemo((): string[] => {
-    const roles = users.map((u) => u.role).filter((r): r is string => Boolean(r))
-    return Array.from(new Set(roles)).sort()
-  }, [users])
-
-  // Filter users
-  const filteredUsers = useMemo((): PermissionUser[] => {
-    const q = searchQuery.toLowerCase()
-
-    return users.filter((userData) => {
-      const matchesSearch =
-        String(userData.user_name ?? '').toLowerCase().includes(q) ||
-        String(userData.user_email ?? '').toLowerCase().includes(q) ||
-        String(userData.role ?? '').toLowerCase().includes(q)
-
-      const matchesRole = roleFilter === 'all' || userData.role === roleFilter
-
-      return matchesSearch && matchesRole
-    })
-  }, [users, searchQuery, roleFilter])
 
   // Handle permission toggle
   const handlePermissionToggle = async (
@@ -172,6 +119,179 @@ const UserTrackingView = () => {
     }
   }
 
+  // Define columns
+  const columns = useMemo<ColumnDef<PermissionUser, unknown>[]>(
+    () => [
+      columnHelper.display({
+        id: 'index',
+        header: '#',
+        cell: (info) => (
+          <div className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+            {info.row.index + 1}
+          </div>
+        ),
+      }),
+      columnHelper.accessor('user_name', {
+        header: 'User Name',
+        cell: (info) => (
+          <div className="px-6 py-4 whitespace-nowrap">
+            <div className="text-sm font-medium text-gray-900">{info.getValue() as string}</div>
+            {info.row.original.designation && (
+              <div className="text-sm text-gray-500">{info.row.original.designation}</div>
+            )}
+          </div>
+        ),
+      }),
+      columnHelper.accessor('user_email', {
+        header: 'Email',
+        cell: (info) => (
+          <div className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+            {info.getValue() as string}
+          </div>
+        ),
+      }),
+      columnHelper.accessor('role', {
+        header: 'Role',
+        cell: (info) => {
+          const role = info.getValue() as string
+          return (
+            <div className="px-6 py-4 whitespace-nowrap">
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                role === 'Admin' ? 'bg-purple-100 text-purple-700' :
+                role === 'Manager' ? 'bg-blue-100 text-blue-700' :
+                'bg-green-100 text-green-700'
+              }`}>
+                {role}
+              </span>
+            </div>
+          )
+        },
+      }),
+      columnHelper.accessor('user_creation_permission', {
+        header: () => (
+          <div className="text-center">User Creation Permission</div>
+        ),
+        cell: (info) => (
+          <div className="px-6 py-4 whitespace-nowrap text-center">
+            <button
+              onClick={() => handlePermissionToggle(info.row.original.user_id, 'user', info.getValue())}
+              disabled={updatingPermission === `${info.row.original.user_id}-user`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                info.getValue() === 1 ? 'bg-green-500' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                  info.getValue() === 1 ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+        ),
+      }),
+      columnHelper.accessor('project_creation_permission', {
+        header: () => (
+          <div className="text-center">Project Creation Permission</div>
+        ),
+        cell: (info) => (
+          <div className="px-6 py-4 whitespace-nowrap text-center">
+            <button
+              onClick={() => handlePermissionToggle(info.row.original.user_id, 'project', info.getValue())}
+              disabled={updatingPermission === `${info.row.original.user_id}-project`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                info.getValue() === 1 ? 'bg-green-500' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                  info.getValue() === 1 ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+        ),
+      }),
+    ],
+    [updatingPermission],
+  )
+
+  const asRecord = (v: unknown): v is Record<string, unknown> =>
+    typeof v === 'object' && v !== null
+
+  const loadUsers = useCallback(async (): Promise<void> => {
+    const rawUserId = user?.user_id
+    if (rawUserId == null) {
+      setUsers([])
+      setLoading(false)
+      return
+    }
+
+    const numericUserId = Number(rawUserId)
+    if (!Number.isFinite(numericUserId)) {
+      setUsers([])
+      setLoading(false)
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      const response: unknown = await fetchUserList(numericUserId)
+
+      if (asRecord(response) && response.status === 200) {
+        setUsers(Array.isArray(response.data) ? (response.data as PermissionUser[]) : [])
+      } else {
+        toast.error('Failed to load users')
+      }
+    } catch (error: unknown) {
+      console.error('Error fetching users:', error)
+      toast.error('Error loading users')
+      setUsers([])
+    } finally {
+      setLoading(false)
+    }
+  }, [user?.user_id])
+
+  // Fetch users on mount + when logged-in user changes
+  useEffect(() => {
+    void loadUsers()
+  }, [loadUsers])
+
+  // Get unique roles for filter
+  const uniqueRoles = useMemo((): string[] => {
+    const roles = users.map((u) => u.role).filter((r): r is string => Boolean(r))
+    return Array.from(new Set(roles)).sort()
+  }, [users])
+
+  // Filter users
+  const filteredUsers = useMemo((): PermissionUser[] => {
+    const q = searchQuery.toLowerCase()
+
+    return users.filter((userData) => {
+      const matchesSearch =
+        String(userData.user_name ?? '').toLowerCase().includes(q) ||
+        String(userData.user_email ?? '').toLowerCase().includes(q) ||
+        String(userData.role ?? '').toLowerCase().includes(q)
+
+      const matchesRole = roleFilter === 'all' || userData.role === roleFilter
+
+      return matchesSearch && matchesRole
+    })
+  }, [users, searchQuery, roleFilter])
+
+  // Initialize TanStack Table
+  const table = useReactTable({
+    data: filteredUsers,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
+  })
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -237,94 +357,44 @@ const UserTrackingView = () => {
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-linear-to-r from-blue-600 to-blue-700">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                    #
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                    User Name
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider">
-                    User Creation Permission
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider">
-                    Project Creation Permission
-                  </th>
-                </tr>
+              <thead className="bg-gradient-to-r from-blue-600 to-blue-700">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredUsers.map((userData, index) => (
-                  <tr key={userData.user_id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      {index + 1}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{userData.user_name}</div>
-                      {userData.designation && (
-                        <div className="text-sm text-gray-500">{userData.designation}</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {userData.user_email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        userData.role === 'Admin' ? 'bg-purple-100 text-purple-700' :
-                        userData.role === 'Manager' ? 'bg-blue-100 text-blue-700' :
-                        'bg-green-100 text-green-700'
-                      }`}>
-                        {userData.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <button
-                        onClick={() => handlePermissionToggle(userData.user_id, 'user', userData.user_creation_permission)}
-                        disabled={updatingPermission === `${userData.user_id}-user`}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                          userData.user_creation_permission === 1 ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
-                            userData.user_creation_permission === 1 ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <button
-                        onClick={() => handlePermissionToggle(userData.user_id, 'project', userData.project_creation_permission)}
-                        disabled={updatingPermission === `${userData.user_id}-project`}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                          userData.project_creation_permission === 1 ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
-                            userData.project_creation_permission === 1 ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </td>
+                {table.getRowModel().rows.map((row) => (
+                  <tr key={row.id} className="hover:bg-gray-50 transition-colors">
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          {/* Results Count */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-            <p className="text-sm text-gray-600">
-              Showing <span className="font-semibold text-gray-900">{filteredUsers.length}</span> of <span className="font-semibold text-gray-900">{users.length}</span> users
-            </p>
-          </div>
+          {/* Pagination */}
+          <DataTablePagination table={table} />
         </div>
       )}
     </div>

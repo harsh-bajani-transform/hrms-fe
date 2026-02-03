@@ -1,7 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import { Download, ChevronDown, Calendar, User } from "lucide-react";
 import { toast } from "sonner";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  flexRender,
+  createColumnHelper,
+  type ColumnDef,
+} from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DataTablePagination } from "@/components/ui/pagination";
 
 interface Agent {
   id: number;
@@ -205,6 +214,95 @@ const UserMonthlyTargetCard: React.FC = () => {
     toast?.success(`Exporting ${monthLabel} data to Excel...`);
   };
 
+  // Define columns for the table
+  const columns = useMemo<ColumnDef<Agent, unknown>[]>(
+    () => [
+      {
+        id: "userName",
+        accessorKey: "userName",
+        header: () => (
+          <div className="px-6 py-4 text-left font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
+            User Name
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div className="px-6 py-4 text-slate-800 font-semibold whitespace-nowrap">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 border border-slate-200">
+                {row.original.userName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </div>
+              {row.original.userName}
+            </div>
+          </div>
+        ),
+      },
+      {
+        id: "workingDays",
+        accessorKey: "workingDays",
+        header: () => (
+          <div className="px-6 py-4 text-center font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
+            Working Days
+          </div>
+        ),
+        cell: ({ row }) => {
+          const monthKey = row.original.id.toString(); // Using agent id as key
+          return (
+            <div className="px-6 py-4 text-center text-slate-700 font-medium">
+              {row.original.workingDays}
+            </div>
+          );
+        },
+      },
+      {
+        id: "dailyRequiredHours",
+        accessorKey: "dailyRequiredHours",
+        header: () => (
+          <div className="px-6 py-4 text-center font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
+            Daily Required
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div className="px-6 py-4 text-center text-slate-600">
+            {row.original.dailyRequiredHours}h
+          </div>
+        ),
+      },
+      {
+        id: "progress",
+        header: () => (
+          <div className="px-6 py-4 text-center font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
+            Progress / Target
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div className="px-6 py-4 text-center">
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                <span className="text-indigo-600">
+                  {row.original.monthlyAchievedTarget}
+                </span>
+                <span className="text-slate-300 font-normal">/</span>
+                <span>{row.original.monthlyTotalTarget}</span>
+              </div>
+              <div className="w-24 h-1 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                <div
+                  className="h-full bg-indigo-500 rounded-full"
+                  style={{
+                    width: `${Math.min(100, (row.original.monthlyAchievedTarget / row.original.monthlyTotalTarget) * 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        ),
+      },
+    ],
+    [],
+  );
+
   return (
     <div className="w-full space-y-6">
       <div className="mb-2 ">
@@ -296,107 +394,72 @@ const UserMonthlyTargetCard: React.FC = () => {
               </div>
             </div>
             <AccordionContent className="p-0 pt-0">
-              <Table>
-                <TableHeader className="bg-slate-50">
-                  <TableRow className="border-b border-slate-100">
-                    <TableHead className="px-6 py-4 text-left font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
-                      User Name
-                    </TableHead>
-                    <TableHead className="px-6 py-4 text-center font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
-                      Working Days
-                    </TableHead>
-                    <TableHead className="px-6 py-4 text-center font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
-                      Daily Required
-                    </TableHead>
-                    <TableHead className="px-6 py-4 text-center font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
-                      Progress / Target
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="divide-y divide-slate-100">
-                  {month.agents.map((agent) => (
-                    <TableRow
-                      key={agent.id}
-                      className="hover:bg-slate-50 transition-colors group"
-                    >
-                      <TableCell className="px-6 py-4 text-slate-800 font-semibold whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 border border-slate-200">
-                            {agent.userName
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </div>
-                          {agent.userName}
-                        </div>
-                      </TableCell>
-                      <TableCell
-                        className="px-6 py-4 text-center text-slate-700 font-medium cursor-pointer"
-                        onDoubleClick={() =>
-                          handleCellDoubleClick(
-                            month.key,
-                            agent.id,
-                            "workingDays",
-                            agent.workingDays,
-                          )
-                        }
-                      >
-                        {editingCell.monthKey === month.key &&
-                        editingCell.agentId === agent.id &&
-                        editingCell.field === "workingDays" ? (
-                          <Input
-                            type="number"
-                            className="h-8 border-indigo-300 rounded px-2 w-16 text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 text-center"
-                            value={
-                              editState[month.key]?.[agent.id]?.workingDays ??
-                              agent.workingDays
-                            }
-                            autoFocus
-                            onChange={(e) =>
-                              handleEditChange(
-                                e,
-                                month.key,
-                                agent.id,
-                                "workingDays",
-                              )
-                            }
-                            onBlur={handleEditSave}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") handleEditSave();
-                            }}
-                          />
+              {(() => {
+                const table = useReactTable({
+                  data: month.agents,
+                  columns,
+                  getCoreRowModel: getCoreRowModel(),
+                  getPaginationRowModel: getPaginationRowModel(),
+                  initialState: {
+                    pagination: { pageSize: 10 },
+                  },
+                });
+
+                return (
+                  <>
+                    <Table>
+                      <TableHeader className="bg-slate-50">
+                        {table.getHeaderGroups().map((headerGroup) => (
+                          <TableRow
+                            key={headerGroup.id}
+                            className="border-b border-slate-100"
+                          >
+                            {headerGroup.headers.map((header) => (
+                              <TableHead key={header.id} className="p-0">
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                              </TableHead>
+                            ))}
+                          </TableRow>
+                        ))}
+                      </TableHeader>
+                      <TableBody className="divide-y divide-slate-100">
+                        {table.getRowModel().rows.length === 0 ? (
+                          <TableRow>
+                            <TableCell
+                              colSpan={columns.length}
+                              className="h-24 text-center text-slate-500"
+                            >
+                              No agents available
+                            </TableCell>
+                          </TableRow>
                         ) : (
-                          agent.workingDays
+                          table.getRowModel().rows.map((row) => (
+                            <TableRow
+                              key={row.id}
+                              className="hover:bg-slate-50 transition-colors group"
+                            >
+                              {row.getVisibleCells().map((cell) => (
+                                <TableCell key={cell.id} className="p-0">
+                                  {flexRender(
+                                    cell.column.columnDef.cell,
+                                    cell.getContext(),
+                                  )}
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                          ))
                         )}
-                      </TableCell>
-                      <TableCell className="px-6 py-4 text-center text-slate-600">
-                        {agent.dailyRequiredHours}h
-                      </TableCell>
-                      <TableCell className="px-6 py-4 text-center">
-                        <div className="flex flex-col items-center">
-                          <div className="flex items-center gap-1.5 font-bold text-slate-800">
-                            <span className="text-indigo-600">
-                              {agent.monthlyAchievedTarget}
-                            </span>
-                            <span className="text-slate-300 font-normal">
-                              /
-                            </span>
-                            <span>{agent.monthlyTotalTarget}</span>
-                          </div>
-                          <div className="w-24 h-1 bg-slate-100 rounded-full mt-2 overflow-hidden">
-                            <div
-                              className="h-full bg-indigo-500 rounded-full"
-                              style={{
-                                width: `${Math.min(100, (agent.monthlyAchievedTarget / agent.monthlyTotalTarget) * 100)}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                      </TableBody>
+                    </Table>
+                    <div className="border-t border-slate-100 bg-white">
+                      <DataTablePagination table={table} />
+                    </div>
+                  </>
+                );
+              })()}
             </AccordionContent>
           </AccordionItem>
         ))}
