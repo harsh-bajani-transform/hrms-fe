@@ -28,7 +28,7 @@ const StatCard = ({
     <div
       className={`
         bg-white p-5 md:p-6 rounded-xl shadow-sm border min-w-0
-        ${alert ? 'border-red-300 bg-gradient-to-br from-red-50 to-red-100' : 'border-gray-200'}
+        ${alert ? 'border-red-300 bg-linear-to-br from-red-50 to-red-100' : 'border-gray-200'}
         flex flex-row items-center justify-between gap-4 relative group hover:shadow-md transition-all duration-200 ${className}
       `}
     >
@@ -67,10 +67,10 @@ const StatCard = ({
       </div>
 
       <div
-        className={`p-3 sm:p-3.5 md:p-4 rounded-xl shrink-0 self-center shadow-sm
-                ${alert ? 'bg-gradient-to-br from-red-100 to-red-200 text-red-700' : trend === 'up' ? 'bg-gradient-to-br from-green-100 to-green-200 text-green-700' : 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700'}`}
+        className={`p-3 rounded-xl shrink-0 self-center shadow-sm
+                ${alert ? 'bg-linear-to-br from-red-100 to-red-200 text-red-700' : trend === 'up' ? 'bg-linear-to-br from-green-100 to-green-200 text-green-700' : 'bg-linear-to-br from-blue-100 to-blue-200 text-blue-700'}`}
       >
-        <CardIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+        <CardIcon className="w-4 h-4" />
       </div>
     </div>
   )

@@ -15,6 +15,26 @@ export interface Project {
   tasks: Task[];
 }
 
+// Database-aligned interfaces
+export interface DBTask {
+  task_id?: number | string;
+  task_name?: string;
+  task_target?: number | string;
+  label?: string;
+  name?: string;
+  status?: string;
+  due_date?: string;
+  priority?: string;
+}
+
+export interface DBProject {
+  project_id?: number | string;
+  project_name?: string;
+  project_file?: string | null;
+  instruction_file?: string | null;
+  tasks?: DBTask[];
+}
+
 // From AgentTabsNavigation
 export type AgentTabId =
   | "overview"

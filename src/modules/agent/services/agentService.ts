@@ -1,7 +1,23 @@
 import api from "../../../services/api";
+import type { ApiEnvelope, ProjectRef, TaskRef } from "../../dashboard/types";
 
 export const fetchDropdowns = async (payload: Record<string, unknown>) => {
   const res = await api.post("/dropdown/get", payload);
+  return res.data;
+};
+
+/**
+ * Fetch projects with tasks assigned to the logged-in agent
+ * @param userId - The logged-in user's ID
+ * @returns Projects with nested tasks
+ */
+export const fetchAgentProjects = async (
+  userId: number | string,
+): Promise<ApiEnvelope<ProjectRef[]>> => {
+  const res = await api.post<ApiEnvelope<ProjectRef[]>>("/dropdown/get", {
+    dropdown_type: "projects with tasks",
+    logged_in_user_id: userId,
+  });
   return res.data;
 };
 

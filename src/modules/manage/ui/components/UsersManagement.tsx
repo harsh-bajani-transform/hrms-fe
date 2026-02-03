@@ -10,6 +10,14 @@ import {
   User,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  flexRender,
+  createColumnHelper,
+  type ColumnDef,
+} from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DataTablePagination } from "@/components/ui/pagination";
 import { useAuth } from "../../../../context/AuthContext";
 import { deleteUser, updateUser } from "../../services/manageService";
 import UserFormModal from "./UserFormModal";
@@ -42,6 +51,8 @@ interface UsersManagementProps {
   onRefresh: () => void;
   dropdowns: UserDropdowns;
 }
+
+const columnHelper = createColumnHelper<UserType>();
 
 const UsersManagement: React.FC<UsersManagementProps> = ({
   users,
@@ -101,6 +112,138 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
     }
   };
 
+  // Define columns
+  const columns = useMemo<ColumnDef<UserType, unknown>[]>(
+    () => [
+      columnHelper.display({
+        id: 'user',
+        header: 'User',
+        cell: (info) => {
+          const u = info.row.original;
+          return (
+            <div className="px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-semibold text-xs border border-blue-200 uppercase">
+                  {u.user_name?.substring(0, 2)}
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-gray-900">
+                    {u.user_name}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {u.user_email}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        },
+      }),
+      columnHelper.display({
+        id: 'role',
+        header: 'Role & Designation',
+        cell: (info) => {
+          const u = info.row.original;
+          return (
+            <div className="px-6 py-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+                  <Shield className="w-3 h-3 text-blue-600" />
+                  {u.role_name || "AGENT"}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {u.designation_name || "—"}
+                </div>
+              </div>
+            </div>
+          );
+        },
+      }),
+      columnHelper.display({
+        id: 'status',
+        header: 'Status',
+        cell: (info) => {
+          const u = info.row.original;
+          return (
+            <div className="px-6 py-4">
+              <Badge
+                variant={u.is_active === 1 ? "default" : "secondary"}
+                className={`cursor-pointer ${
+                  u.is_active === 1
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100"
+                    : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
+                }`}
+                onClick={() => canManageUsers && handleToggleStatus(u)}
+              >
+                {u.is_active === 1 ? (
+                  <>
+                    <CheckCircle className="w-3 h-3 mr-1" /> Active
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-3 h-3 mr-1" /> Inactive
+                  </>
+                )}
+              </Badge>
+            </div>
+          );
+        },
+      }),
+      columnHelper.display({
+        id: 'actions',
+        header: () => <div className="text-right">Actions</div>,
+        cell: (info) => {
+          const u = info.row.original;
+          return (
+            <div className="px-6 py-4 text-right">
+              {canManageUsers && (
+                <div className="flex items-center justify-end gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => setEditingUser(u)}
+                    className="text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                    title="Edit User"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => handleDelete(u)}
+                    className="text-gray-400 hover:text-rose-600 hover:bg-rose-50"
+                    disabled={isDeleting === u.user_id}
+                    title="Delete User"
+                  >
+                    <Trash2
+                      className={`w-4 h-4 ${
+                        isDeleting === u.user_id ? "animate-pulse" : ""
+                      }`}
+                    />
+                  </Button>
+                </div>
+              )}
+            </div>
+          );
+        },
+      }),
+    ],
+    [canManageUsers, isDeleting],
+  );
+
+  // Initialize TanStack Table
+  const table = useReactTable({
+    data: filteredUsers,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
+  });
+
   return (
     <div className="space-y-6">
       {/* Search and Actions */}
@@ -130,20 +273,23 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 border-b border-gray-200">
-              <TableHead className="px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                User
-              </TableHead>
-              <TableHead className="px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                Role & Designation
-              </TableHead>
-              <TableHead className="px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                Status
-              </TableHead>
-              <TableHead className="px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-right">
-                Actions
-              </TableHead>
-            </TableRow>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="bg-gray-50 border-b border-gray-200">
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className="px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider"
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
           </TableHeader>
           <TableBody>
             {loading ? (
@@ -160,7 +306,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
                   </div>
                 </TableCell>
               </TableRow>
-            ) : filteredUsers.length === 0 ? (
+            ) : table.getRowModel().rows.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={4}
@@ -173,92 +319,29 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
                 </TableCell>
               </TableRow>
             ) : (
-              filteredUsers.map((u) => (
+              table.getRowModel().rows.map((row) => (
                 <TableRow
-                  key={u.user_id}
+                  key={row.id}
                   className="hover:bg-blue-50 transition-colors group"
                 >
-                  <TableCell className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-semibold text-xs border border-blue-200 uppercase">
-                        {u.user_name?.substring(0, 2)}
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-gray-900">
-                          {u.user_name}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {u.user_email}
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-6 py-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
-                        <Shield className="w-3 h-3 text-blue-600" />
-                        {u.role_name || "AGENT"}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {u.designation_name || "—"}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-6 py-4">
-                    <Badge
-                      variant={u.is_active === 1 ? "default" : "secondary"}
-                      className={`cursor-pointer ${
-                        u.is_active === 1
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100"
-                          : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
-                      }`}
-                      onClick={() => canManageUsers && handleToggleStatus(u)}
-                    >
-                      {u.is_active === 1 ? (
-                        <>
-                          <CheckCircle className="w-3 h-3 mr-1" /> Active
-                        </>
-                      ) : (
-                        <>
-                          <XCircle className="w-3 h-3 mr-1" /> Inactive
-                        </>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="p-0">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
                       )}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-right">
-                    {canManageUsers && (
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => setEditingUser(u)}
-                          className="text-gray-400 hover:text-blue-600 hover:bg-blue-50"
-                          title="Edit User"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => handleDelete(u)}
-                          className="text-gray-400 hover:text-rose-600 hover:bg-rose-50"
-                          disabled={isDeleting === u.user_id}
-                          title="Delete User"
-                        >
-                          <Trash2
-                            className={`w-4 h-4 ${
-                              isDeleting === u.user_id ? "animate-pulse" : ""
-                            }`}
-                          />
-                        </Button>
-                      </div>
-                    )}
-                  </TableCell>
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
+
+        {/* Pagination */}
+        {!loading && filteredUsers.length > 0 && (
+          <DataTablePagination table={table} />
+        )}
       </div>
 
       {/* Modals */}

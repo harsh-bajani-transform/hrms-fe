@@ -21,6 +21,14 @@ import {
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  flexRender,
+  createColumnHelper,
+  type ColumnDef,
+} from "@tanstack/react-table";
+import {
   Table,
   TableBody,
   TableCell,
@@ -53,6 +61,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { DataTablePagination } from "@/components/ui/pagination";
 
 import { deleteTracker, fetchTrackers } from "../../services/agentService";
 import { useAuth } from "../../../../context/AuthContext";
@@ -74,6 +83,8 @@ const getTodayDate = (): string => {
   const today = new Date();
   return today.toISOString().split("T")[0] ?? "";
 };
+
+const columnHelper = createColumnHelper<AgentTrackerRow>();
 
 const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
   const { user } = useAuth();
@@ -395,6 +406,141 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
     }
   };
 
+  // Define columns for the tracker table
+  const columns = useMemo<ColumnDef<AgentTrackerRow, unknown>[]>(
+    () => [
+      {
+        id: "date",
+        header: "Date",
+        cell: ({ row }) => (
+          <div className="font-medium text-gray-700">
+            {row.original.date_time
+              ? format(new Date(row.original.date_time), "dd/MM/yyyy")
+              : "-"}
+          </div>
+        ),
+      },
+      {
+        id: "project",
+        header: "Project",
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-500" />
+            <span className="font-medium text-gray-900">
+              {row.original.project_name ||
+                getProjectName(row.original.project_id)}
+            </span>
+          </div>
+        ),
+      },
+      {
+        id: "task",
+        header: "Task",
+        cell: ({ row }) => (
+          <div className="text-gray-700">
+            {row.original.task_name ||
+              getTaskName(row.original.task_id, row.original.project_id)}
+          </div>
+        ),
+      },
+      {
+        id: "tenureTarget",
+        header: () => <div className="text-center">Per Hour Target</div>,
+        cell: ({ row }) => (
+          <div className="text-center">
+            <Badge
+              variant="outline"
+              className="font-medium border-gray-300 bg-gray-50 text-gray-700"
+            >
+              {row.original.tenure_target ?? "-"}
+            </Badge>
+          </div>
+        ),
+      },
+      {
+        id: "production",
+        header: () => <div className="text-center">Production</div>,
+        cell: ({ row }) => (
+          <div className="text-center">
+            <Badge className="bg-blue-100 text-blue-700 border-blue-200 font-medium">
+              {row.original.production}
+            </Badge>
+          </div>
+        ),
+      },
+      {
+        id: "billableHours",
+        header: () => <div className="text-center">Billable Hours</div>,
+        cell: ({ row }) => (
+          <div className="text-center font-medium text-gray-700">
+            {row.original.billable_hours != null
+              ? Number(row.original.billable_hours).toFixed(2)
+              : "0.00"}
+          </div>
+        ),
+      },
+      {
+        id: "file",
+        header: () => <div className="text-center">File</div>,
+        cell: ({ row }) => (
+          <div className="text-center">
+            {row.original.tracker_file ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 w-9 p-0 rounded-lg hover:bg-blue-100 text-blue-600"
+                asChild
+              >
+                <a
+                  href={row.original.tracker_file}
+                  download
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Download className="w-4 h-4" />
+                </a>
+              </Button>
+            ) : (
+              <span className="text-gray-300 text-xs">—</span>
+            )}
+          </div>
+        ),
+      },
+      {
+        id: "action",
+        header: () => <div className="text-right pr-6">Action</div>,
+        cell: ({ row }) => (
+          <div className="text-right pr-6">
+            {isToday(row.original.date_time) ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 rounded-full hover:bg-red-50 text-red-500"
+                onClick={() => handleDelete(row.original.tracker_id)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            ) : (
+              <span className="text-slate-300 text-xs">—</span>
+            )}
+          </div>
+        ),
+      },
+    ],
+    [getProjectName, getTaskName, isToday],
+  );
+
+  // Initialize table
+  const table = useReactTable({
+    data: trackers,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: { pageSize: 10 },
+    },
+  });
+
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-300">
       {/* Page Header */}
@@ -532,37 +678,29 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <Table>
           <TableHeader className="bg-gray-50 border-b border-gray-200">
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="font-semibold text-gray-900 h-12">
-                Date
-              </TableHead>
-              <TableHead className="font-semibold text-gray-900 h-12">
-                Project
-              </TableHead>
-              <TableHead className="font-semibold text-gray-900 h-12">
-                Task
-              </TableHead>
-              <TableHead className="text-center font-semibold text-gray-900 h-12">
-                Per Hour Target
-              </TableHead>
-              <TableHead className="text-center font-semibold text-gray-900 h-12">
-                Production
-              </TableHead>
-              <TableHead className="text-center font-semibold text-gray-900 h-12">
-                Billable Hours
-              </TableHead>
-              <TableHead className="text-center font-semibold text-gray-900 h-12">
-                File
-              </TableHead>
-              <TableHead className="text-right pr-6 font-semibold text-gray-900 h-12">
-                Action
-              </TableHead>
-            </TableRow>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow
+                key={headerGroup.id}
+                className="hover:bg-transparent"
+              >
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className="font-semibold text-gray-900 h-12"
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-64 text-center">
+                <TableCell colSpan={columns.length} className="h-64 text-center">
                   <div className="flex flex-col items-center justify-center gap-3">
                     <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
                     <p className="text-gray-500 font-medium">
@@ -571,9 +709,9 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : trackers.length === 0 ? (
+            ) : table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-64 text-center">
+                <TableCell colSpan={columns.length} className="h-64 text-center">
                   <div className="flex flex-col items-center justify-center gap-3">
                     <FileText className="w-12 h-12 text-gray-300" />
                     <p className="text-gray-500 font-medium">
@@ -583,87 +721,29 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
                 </TableCell>
               </TableRow>
             ) : (
-              trackers.map((tracker) => (
+              table.getRowModel().rows.map((row) => (
                 <TableRow
-                  key={tracker.tracker_id}
-                  className="hover:bg-blue-50/50 transition-colors border-gray-100"
+                  key={row.id}
+                  className="hover:bg-blue-50/50 transition-colors border-gray-100 group"
                 >
-                  <TableCell className="font-medium text-gray-700">
-                    {tracker.date_time
-                      ? format(new Date(tracker.date_time), "dd/MM/yyyy")
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-blue-500" />
-                      <span className="font-medium text-gray-900">
-                        {tracker.project_name ||
-                          getProjectName(tracker.project_id)}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-gray-700">
-                    {tracker.task_name ||
-                      getTaskName(tracker.task_id, tracker.project_id)}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge
-                      variant="outline"
-                      className="font-medium border-gray-300 bg-gray-50 text-gray-700"
-                    >
-                      {tracker.tenure_target ?? "-"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge className="bg-blue-100 text-blue-700 border-blue-200 font-medium">
-                      {tracker.production}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center font-medium text-gray-700">
-                    {tracker.billable_hours != null
-                      ? Number(tracker.billable_hours).toFixed(2)
-                      : "0.00"}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {tracker.tracker_file ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-9 w-9 p-0 rounded-lg hover:bg-blue-100 text-blue-600"
-                        asChild
-                      >
-                        <a
-                          href={tracker.tracker_file}
-                          download
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <Download className="w-4 h-4" />
-                        </a>
-                      </Button>
-                    ) : (
-                      <span className="text-gray-300 text-xs">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right pr-6">
-                    {isToday(tracker.date_time) ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 rounded-full hover:bg-red-50 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => handleDelete(tracker.tracker_id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    ) : (
-                      <span className="text-slate-300 text-xs">—</span>
-                    )}
-                  </TableCell>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
+        {!loading && table.getRowModel().rows.length > 0 && (
+          <div className="border-t border-gray-200">
+            <DataTablePagination table={table} />
+          </div>
+        )}
       </div>
 
       {/* Totals Summary */}

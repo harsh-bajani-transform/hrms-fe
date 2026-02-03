@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import dayjs from "dayjs";
@@ -6,6 +6,14 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 
 dayjs.extend(customParseFormat);
 
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  flexRender,
+  createColumnHelper,
+  type ColumnDef,
+} from "@tanstack/react-table";
 import { getFriendlyErrorMessage } from "../../../../utils/errorMessages";
 import ErrorMessage from "../../../../components/common/ErrorMessage";
 import {
@@ -34,6 +42,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { DataTablePagination } from "@/components/ui/pagination";
 import {
   Calendar,
   FileDown,
@@ -62,6 +71,9 @@ type MonthlyExportRow = {
   "Pending Target": string | number;
   "Avg. QC Score": string | number;
 };
+
+const dailyColumnHelper = createColumnHelper<TrackerRow>();
+const monthlyColumnHelper = createColumnHelper<MonthlyBillableReportRow>();
 
 const AgentBillableReport = () => {
   const { user } = useAuth();
@@ -185,6 +197,169 @@ const AgentBillableReport = () => {
   }, [activeToggle, monthlyMonth, user]);
 
   const filteredDailyData = dailyData;
+
+  // Daily table columns
+  const dailyColumns = useMemo<ColumnDef<TrackerRow, unknown>[]>(
+    () => [
+      dailyColumnHelper.accessor((row) => row.work_date, {
+        id: 'work_date',
+        header: 'Date',
+        cell: (info) => (
+          <div className="px-6 py-4 font-medium text-gray-900">
+            {info.getValue()
+              ? dayjs(info.getValue() as string).format("DD-MM-YYYY")
+              : info.row.original.date_time
+                ? dayjs(info.row.original.date_time).format("DD-MM-YYYY")
+                : "-"}
+          </div>
+        ),
+      }) as ColumnDef<TrackerRow, unknown>,
+      dailyColumnHelper.display({
+        id: 'assigned_hours',
+        header: () => <div className="text-center">Assigned (Hrs)</div>,
+        cell: () => (
+          <div className="px-6 py-4 text-center text-gray-400 font-medium italic">
+            —
+          </div>
+        ),
+      }),
+      dailyColumnHelper.accessor((row) => row.cumulative_billable_hours_till_day as unknown, {
+        id: 'cumulative_billable_hours_till_day',
+        header: () => <div className="text-center">Worked (Hrs)</div>,
+        cell: (info) => (
+          <div className="px-6 py-4 text-center">
+            <Badge className="bg-blue-50 text-blue-700 border-blue-200 font-semibold text-sm">
+              {info.getValue() != null
+                ? Number(info.getValue()).toFixed(2)
+                : "-"}
+            </Badge>
+          </div>
+        ),
+      }) as ColumnDef<TrackerRow, unknown>,
+      dailyColumnHelper.display({
+        id: 'qc_score',
+        header: () => <div className="text-center">QC Score</div>,
+        cell: () => (
+          <div className="px-6 py-4 text-center text-gray-400 font-medium italic">
+            —
+          </div>
+        ),
+      }),
+      dailyColumnHelper.accessor((row) => row.daily_required_hours as unknown, {
+        id: 'daily_required_hours',
+        header: () => <div className="text-center">Daily Target (Hrs)</div>,
+        cell: (info) => (
+          <div className="px-6 py-4 text-center">
+            <Badge
+              variant="outline"
+              className="font-semibold text-gray-700 border-gray-300"
+            >
+              {info.getValue() != null ? Number(info.getValue()).toFixed(2) : "-"}
+            </Badge>
+          </div>
+        ),
+      }) as ColumnDef<TrackerRow, unknown>,
+    ],
+    [],
+  );
+
+  // Initialize daily table
+  const dailyTable = useReactTable({
+    data: filteredDailyData,
+    columns: dailyColumns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
+  });
+
+  // Monthly table columns
+  const monthlyColumns = useMemo(
+    () => [
+      monthlyColumnHelper.accessor((row) => row.month_year, {
+        id: 'month_year',
+        header: 'Month & Year',
+        cell: (info) => (
+          <div className="px-6 py-4 font-semibold text-gray-900">
+            {info.getValue() ?? "-"}
+          </div>
+        ),
+      }) as ColumnDef<MonthlyBillableReportRow, unknown>,
+      monthlyColumnHelper.display({
+        id: 'billable_hours',
+        header: () => <div className="text-center">Billable Hours</div>,
+        cell: (info) => {
+          const row = info.row.original;
+          const value = row.total_billable_hours || row.total_billable_hours_month;
+          return (
+            <div className="px-6 py-4 text-center">
+              <Badge className="bg-blue-50 text-blue-700 border-blue-200 font-semibold">
+                {value ? Number(value).toFixed(2) : "-"}
+              </Badge>
+            </div>
+          );
+        },
+      }),
+      monthlyColumnHelper.display({
+        id: 'monthly_goal',
+        header: () => <div className="text-center">Monthly Goal</div>,
+        cell: (info) => {
+          const row = info.row.original;
+          const goal = row.monthly_target ?? row.monthly_goal;
+          return (
+            <div className="px-6 py-4 text-center">
+              <Badge
+                variant="outline"
+                className="font-semibold border-gray-300 text-gray-700"
+              >
+                {goal ?? "-"}
+              </Badge>
+            </div>
+          );
+        },
+      }),
+      monthlyColumnHelper.accessor((row) => row.pending_target as unknown, {
+        id: 'pending_target',
+        header: () => <div className="text-center">Pending Target</div>,
+        cell: (info) => {
+          const value = info.row.original.pending_target;
+          return (
+            <div className="px-6 py-4 text-center">
+              <Badge className="bg-amber-50 text-amber-700 border-amber-200 font-semibold">
+                {value ? Number(value).toFixed(2) : "-"}
+              </Badge>
+            </div>
+          );
+        },
+      }) as ColumnDef<MonthlyBillableReportRow, unknown>,
+      monthlyColumnHelper.accessor((row) => row.avg_qc_score as unknown, {
+        id: 'avg_qc_score',
+        header: () => <div className="text-center">Avg. QC Score</div>,
+        cell: (info) => (
+          <div className="px-6 py-4 text-center text-gray-400 font-medium italic">
+            {info.row.original.avg_qc_score ?? "—"}
+          </div>
+        ),
+      }) as ColumnDef<MonthlyBillableReportRow, unknown>,
+    ],
+    [],
+  );
+
+  // Initialize monthly table
+  const monthlyTable = useReactTable({
+    data: monthlySummaryData,
+    columns: monthlyColumns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
+  });
 
   // Export handlers
   const handleExportMonthlyTable = () => {
@@ -403,81 +578,61 @@ const AgentBillableReport = () => {
                 />
               </div>
             ) : (
-              <Table>
-                <TableHeader className="bg-gray-50">
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="px-6 font-semibold text-gray-700 h-12">
-                      Date
-                    </TableHead>
-                    <TableHead className="text-center font-semibold text-gray-700 h-12">
-                      Assigned (Hrs)
-                    </TableHead>
-                    <TableHead className="text-center font-semibold text-gray-700 h-12">
-                      Worked (Hrs)
-                    </TableHead>
-                    <TableHead className="text-center font-semibold text-gray-700 h-12">
-                      QC Score
-                    </TableHead>
-                    <TableHead className="text-center font-semibold text-gray-700 h-12">
-                      Daily Target (Hrs)
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredDailyData.length > 0 ? (
-                    filteredDailyData.map((row, idx) => (
-                      <TableRow
-                        key={idx}
-                        className="group hover:bg-blue-50 transition-colors border-gray-200"
-                      >
-                        <td className="px-6 py-4 font-medium text-gray-900">
-                          {row.work_date
-                            ? dayjs(row.work_date).format("DD-MM-YYYY")
-                            : row.date_time
-                              ? dayjs(row.date_time).format("DD-MM-YYYY")
-                              : "-"}
-                        </td>
-                        <td className="px-6 py-4 text-center text-gray-400 font-medium italic">
-                          —
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <Badge className="bg-blue-50 text-blue-700 border-blue-200 font-semibold text-sm">
-                            {row.cumulative_billable_hours_till_day != null
-                              ? Number(
-                                  row.cumulative_billable_hours_till_day,
-                                ).toFixed(2)
-                              : "-"}
-                          </Badge>
-                        </td>
-                        <td className="px-6 py-4 text-center text-gray-400 font-medium italic">
-                          —
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <Badge
-                            variant="outline"
-                            className="font-semibold border-gray-200 text-gray-600"
-                          >
-                            {row.daily_required_hours != null
-                              ? Number(row.daily_required_hours).toFixed(2)
-                              : "-"}
-                          </Badge>
-                        </td>
+              <>
+                <Table>
+                  <TableHeader className="bg-gray-50">
+                    {dailyTable.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                        {headerGroup.headers.map((header) => (
+                          <TableHead key={header.id} className="px-6 font-semibold text-gray-700 h-12">
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </TableHead>
+                        ))}
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} className="h-64 text-center">
-                        <div className="flex flex-col items-center justify-center gap-3">
-                          <Clock className="w-12 h-12 text-gray-300" />
-                          <p className="text-gray-500 font-medium">
-                            No performance data found for this period.
-                          </p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                    ))}
+                  </TableHeader>
+                  <TableBody>
+                    {dailyTable.getRowModel().rows.length > 0 ? (
+                      dailyTable.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          className="group hover:bg-blue-50 transition-colors border-gray-200"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <td key={cell.id} className="p-0">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </td>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-64 text-center">
+                          <div className="flex flex-col items-center justify-center gap-3">
+                            <Clock className="w-12 h-12 text-gray-300" />
+                            <p className="text-gray-500 font-medium">
+                              No performance data found for this period.
+                            </p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+
+                {/* Daily Pagination */}
+                {filteredDailyData.length > 0 && (
+                  <DataTablePagination table={dailyTable} />
+                )}
+              </>
             )}
           </CardContent>
         </Card>
@@ -554,92 +709,59 @@ const AgentBillableReport = () => {
                 />
               </div>
             ) : (
-              <Table>
-                <TableHeader className="bg-gray-50">
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="px-6 font-semibold text-gray-700 h-12">
-                      Year & Month
-                    </TableHead>
-                    <TableHead className="text-center font-semibold text-gray-700 h-12">
-                      Hours Delivered
-                    </TableHead>
-                    <TableHead className="text-center font-semibold text-gray-700 h-12">
-                      Monthly Goal
-                    </TableHead>
-                    <TableHead className="text-center font-semibold text-gray-700 h-12">
-                      Pending
-                    </TableHead>
-                    <TableHead className="text-center font-semibold text-gray-700 h-12">
-                      Avg QC Score
-                    </TableHead>
-                    <TableHead className="text-right pr-6 font-semibold text-gray-700 h-12">
-                      Full Report
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {monthlySummaryData.length > 0 ? (
-                    monthlySummaryData.map((row, idx) => (
-                      <TableRow
-                        key={idx}
-                        className="group hover:bg-blue-50 transition-colors border-gray-200"
-                      >
-                        <td className="px-6 py-4 font-semibold text-gray-900">
-                          {row.month_year}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <Badge className="bg-blue-50 text-blue-700 border-blue-200 font-semibold text-sm">
-                            {row.total_billable_hours ||
-                            row.total_billable_hours_month
-                              ? Number(
-                                  row.total_billable_hours ||
-                                    row.total_billable_hours_month,
-                                ).toFixed(2)
-                              : "-"}
-                          </Badge>
-                        </td>
-                        <td className="px-6 py-4 text-center font-medium text-gray-600">
-                          {row.monthly_target ?? row.monthly_goal ?? "-"}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <Badge
-                            variant="outline"
-                            className={`font-semibold ${Number(row.pending_target) > 0 ? "text-amber-600 bg-amber-50 border-amber-200" : "text-emerald-600 bg-emerald-50 border-emerald-200"}`}
-                          >
-                            {row.pending_target
-                              ? Number(row.pending_target).toFixed(2)
-                              : "-"}
-                          </Badge>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          {row.avg_qc_score != null ? (
-                            <Badge
-                              variant="secondary"
-                              className="bg-gray-100 text-gray-900 font-semibold"
-                            >
-                              {row.avg_qc_score}
-                            </Badge>
-                          ) : (
-                            <span className="text-gray-400">—</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right pr-6">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-11 border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-semibold gap-2 rounded-lg"
-                            onClick={() =>
-                              row.month_year &&
-                              void handleExportMonthDailyExcel(row.month_year)
-                            }
-                          >
-                            <Download className="w-4 h-4" />
-                            Excel
-                          </Button>
-                        </td>
+              <>
+                <Table>
+                  <TableHeader className="bg-gray-50">
+                    {monthlyTable.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                        {headerGroup.headers.map((header) => (
+                          <TableHead key={header.id} className="px-6 font-semibold text-gray-700 h-12">
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </TableHead>
+                        ))}
+                        <TableHead className="text-right pr-6 font-semibold text-gray-700 h-12">
+                          Full Report
+                        </TableHead>
                       </TableRow>
-                    ))
-                  ) : (
+                    ))}
+                  </TableHeader>
+                  <TableBody>
+                    {monthlyTable.getRowModel().rows.length > 0 ? (
+                      monthlyTable.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          className="group hover:bg-blue-50 transition-colors border-gray-200"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <td key={cell.id} className="p-0">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </td>
+                          ))}
+                          <td className="px-6 py-4 text-right pr-6">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-11 border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-semibold gap-2 rounded-lg"
+                              onClick={() =>
+                                row.original.month_year &&
+                                void handleExportMonthDailyExcel(row.original.month_year)
+                              }
+                            >
+                              <Download className="w-4 h-4" />
+                              Excel
+                            </Button>
+                          </td>
+                        </TableRow>
+                      ))
+                    ) : (
                     <TableRow>
                       <TableCell colSpan={6} className="h-64 text-center">
                         <div className="flex flex-col items-center justify-center gap-3">
@@ -653,6 +775,12 @@ const AgentBillableReport = () => {
                   )}
                 </TableBody>
               </Table>
+
+              {/* Monthly Pagination */}
+              {monthlySummaryData.length > 0 && (
+                <DataTablePagination table={monthlyTable} />
+              )}
+            </>
             )}
           </CardContent>
         </Card>
