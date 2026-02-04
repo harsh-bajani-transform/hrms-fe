@@ -274,7 +274,7 @@ const AssistantManagerDashboard: FC = () => {
 
       {/* Latest QC Done Files */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
+        <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-5">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-white/10 rounded-lg">
               <FileText className="w-7 h-7 text-white" />
@@ -318,7 +318,7 @@ const AssistantManagerDashboard: FC = () => {
               >
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4 flex-1">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 bg-linear-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center shrink-0">
                       <FileText className="w-6 h-6 text-blue-700" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-3 flex-1">

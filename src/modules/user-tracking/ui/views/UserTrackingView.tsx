@@ -1,14 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Search, Users } from 'lucide-react'
 import { toast } from 'sonner'
-import {
-  useReactTable,
-  getCoreRowModel,
-  getPaginationRowModel,
-  flexRender,
-  createColumnHelper,
-  type ColumnDef,
-} from '@tanstack/react-table'
 
 import { useAuth } from '../../../../context/AuthContext'
 import { fetchUserList, updatePermission } from '../../services/userTrackingService'
@@ -22,26 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { DataTablePagination } from '@/components/ui/pagination'
+import { DataTable } from '@/components/ui/data-table'
+import { createColumns, type PermissionUser } from './UserTrackingViewColumns'
 
 type PermissionFlag = 0 | 1
-
-interface PermissionUser {
-  user_id: Id
-  user_name?: string
-  user_email?: string
-  role?: string
-  designation?: string
-
-  user_creation_permission?: PermissionFlag
-  project_creation_permission?: PermissionFlag
-
-  [key: string]: unknown
-}
-
 type PermissionType = 'user' | 'project'
-
-const columnHelper = createColumnHelper<PermissionUser>()
 
 const UserTrackingView = () => {
   const { user } = useAuth()
@@ -119,101 +96,11 @@ const UserTrackingView = () => {
     }
   }
 
-  // Define columns
-  const columns = useMemo<ColumnDef<PermissionUser, unknown>[]>(
-    () => [
-      columnHelper.display({
-        id: 'index',
-        header: '#',
-        cell: (info) => (
-          <div className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-            {info.row.index + 1}
-          </div>
-        ),
-      }),
-      columnHelper.accessor('user_name', {
-        header: 'User Name',
-        cell: (info) => (
-          <div className="px-6 py-4 whitespace-nowrap">
-            <div className="text-sm font-medium text-gray-900">{info.getValue() as string}</div>
-            {info.row.original.designation && (
-              <div className="text-sm text-gray-500">{info.row.original.designation}</div>
-            )}
-          </div>
-        ),
-      }),
-      columnHelper.accessor('user_email', {
-        header: 'Email',
-        cell: (info) => (
-          <div className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-            {info.getValue() as string}
-          </div>
-        ),
-      }),
-      columnHelper.accessor('role', {
-        header: 'Role',
-        cell: (info) => {
-          const role = info.getValue() as string
-          return (
-            <div className="px-6 py-4 whitespace-nowrap">
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                role === 'Admin' ? 'bg-purple-100 text-purple-700' :
-                role === 'Manager' ? 'bg-blue-100 text-blue-700' :
-                'bg-green-100 text-green-700'
-              }`}>
-                {role}
-              </span>
-            </div>
-          )
-        },
-      }),
-      columnHelper.accessor('user_creation_permission', {
-        header: () => (
-          <div className="text-center">User Creation Permission</div>
-        ),
-        cell: (info) => (
-          <div className="px-6 py-4 whitespace-nowrap text-center">
-            <button
-              onClick={() => handlePermissionToggle(info.row.original.user_id, 'user', info.getValue())}
-              disabled={updatingPermission === `${info.row.original.user_id}-user`}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                info.getValue() === 1 ? 'bg-green-500' : 'bg-gray-300'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
-                  info.getValue() === 1 ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </div>
-        ),
-      }),
-      columnHelper.accessor('project_creation_permission', {
-        header: () => (
-          <div className="text-center">Project Creation Permission</div>
-        ),
-        cell: (info) => (
-          <div className="px-6 py-4 whitespace-nowrap text-center">
-            <button
-              onClick={() => handlePermissionToggle(info.row.original.user_id, 'project', info.getValue())}
-              disabled={updatingPermission === `${info.row.original.user_id}-project`}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                info.getValue() === 1 ? 'bg-green-500' : 'bg-gray-300'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
-                  info.getValue() === 1 ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </div>
-        ),
-      }),
-    ],
-    [updatingPermission],
-  )
+  // Create columns with dependencies
+  const columns = useMemo(
+    () => createColumns(updatingPermission, handlePermissionToggle),
+    [updatingPermission]
+  );
 
   const asRecord = (v: unknown): v is Record<string, unknown> =>
     typeof v === 'object' && v !== null
@@ -279,19 +166,6 @@ const UserTrackingView = () => {
     })
   }, [users, searchQuery, roleFilter])
 
-  // Initialize TanStack Table
-  const table = useReactTable({
-    data: filteredUsers,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
-  })
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -346,57 +220,20 @@ const UserTrackingView = () => {
         </div>
       </div>
 
-      {/* Users Table */}
-      {filteredUsers.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md text-center py-12">
-          <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">No users found</h3>
-          <p className="text-gray-500">Try adjusting your search or filters</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gradient-to-r from-blue-600 to-blue-700">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <th
-                        key={header.id}
-                        className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                    {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <DataTablePagination table={table} />
-        </div>
-      )}
+      {/* Users Table with DataTable Component */}
+      <DataTable
+        columns={columns}
+        data={filteredUsers}
+        loading={false}
+        emptyMessage="No users found"
+        emptyIcon={Users}
+        showPagination={true}
+        pageSize={10}
+        containerClassName="bg-white rounded-lg shadow-md overflow-hidden"
+        headerClassName=""
+        rowClassName=""
+        rowHoverClassName="hover:bg-gray-50 transition-colors"
+      />
     </div>
   );
 }

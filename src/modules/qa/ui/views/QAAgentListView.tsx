@@ -1,43 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { format } from "date-fns";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   ChevronDown,
   ChevronUp,
-  Download,
   FileText,
   Users as UsersIcon,
 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  useReactTable,
-  getCoreRowModel,
-  getPaginationRowModel,
-  flexRender,
-  createColumnHelper,
-  type ColumnDef,
-} from "@tanstack/react-table";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { DataTablePagination } from "@/components/ui/pagination";
+import { DataTable } from "@/components/ui/data-table";
 import { useAuth } from "../../../../context/AuthContext";
 import {
   fetchDashboardData,
   fetchDropdownData,
 } from "../../../dashboard/services/dashboardService";
 import type { UserRef, TrackerRow, ProjectRef } from "../../../dashboard/types";
-
 import type {
   QATaskNameMap as TaskNameMap,
   QAAgentTrackersMap as AgentTrackersMap,
   QAExpandedAgentsMap as ExpandedAgentsMap,
 } from "../../types";
+import { createColumns } from "./QAAgentListViewColumns";
 
 const QAAgentListView: React.FC = () => {
   const { user } = useAuth();
@@ -289,153 +270,12 @@ const QAAgentListView: React.FC = () => {
                         </p>
                       </div>
                     ) : (
-                      <>
-                        {(() => {
-                          const columns: ColumnDef<TrackerRow, unknown>[] = [
-                            {
-                              id: "dateTime",
-                              header: "Date/Time",
-                              cell: ({ row }) => (
-                                <div className="text-slate-700">
-                                  {row.original.date_time
-                                    ? format(
-                                        new Date(row.original.date_time),
-                                        "M/d/yyyy h:mma",
-                                      )
-                                    : "-"}
-                                </div>
-                              ),
-                            },
-                            {
-                              id: "agentName",
-                              header: "Agent Name",
-                              cell: ({ row }) => (
-                                <div className="text-slate-700 font-medium">
-                                  {row.original.user_name ||
-                                    agent.user_name ||
-                                    "-"}
-                                </div>
-                              ),
-                            },
-                            {
-                              id: "projectName",
-                              header: "Project Name",
-                              cell: ({ row }) => (
-                                <div className="text-slate-700">
-                                  {row.original.project_name || "-"}
-                                </div>
-                              ),
-                            },
-                            {
-                              id: "taskName",
-                              header: "Task Name",
-                              cell: ({ row }) => (
-                                <div className="text-slate-700">
-                                  {row.original.task_name ||
-                                    (row.original.task_id !== undefined
-                                      ? dropdownTaskNameMap[
-                                          String(row.original.task_id)
-                                        ]
-                                      : undefined) ||
-                                    "-"}
-                                </div>
-                              ),
-                            },
-                            {
-                              id: "file",
-                              header: () => <div className="text-center">File</div>,
-                              cell: ({ row }) => (
-                                <div className="text-center">
-                                  {row.original.tracker_file ? (
-                                    <a
-                                      href={row.original.tracker_file}
-                                      download
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center justify-center text-blue-600 hover:text-blue-800 transition-colors"
-                                      title="Download file"
-                                    >
-                                      <Download className="w-5 h-5" />
-                                    </a>
-                                  ) : (
-                                    <span className="text-slate-400">—</span>
-                                  )}
-                                </div>
-                              ),
-                            },
-                            {
-                              id: "action",
-                              header: () => <div className="text-center">Action</div>,
-                              cell: ({ row }) => (
-                                <div className="text-center">
-                                  <Button
-                                    onClick={() => handleQCForm(row.original)}
-                                    size="sm"
-                                    className="bg-blue-600 hover:bg-blue-700 text-white h-8 px-3"
-                                  >
-                                    <FileText className="w-3.5 h-3.5 mr-1.5" />
-                                    QC Form
-                                  </Button>
-                                </div>
-                              ),
-                            },
-                          ];
-
-                          const table = useReactTable({
-                            data: trackers,
-                            columns,
-                            getCoreRowModel: getCoreRowModel(),
-                            getPaginationRowModel: getPaginationRowModel(),
-                            initialState: {
-                              pagination: { pageSize: 10 },
-                            },
-                          });
-
-                          return (
-                            <>
-                              <Table>
-                                <TableHeader className="bg-slate-50 border-b border-slate-200">
-                                  {table.getHeaderGroups().map((headerGroup) => (
-                                    <TableRow key={headerGroup.id}>
-                                      {headerGroup.headers.map((header) => (
-                                        <TableHead
-                                          key={header.id}
-                                          className="font-semibold text-slate-700 h-12"
-                                        >
-                                          {flexRender(
-                                            header.column.columnDef.header,
-                                            header.getContext(),
-                                          )}
-                                        </TableHead>
-                                      ))}
-                                    </TableRow>
-                                  ))}
-                                </TableHeader>
-                                <TableBody>
-                                  {table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                      key={row.id}
-                                      className="border-b border-slate-100 hover:bg-blue-50 transition-colors"
-                                    >
-                                      {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                          {flexRender(
-                                            cell.column.columnDef.cell,
-                                            cell.getContext(),
-                                          )}
-                                        </TableCell>
-                                      ))}
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                              <div className="border-t border-slate-200">
-                                <DataTablePagination table={table} />
-                              </div>
-                            </>
-                          );
-                        })()}
-                      </>
+                      <AgentTrackerTable
+                        trackers={trackers}
+                        agentName={agent.user_name || ""}
+                        dropdownTaskNameMap={dropdownTaskNameMap}
+                        handleQCForm={handleQCForm}
+                      />
                     )}
                   </div>
                 )}
@@ -445,6 +285,39 @@ const QAAgentListView: React.FC = () => {
         </div>
       )}
     </div>
+  );
+};
+
+// Separate component for agent tracker table
+interface AgentTrackerTableProps {
+  trackers: TrackerRow[];
+  agentName: string;
+  dropdownTaskNameMap: TaskNameMap;
+  handleQCForm: (tracker: TrackerRow) => void;
+}
+
+const AgentTrackerTable: React.FC<AgentTrackerTableProps> = ({
+  trackers,
+  agentName,
+  dropdownTaskNameMap,
+  handleQCForm,
+}) => {
+  const columns = useMemo(
+    () => createColumns(dropdownTaskNameMap, agentName, handleQCForm),
+    [dropdownTaskNameMap, agentName, handleQCForm]
+  );
+
+  return (
+    <DataTable
+      columns={columns}
+      data={trackers}
+      emptyMessage="No tracker data with files found"
+      emptyIcon={FileText}
+      showPagination={true}
+      pageSize={10}
+      className="border-t-0"
+      headerClassName="bg-slate-50"
+    />
   );
 };
 

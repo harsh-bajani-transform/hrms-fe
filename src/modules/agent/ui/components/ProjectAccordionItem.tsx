@@ -7,13 +7,7 @@ import {
   Calendar as CalendarIcon,
   Plus,
 } from "lucide-react";
-import {
-  useReactTable,
-  getCoreRowModel,
-  getPaginationRowModel,
-  flexRender,
-  type ColumnDef,
-} from "@tanstack/react-table";
+import { type ColumnDef } from "@tanstack/react-table";
 import {
   AccordionContent,
   AccordionItem,
@@ -21,17 +15,9 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTablePagination } from "@/components/ui/pagination";
+import { DataTable } from "@/components/ui/data-table";
 import { Task, Project } from "../../types";
 
 interface DocxPreviewProps {
@@ -221,19 +207,6 @@ export const ProjectAccordionItem: React.FC<ProjectAccordionItemProps> = ({
 
   console.log('[ProjectAccordionItem]', project.name, '- project.id:', project.id, 'expanded:', expanded, 'isProjectExpanded:', isProjectExpanded);
 
-  // Create table instance for this project (hooks at top level)
-  const taskTable = useReactTable({
-    data: todaysTasks,
-    columns: taskColumns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
-  });
-
   return (
     <AccordionItem
       key={project.id}
@@ -401,54 +374,19 @@ export const ProjectAccordionItem: React.FC<ProjectAccordionItemProps> = ({
                     </p>
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white">
-                    <Table>
-                      <TableHeader className="bg-slate-50/80">
-                        {taskTable.getHeaderGroups().map((headerGroup) => (
-                          <TableRow
-                            key={headerGroup.id}
-                            className="hover:bg-transparent border-slate-200"
-                          >
-                            {headerGroup.headers.map((header) => (
-                              <TableHead
-                                key={header.id}
-                                className="font-bold text-slate-700 h-11"
-                              >
-                                {header.isPlaceholder
-                                  ? null
-                                  : flexRender(
-                                      header.column.columnDef.header,
-                                      header.getContext(),
-                                    )}
-                              </TableHead>
-                            ))}
-                          </TableRow>
-                        ))}
-                      </TableHeader>
-                      <TableBody>
-                        {taskTable.getRowModel().rows.map((row) => (
-                          <TableRow
-                            key={row.id}
-                            className="border-slate-100 hover:bg-slate-50/50 transition-colors"
-                          >
-                            {row.getVisibleCells().map((cell) => (
-                              <TableCell key={cell.id} className="p-2">
-                                {flexRender(
-                                  cell.column.columnDef.cell,
-                                  cell.getContext(),
-                                )}
-                              </TableCell>
-                            ))}
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-
-                    {/* Pagination */}
-                    {todaysTasks.length > 0 && (
-                      <DataTablePagination table={taskTable} />
-                    )}
-                  </div>
+                  <DataTable
+                    columns={taskColumns}
+                    data={todaysTasks}
+                    loading={false}
+                    emptyMessage="No tasks assigned for this date."
+                    emptyIcon={CalendarIcon}
+                    showPagination={true}
+                    pageSize={10}
+                    containerClassName="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white"
+                    headerClassName="bg-slate-50/80"
+                    rowClassName="border-slate-100"
+                    rowHoverClassName="hover:bg-slate-50/50 transition-colors"
+                  />
                 )}
               </div>
             </div>

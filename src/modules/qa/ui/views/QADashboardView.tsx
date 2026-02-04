@@ -66,15 +66,15 @@ const QADashboardView: React.FC = () => {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">QA Dashboard</h2>
         {dashboardData.summary && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-lg border border-blue-200">
+            <div className="bg-linear-to-br from-blue-50 to-blue-100 p-5 rounded-lg border border-blue-200">
               <div className="text-sm font-medium text-blue-700 mb-2">Total Production</div>
               <div className="text-3xl font-bold text-blue-900">{dashboardData.summary.total_production ?? '-'}</div>
             </div>
-            <div className="bg-gradient-to-br from-green-50 to-green-100 p-5 rounded-lg border border-green-200">
+            <div className="bg-linear-to-br from-green-50 to-green-100 p-5 rounded-lg border border-green-200">
               <div className="text-sm font-medium text-green-700 mb-2">QC Score</div>
               <div className="text-3xl font-bold text-green-900">{dashboardData.summary.qc_score ?? '-'}</div>
             </div>
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-lg border border-purple-200">
+            <div className="bg-linear-to-br from-purple-50 to-purple-100 p-5 rounded-lg border border-purple-200">
               <div className="text-sm font-medium text-purple-700 mb-2">User Count</div>
               <div className="text-3xl font-bold text-purple-900">{dashboardData.summary.user_count ?? '-'}</div>
             </div>

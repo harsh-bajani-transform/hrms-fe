@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { format } from "date-fns";
-import { Download, Filter, FileDown, Users as UsersIcon } from "lucide-react";
+import { Filter, FileDown, Users as UsersIcon } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { format } from "date-fns";
 import api from "../../../../services/api";
 import { useAuth } from "../../../../context/AuthContext";
 import { log, logError } from "../../../../config/environment";
@@ -15,25 +15,13 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
+import { createColumns, Tracker } from "./QATrackerReportColumns";
 
 interface Agent {
   user_id: number | string;
   user_name: string;
   // Add more specific fields as needed
-}
-
-interface Tracker {
-  tracker_id: number | string;
-  user_id: number | string;
-  date_time?: string;
-  user_name?: string;
-  project_name?: string;
-  task_name?: string;
-  tracker_file?: string;
-  task_id?: number | string;
-  tenure_target?: number | string;
-  production?: number | string;
-  billable_hours?: number | string | null;
 }
 
 interface Task {
@@ -67,6 +55,9 @@ const QATrackerReport: React.FC = () => {
   const [endDate, setEndDate] = useState(getTodayDate());
 
   const [dropdownTaskMap, setDropdownTaskMap] = useState<DropdownTaskMap>({});
+
+  // Create columns with the dropdownTaskMap
+  const columns = useMemo(() => createColumns(dropdownTaskMap), [dropdownTaskMap]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -315,134 +306,21 @@ const QATrackerReport: React.FC = () => {
         </div>
       </div>
 
-      {/* Scrollable table container */}
-      <div className="overflow-x-auto max-h-150 overflow-y-auto border border-slate-200 rounded-2xl shadow-lg bg-white">
-        <table className="min-w-full text-sm text-slate-700 table-fixed rounded-xl overflow-hidden">
-          <colgroup>
-            <col style={{ width: "14%" }} />
-            <col style={{ width: "12%" }} />
-            <col style={{ width: "16%" }} />
-            <col style={{ width: "16%" }} />
-            <col style={{ width: "12%" }} />
-            <col style={{ width: "12%" }} />
-            <col style={{ width: "12%" }} />
-            <col style={{ width: "6%" }} />
-          </colgroup>
-          <thead className="bg-linear-to-r from-blue-100 to-blue-50 sticky top-0 z-10">
-            <tr>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200">
-                Date/Time
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200">
-                Agent
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200">
-                Project
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200">
-                Task
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200">
-                Per Hour Target
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200">
-                Production
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200">
-                Billable Hours
-              </th>
-              <th className="px-5 py-3 font-bold text-blue-800 uppercase tracking-wider border-b border-slate-200 text-center">
-                File
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={8} className="text-center py-16">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="loader mb-2"></div>
-                    <span className="text-blue-600 font-semibold text-lg animate-pulse">
-                      Loading tracker data...
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            ) : filteredTrackers.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="text-center py-16">
-                  <div className="flex flex-col items-center gap-2">
-                    <UsersIcon className="w-12 h-12 text-gray-300" />
-                    <span className="text-gray-500 font-medium">
-                      No tracker data found
-                    </span>
-                    <span className="text-gray-400 text-xs">
-                      Try adjusting your filters
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              filteredTrackers.map((tracker, index) => (
-                <tr
-                  key={tracker.tracker_id || index}
-                  className="border-b border-slate-100 hover:bg-blue-50/60 transition-colors group"
-                >
-                  <td className="px-5 py-3 align-middle whitespace-nowrap">
-                    {tracker.date_time
-                      ? (() => {
-                          const d = new Date(tracker.date_time);
-                          return isNaN(d.getTime())
-                            ? tracker.date_time
-                            : format(d, "M/d/yyyy h:mma");
-                        })()
-                      : "-"}
-                  </td>
-                  <td className="px-5 py-3 align-middle font-semibold text-blue-700 whitespace-nowrap">
-                    {tracker.user_name || "-"}
-                  </td>
-                  <td className="px-5 py-3 align-middle whitespace-nowrap">
-                    {tracker.project_name || "-"}
-                  </td>
-                  <td className="px-5 py-3 align-middle whitespace-nowrap">
-                    {tracker.task_name || "-"}
-                  </td>
-                  <td className="px-5 py-3 align-middle whitespace-nowrap">
-                    {tracker.tenure_target ||
-                      dropdownTaskMap[String(tracker.task_id)] ||
-                      "0"}
-                  </td>
-                  <td className="px-5 py-3 align-middle font-bold text-green-700 whitespace-nowrap">
-                    {tracker.production || "0"}
-                  </td>
-                  <td className="px-5 py-3 align-middle font-bold text-purple-700 whitespace-nowrap">
-                    {tracker.billable_hours !== null &&
-                    tracker.billable_hours !== undefined
-                      ? Number(tracker.billable_hours).toFixed(2)
-                      : "0.00"}
-                  </td>
-                  <td className="px-5 py-3 align-middle text-center">
-                    {tracker.tracker_file ? (
-                      <a
-                        href={tracker.tracker_file}
-                        download
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 group-hover:bg-blue-100 rounded-full p-2 shadow-sm cursor-pointer"
-                        title="Download file"
-                      >
-                        <Download className="w-5 h-5" />
-                      </a>
-                    ) : (
-                      <span className="text-slate-300">—</span>
-                    )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* Reusable DataTable Component */}
+      <DataTable
+        columns={columns}
+        data={filteredTrackers}
+        loading={loading}
+        loadingMessage="Loading tracker data..."
+        emptyMessage="No tracker data found"
+        emptyIcon={UsersIcon}
+        showPagination={true}
+        pageSize={10}
+        containerClassName="rounded-2xl border border-slate-200 shadow-lg bg-white overflow-hidden"
+        headerClassName=""
+        rowClassName="border-b border-slate-100"
+        rowHoverClassName="hover:bg-blue-50/60 transition-colors"
+      />
 
       {/* Totals Summary Card */}
       {!loading && filteredTrackers.length > 0 && (
@@ -484,21 +362,6 @@ const QATrackerReport: React.FC = () => {
           </div>
         </div>
       )}
-      {/* Loader spinner style */}
-      <style>{`
-				.loader {
-					border: 4px solid #e0e7ef;
-					border-top: 4px solid #2563eb;
-					border-radius: 50%;
-					width: 36px;
-					height: 36px;
-					animation: spin 1s linear infinite;
-				}
-				@keyframes spin {
-					0% { transform: rotate(0deg); }
-					100% { transform: rotate(360deg); }
-				}
-			`}</style>
     </div>
   );
 };
