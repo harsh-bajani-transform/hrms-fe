@@ -5,37 +5,19 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { format } from "date-fns";
 import {
   Download,
   FileDown,
   Filter,
-  Trash2,
   Calendar as CalendarIcon,
   ArrowLeft,
-  MoreHorizontal,
   FileText,
   PlusCircle,
   Briefcase,
 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
-import {
-  useReactTable,
-  getCoreRowModel,
-  getPaginationRowModel,
-  flexRender,
-  createColumnHelper,
-  type ColumnDef,
-} from "@tanstack/react-table";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { format } from "date-fns";
 import {
   Card,
   CardContent,
@@ -52,7 +34,6 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -61,7 +42,8 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { DataTablePagination } from "@/components/ui/pagination";
+import { DataTable } from "@/components/ui/data-table";
+import { createTrackerColumns } from "./TrackerTableColumns";
 
 import { deleteTracker, fetchTrackers } from "../../services/agentService";
 import { useAuth } from "../../../../context/AuthContext";
@@ -83,8 +65,6 @@ const getTodayDate = (): string => {
   const today = new Date();
   return today.toISOString().split("T")[0] ?? "";
 };
-
-const columnHelper = createColumnHelper<AgentTrackerRow>();
 
 const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
   const { user } = useAuth();
@@ -135,7 +115,7 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
   );
 
   // Check if tracker entry is from today
-  const isToday = (dateTime: string | undefined): boolean => {
+  const isToday = useCallback((dateTime: string | null | undefined): boolean => {
     if (!dateTime) return false;
     const trackerDate = new Date(dateTime);
     const today = new Date();
@@ -144,7 +124,7 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
       trackerDate.getMonth() === today.getMonth() &&
       trackerDate.getDate() === today.getDate()
     );
-  };
+  }, []);
   // Fetch tracker data with filters
   useEffect(() => {
     if (userId == null) {
@@ -272,11 +252,11 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
     }
   }, [trackers, user]);
 
-  const handleDelete = (tracker_id: Id | undefined) => {
+  const handleDelete = useCallback((tracker_id: Id | undefined) => {
     if (tracker_id != null) {
       setDeleteConfirm(tracker_id);
     }
-  };
+  }, []);
 
   const confirmDelete = async (): Promise<void> => {
     if (deleteConfirm == null) return;
@@ -407,139 +387,16 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
   };
 
   // Define columns for the tracker table
-  const columns = useMemo<ColumnDef<AgentTrackerRow, unknown>[]>(
-    () => [
-      {
-        id: "date",
-        header: "Date",
-        cell: ({ row }) => (
-          <div className="font-medium text-gray-700">
-            {row.original.date_time
-              ? format(new Date(row.original.date_time), "dd/MM/yyyy")
-              : "-"}
-          </div>
-        ),
-      },
-      {
-        id: "project",
-        header: "Project",
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-blue-500" />
-            <span className="font-medium text-gray-900">
-              {row.original.project_name ||
-                getProjectName(row.original.project_id)}
-            </span>
-          </div>
-        ),
-      },
-      {
-        id: "task",
-        header: "Task",
-        cell: ({ row }) => (
-          <div className="text-gray-700">
-            {row.original.task_name ||
-              getTaskName(row.original.task_id, row.original.project_id)}
-          </div>
-        ),
-      },
-      {
-        id: "tenureTarget",
-        header: () => <div className="text-center">Per Hour Target</div>,
-        cell: ({ row }) => (
-          <div className="text-center">
-            <Badge
-              variant="outline"
-              className="font-medium border-gray-300 bg-gray-50 text-gray-700"
-            >
-              {row.original.tenure_target ?? "-"}
-            </Badge>
-          </div>
-        ),
-      },
-      {
-        id: "production",
-        header: () => <div className="text-center">Production</div>,
-        cell: ({ row }) => (
-          <div className="text-center">
-            <Badge className="bg-blue-100 text-blue-700 border-blue-200 font-medium">
-              {row.original.production}
-            </Badge>
-          </div>
-        ),
-      },
-      {
-        id: "billableHours",
-        header: () => <div className="text-center">Billable Hours</div>,
-        cell: ({ row }) => (
-          <div className="text-center font-medium text-gray-700">
-            {row.original.billable_hours != null
-              ? Number(row.original.billable_hours).toFixed(2)
-              : "0.00"}
-          </div>
-        ),
-      },
-      {
-        id: "file",
-        header: () => <div className="text-center">File</div>,
-        cell: ({ row }) => (
-          <div className="text-center">
-            {row.original.tracker_file ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 w-9 p-0 rounded-lg hover:bg-blue-100 text-blue-600"
-                asChild
-              >
-                <a
-                  href={row.original.tracker_file}
-                  download
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Download className="w-4 h-4" />
-                </a>
-              </Button>
-            ) : (
-              <span className="text-gray-300 text-xs">—</span>
-            )}
-          </div>
-        ),
-      },
-      {
-        id: "action",
-        header: () => <div className="text-right pr-6">Action</div>,
-        cell: ({ row }) => (
-          <div className="text-right pr-6">
-            {isToday(row.original.date_time) ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 rounded-full hover:bg-red-50 text-red-500"
-                onClick={() => handleDelete(row.original.tracker_id)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            ) : (
-              <span className="text-slate-300 text-xs">—</span>
-            )}
-          </div>
-        ),
-      },
-    ],
-    [getProjectName, getTaskName, isToday],
+  const columns = useMemo(
+    () =>
+      createTrackerColumns({
+        handleDelete,
+        getProjectName,
+        getTaskName,
+        isToday,
+      }),
+    [handleDelete, getProjectName, getTaskName, isToday]
   );
-
-  // Initialize table
-  const table = useReactTable({
-    data: trackers,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: { pageSize: 10 },
-    },
-  });
 
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-300">
@@ -675,76 +532,19 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
       )}
 
       {/* Main Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <Table>
-          <TableHeader className="bg-gray-50 border-b border-gray-200">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow
-                key={headerGroup.id}
-                className="hover:bg-transparent"
-              >
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="font-semibold text-gray-900 h-12"
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-64 text-center">
-                  <div className="flex flex-col items-center justify-center gap-3">
-                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-gray-500 font-medium">
-                      Loading tracker data...
-                    </p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-64 text-center">
-                  <div className="flex flex-col items-center justify-center gap-3">
-                    <FileText className="w-12 h-12 text-gray-300" />
-                    <p className="text-gray-500 font-medium">
-                      No tracker entries found for this period
-                    </p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="hover:bg-blue-50/50 transition-colors border-gray-100 group"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-        {!loading && table.getRowModel().rows.length > 0 && (
-          <div className="border-t border-gray-200">
-            <DataTablePagination table={table} />
-          </div>
-        )}
-      </div>
+      <DataTable
+        columns={columns}
+        data={trackers}
+        loading={loading}
+        emptyMessage="No tracker entries found for this period"
+        emptyIcon={FileText}
+        showPagination={true}
+        pageSize={10}
+        containerClassName="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+        headerClassName="bg-gray-50 border-b border-gray-200"
+        rowClassName="border-gray-100 group"
+        rowHoverClassName="hover:bg-blue-50/50 transition-colors"
+      />
 
       {/* Totals Summary */}
       {!loading && trackers.length > 0 && (
@@ -796,7 +596,7 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
         open={!!deleteConfirm}
         onOpenChange={(open) => !open && setDeleteConfirm(null)}
       >
-        <DialogContent className="max-w-[400px]">
+        <DialogContent className="max-w-100">
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>

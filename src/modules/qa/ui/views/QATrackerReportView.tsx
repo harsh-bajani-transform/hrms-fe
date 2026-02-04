@@ -1,29 +1,14 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { format } from "date-fns";
-import { Download, Filter, FileDown, Users as UsersIcon } from "lucide-react";
+import { Filter, FileDown, Users as UsersIcon } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from 'xlsx';
-import {
-  useReactTable,
-  getCoreRowModel,
-  getPaginationRowModel,
-  flexRender,
-  createColumnHelper,
-  type ColumnDef,
-} from "@tanstack/react-table";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { DataTablePagination } from "@/components/ui/pagination";
+import { format } from 'date-fns';
+import { DataTable } from "@/components/ui/data-table";
 import { useAuth } from "../../../../context/AuthContext";
 import { fetchDashboardData, fetchDropdownData } from "../../../dashboard/services/dashboardService";
 import { Button } from "@/components/ui/button";
+import type { TrackerRow, UserRef, ProjectRef, TaskRef, DashboardFilterPayload } from '../../../dashboard/types';
+import { createColumns } from "./QATrackerReportViewColumns";
 
 // Helper to get today's date in YYYY-MM-DD format
 const getTodayDate = (): string => {
@@ -31,13 +16,9 @@ const getTodayDate = (): string => {
   return today.toISOString().split('T')[0] ?? '';
 };
 
-import type { TrackerRow, UserRef, ProjectRef, TaskRef, DashboardFilterPayload } from '../../../dashboard/types';
-
 interface DropdownTaskMap {
   [taskId: string]: number | string | undefined;
 }
-
-const columnHelper = createColumnHelper<TrackerRow>();
 
 const QATrackerReportView: React.FC = () => {
   const { user } = useAuth();
@@ -269,121 +250,8 @@ const QATrackerReportView: React.FC = () => {
     }
   };
 
-  // Define columns for TanStack Table
-  const columns = useMemo<ColumnDef<TrackerRow, unknown>[]>(
-    () => [
-      {
-        id: "dateTime",
-        header: "Date/Time",
-        cell: ({ row }) => (
-          <div className="font-medium text-gray-700">
-            {row.original.date_time
-              ? format(new Date(row.original.date_time), "M/d/yyyy h:mma")
-              : "-"}
-          </div>
-        ),
-      },
-      {
-        id: "agent",
-        header: "Agent",
-        cell: ({ row }) => (
-          <div className="font-medium text-blue-700">
-            {row.original.user_name || "-"}
-          </div>
-        ),
-      },
-      {
-        id: "project",
-        header: "Project",
-        cell: ({ row }) => (
-          <div className="text-gray-700">
-            {row.original.project_name || "-"}
-          </div>
-        ),
-      },
-      {
-        id: "task",
-        header: "Task",
-        cell: ({ row }) => (
-          <div className="text-gray-700">
-            {row.original.task_name || "-"}
-          </div>
-        ),
-      },
-      {
-        id: "tenureTarget",
-        header: "Per Hour Target",
-        cell: ({ row }) => (
-          <div>
-            <Badge
-              variant="outline"
-              className="font-medium border-gray-300 bg-gray-50 text-gray-700"
-            >
-              {row.original.tenure_target || dropdownTaskMap[String(row.original.task_id)] || "0"}
-            </Badge>
-          </div>
-        ),
-      },
-      {
-        id: "production",
-        header: "Production",
-        cell: ({ row }) => (
-          <div>
-            <Badge className="bg-green-100 text-green-700 border-green-200 font-semibold">
-              {row.original.production || "0"}
-            </Badge>
-          </div>
-        ),
-      },
-      {
-        id: "billableHours",
-        header: "Billable Hours",
-        cell: ({ row }) => (
-          <div>
-            <Badge className="bg-purple-100 text-purple-700 border-purple-200 font-semibold">
-              {row.original.billable_hours !== null && row.original.billable_hours !== undefined
-                ? Number(row.original.billable_hours).toFixed(2)
-                : "0.00"}
-            </Badge>
-          </div>
-        ),
-      },
-      {
-        id: "file",
-        header: () => <div className="text-center">File</div>,
-        cell: ({ row }) => (
-          <div className="text-center">
-            {row.original.tracker_file ? (
-              <a
-                href={row.original.tracker_file}
-                download
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center text-blue-600 hover:text-blue-800 transition-colors"
-                title="Download file"
-              >
-                <Download className="w-5 h-5" />
-              </a>
-            ) : (
-              <span className="text-slate-400">—</span>
-            )}
-          </div>
-        ),
-      },
-    ],
-    [dropdownTaskMap],
-  );
-
-  // Initialize table
-  const table = useReactTable({
-    data: trackers,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: { pageSize: 10 },
-    },
-  });
+  // Create columns with dependencies
+  const columns = useMemo(() => createColumns(dropdownTaskMap), [dropdownTaskMap]);
 
   return (
     <div className="space-y-6">
@@ -481,70 +349,17 @@ const QATrackerReportView: React.FC = () => {
       {error && <div className="text-red-600 mb-2 text-sm">{error}</div>}
       
       {/* Main Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <Table>
-          <TableHeader className="bg-blue-50 border-b border-gray-200">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent">
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="font-semibold text-gray-900 h-12"
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-64 text-center">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <span className="text-gray-500 font-medium">Loading tracker data...</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-64 text-center">
-                  <div className="flex flex-col items-center gap-3">
-                    <UsersIcon className="w-12 h-12 text-gray-300" />
-                    <span className="text-gray-500 font-medium">No tracker data found</span>
-                    <span className="text-gray-400 text-xs">Try adjusting your filters</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="border-b border-slate-100 hover:bg-blue-50/50 transition-colors"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-        {!loading && table.getRowModel().rows.length > 0 && (
-          <div className="border-t border-gray-200">
-            <DataTablePagination table={table} />
-          </div>
-        )}
-      </div>
+      <DataTable
+        columns={columns}
+        data={trackers}
+        loading={loading}
+        emptyMessage="No tracker data found"
+        emptyIcon={UsersIcon}
+        showPagination={true}
+        pageSize={10}
+        className="shadow-sm"
+        headerClassName="bg-blue-50"
+      />
 
       {/* Totals Summary Card */}
       {!loading && trackers.length > 0 && (

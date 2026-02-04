@@ -1,22 +1,16 @@
 import React, { useState, useEffect, useMemo } from "react";
 import mammoth from "mammoth";
 import {
-  createColumnHelper,
-  type ColumnDef,
-} from "@tanstack/react-table";
-import {
   Accordion,
 } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 import { Task, Project } from "../../types";
 import { ProjectAccordionItem } from "./ProjectAccordionItem";
+import { createTaskColumns } from "./ProjectAccordionItemColumns";
 import { fetchAgentProjects } from "../../services/agentService";
 import { useAuth } from "@/context/AuthContext";
 import type { ProjectRef, TaskRef } from "../../../dashboard/types";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import ErrorMessage from "@/components/common/ErrorMessage";
-
-const columnHelper = createColumnHelper<Task>();
 
 
 const getTodayString = () => {
@@ -50,7 +44,7 @@ const transformProject = (dbProject: ProjectRef): Project => {
 const AgentProjectList: React.FC = () => {
   const { user } = useAuth();
   const [expanded, setExpanded] = useState<number | null>(null);
-  const [dateFilter, setDateFilter] = useState<string>(getTodayString());
+  const [dateFilter] = useState<string>(getTodayString());
   const [projects, setProjects] = useState<Project[]>([]);
   const [docxHtml, setDocxHtml] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
@@ -98,84 +92,7 @@ const AgentProjectList: React.FC = () => {
   }, [user?.user_id]);
 
   // Task table columns
-  const taskColumns = useMemo<ColumnDef<Task, any>[]>(
-    () => [
-      columnHelper.accessor('name', {
-        header: 'Task Name',
-        cell: (info) => (
-          <div className="py-4 font-semibold text-slate-900">
-            {info.getValue()}
-          </div>
-        ),
-      }),
-      columnHelper.accessor('target', {
-        header: () => <div className="text-center">Target/Hr</div>,
-        cell: (info) => (
-          <div className="py-4 text-center">
-            <Badge
-              variant="outline"
-              className="font-bold text-slate-600 border-slate-200"
-            >
-              {info.getValue()}
-            </Badge>
-          </div>
-        ),
-      }),
-      columnHelper.accessor('status', {
-        header: 'Status',
-        cell: (info) => {
-          const status = info.getValue();
-          return (
-            <div className="py-4">
-              <Badge
-                variant={
-                  status === "Completed"
-                    ? "success"
-                    : status === "In Progress"
-                      ? "warning"
-                      : "secondary"
-                }
-                className="font-bold text-[10px] py-0.5"
-              >
-                {status}
-              </Badge>
-            </div>
-          );
-        },
-      }),
-      columnHelper.accessor('priority', {
-        header: 'Priority',
-        cell: (info) => {
-          const priority = info.getValue();
-          return (
-            <div className="py-4">
-              <Badge
-                variant={
-                  priority === "High"
-                    ? "destructive"
-                    : priority === "Medium"
-                      ? "warning"
-                      : "secondary"
-                }
-                className="font-bold text-[10px] py-0.5"
-              >
-                {priority}
-              </Badge>
-            </div>
-          );
-        },
-      }),
-      columnHelper.accessor('due', {
-        header: () => <div className="text-right pr-6">Due Date</div>,
-        cell: (info) => (
-          <div className="py-4 text-right pr-6 text-slate-500 font-medium text-xs">
-            {info.getValue()}
-          </div>
-        ),
-      }),
-    ],
-    [],
-  );
+  const taskColumns = useMemo(() => createTaskColumns(), []);
 
   // Sort projects by latest assigned task (by due date, descending)
   const sortedProjects = useMemo(() => {

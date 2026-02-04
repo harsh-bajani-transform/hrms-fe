@@ -59,7 +59,7 @@ const AgentTabsNavigation = ({
               onClick={() => setActiveTab(tab.id)}
               disabled={tab.disabled}
               className={`
-                flex-shrink-0 px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg text-sm font-medium
+                shrink-0 px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg text-sm font-medium
                 flex items-center justify-center gap-2
                 transition-all duration-200 whitespace-nowrap
                 ${
