@@ -13,6 +13,7 @@ import {
   Download,
 } from "lucide-react";
 import { toast } from "sonner";
+import Loading from "@/components/common/Loading";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -186,12 +187,11 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
       {/* Projects List with Accordion */}
       <div className="grid grid-cols-1 gap-4">
         {loading ? (
-          <div className="py-20 text-center">
-            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <span className="text-gray-600 font-medium">
-              Loading projects...
-            </span>
-          </div>
+          <Loading 
+            title="Loading projects..." 
+            description="Fetching project details and tasks"
+            fullHeight={false}
+          />
         ) : filteredProjects.length === 0 ? (
           <div className="py-20 text-center bg-gray-50 border border-dashed border-gray-200 rounded-xl">
             <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-3" />

@@ -6,6 +6,7 @@ import {
   Users as UsersIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import Loading from "@/components/common/Loading";
 import { DataTable } from "@/components/ui/data-table";
 import { useAuth } from "../../../../context/AuthContext";
 import {
@@ -210,12 +211,11 @@ const QAAgentListView: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center py-16">
-          <div className="flex flex-col items-center gap-3">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
-            <span className="text-gray-600 font-medium">Loading agents...</span>
-          </div>
-        </div>
+        <Loading 
+          title="Loading agents..." 
+          description="Fetching QA agent data and performance metrics"
+          fullHeight={false}
+        />
       ) : agents.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
           <UsersIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -315,7 +315,6 @@ const AgentTrackerTable: React.FC<AgentTrackerTableProps> = ({
       emptyIcon={FileText}
       showPagination={true}
       pageSize={10}
-      className="border-t-0"
       headerClassName="bg-slate-50"
     />
   );

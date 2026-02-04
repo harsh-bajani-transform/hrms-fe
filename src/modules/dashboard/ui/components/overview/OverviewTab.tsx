@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 import axios from "axios";
 
+import Loading from "@/components/common/Loading";
 import StatCard from "./StatCard";
 import HourlyChart, { type HourlyChartDatum } from "./HourlyChart";
 import { useAuth } from "../../../../../context/AuthContext";
@@ -338,10 +339,11 @@ const OverviewTab = ({
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             {qaLoading ? (
-              <div className="py-12 text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600 font-medium">Loading QA dashboard...</p>
-              </div>
+              <Loading 
+                title="Loading QA dashboard..." 
+                description="Fetching quality assurance metrics and tracker data"
+                fullHeight={false}
+              />
             ) : qaTrackers.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-gray-500">No tracker data found for this range.</p>

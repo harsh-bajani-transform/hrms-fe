@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 dayjs.extend(customParseFormat);
+import Loading from "@/components/common/Loading";
 import {
   fetchDailyBillableReport,
   fetchMonthlyBillableReport,
@@ -684,10 +685,11 @@ const BillableReport: React.FC = () => {
           </div>
 
           {loadingDaily ? (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 py-16 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600 font-medium">Loading daily report...</p>
-            </div>
+            <Loading 
+              title="Loading daily report..." 
+              description="Fetching daily billable hours and performance data"
+              fullHeight={false}
+            />
           ) : errorDaily ? (
             <div className="bg-white rounded-xl shadow-sm border border-red-200 py-16 text-center">
               <p className="text-red-600 font-semibold">{errorDaily}</p>
@@ -780,10 +782,11 @@ const BillableReport: React.FC = () => {
           </div>
 
           {loadingMonthly ? (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 py-16 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600 font-medium">Loading monthly report...</p>
-            </div>
+            <Loading 
+              title="Loading monthly report..." 
+              description="Compiling monthly performance summary and statistics"
+              fullHeight={false}
+            />
           ) : errorMonthly ? (
             <div className="bg-white rounded-xl shadow-sm border border-red-200 py-16 text-center">
               <p className="text-red-600 font-semibold">{errorMonthly}</p>

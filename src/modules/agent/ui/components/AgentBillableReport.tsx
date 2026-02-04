@@ -6,6 +6,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 
 dayjs.extend(customParseFormat);
 
+import Loading from "@/components/common/Loading";
 import { getFriendlyErrorMessage } from "../../../../utils/errorMessages";
 import ErrorMessage from "../../../../components/common/ErrorMessage";
 import {
@@ -388,12 +389,11 @@ const AgentBillableReport = () => {
 
           <CardContent className="p-0">
             {loadingDaily ? (
-              <div className="py-32 text-center">
-                <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-                <p className="text-gray-500 font-medium">
-                  Analyzing daily performance...
-                </p>
-              </div>
+              <Loading 
+                title="Analyzing daily performance..." 
+                description="Loading your billable hours and targets"
+                fullHeight={false}
+              />
             ) : errorDaily ? (
               <div className="p-8">
                 <ErrorMessage
@@ -481,12 +481,11 @@ const AgentBillableReport = () => {
 
           <CardContent className="p-0">
             {loadingMonthly ? (
-              <div className="py-32 text-center">
-                <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-                <p className="text-gray-500 font-medium">
-                  Generating monthly insights...
-                </p>
-              </div>
+              <Loading 
+                title="Generating monthly insights..." 
+                description="Compiling your monthly performance summary"
+                fullHeight={false}
+              />
             ) : errorMonthly ? (
               <div className="p-8">
                 <ErrorMessage

@@ -9,6 +9,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
+import Loading from "@/components/common/Loading"
 import {
   Table,
   TableBody,
@@ -87,13 +88,12 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="loader mb-2"></div>
-                    <span className="animate-pulse">
-                      {loadingMessage}
-                    </span>
-                  </div>
+                <TableCell colSpan={columns.length} className="h-24 text-center p-0">
+                  <Loading 
+                    title={loadingMessage} 
+                    size="sm"
+                    fullHeight={false}
+                  />
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows?.length ? (
