@@ -51,10 +51,11 @@ const UserTrackingView: React.FC = () => {
     try {
       setLoading(true);
       const response = await api.post("/permission/user_list", {
-        user_id: user?.user_id,
+        logged_in_user_id: user?.user_id,
       });
       if (response.data?.status === 200) {
-        const mappedUsers = response.data.data.map((u: UserType) => ({
+        const usersArray = response.data.data?.users || [];
+        const mappedUsers = usersArray.map((u: UserType) => ({
           ...u,
           role_name: u.role,
           can_manage_users: u.user_creation_permission,

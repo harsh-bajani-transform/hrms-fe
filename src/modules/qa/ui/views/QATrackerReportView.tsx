@@ -357,7 +357,6 @@ const QATrackerReportView: React.FC = () => {
         emptyIcon={UsersIcon}
         showPagination={true}
         pageSize={10}
-        className="shadow-sm"
         headerClassName="bg-blue-50"
       />
 

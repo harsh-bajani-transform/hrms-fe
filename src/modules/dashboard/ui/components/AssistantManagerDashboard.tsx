@@ -53,30 +53,22 @@ const AssistantManagerDashboard: FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Fetch reference data for dropdowns
-  const [taskNameMap, setTaskNameMap] = useState<Record<string, string>>({});
-
   useEffect(() => {
     const fetchRefData = async () => {
       try {
-        const [, taskRes] = await Promise.all([
-          api.post("/dropdown/get", { dropdown_type: "projects" }),
-          api.post("/dropdown/get", { dropdown_type: "tasks" }),
-        ]);
-        // Projects handled via row.project_name usually, but could store if needed
-        if (taskRes.data?.status === 200) {
-          const tMap: Record<string, string> = {};
-          taskRes.data.data.forEach(
-            (t: { task_id: string | number; label: string }) =>
-              (tMap[String(t.task_id)] = t.label),
-          );
-          setTaskNameMap(tMap);
-        }
+        const response = await api.post("/dropdown/get", {
+          dropdown_type: "projects with tasks",
+          logged_in_user_id: user?.user_id,
+        });
+        console.log("[AssistantManagerDashboard] Dropdown response:", response.data);
       } catch (err) {
-        console.error("Error loading dropdowns", err);
+        console.error("Error loading dropdowns:", err);
       }
     };
-    fetchRefData();
-  }, []);
+    if (user?.user_id) {
+      fetchRefData();
+    }
+  }, [user?.user_id]);
 
   // Fetch dashboard data
   useEffect(() => {
@@ -155,7 +147,7 @@ const AssistantManagerDashboard: FC = () => {
     if (user?.user_id) {
       fetchDashboard();
     }
-  }, [user, dateRange, device_id, device_type, taskNameMap]);
+  }, [user, dateRange, device_id, device_type]);
 
   const handleDateRangeChange = (field: "start" | "end", value: string) => {
     setDateRange((prev) => ({ ...prev, [field]: value }));
@@ -184,7 +176,9 @@ const AssistantManagerDashboard: FC = () => {
             <div className="p-2 bg-blue-50 rounded-lg">
               <Filter className="w-5 h-5 text-blue-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">Organization Analytics</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Organization Analytics
+            </h3>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Start Date */}
@@ -235,7 +229,9 @@ const AssistantManagerDashboard: FC = () => {
             </div>
             <span className="font-semibold text-gray-900">Total Agents</span>
           </div>
-          <div className="text-3xl font-bold text-gray-900">{stats.totalAgents}</div>
+          <div className="text-3xl font-bold text-gray-900">
+            {stats.totalAgents}
+          </div>
           <div className="text-sm text-gray-500 mt-1">Assigned agents</div>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
@@ -243,9 +239,13 @@ const AssistantManagerDashboard: FC = () => {
             <div className="p-2.5 bg-orange-50 rounded-lg">
               <FileText className="w-5 h-5 text-orange-600" />
             </div>
-            <span className="font-semibold text-gray-900">Pending QC Files</span>
+            <span className="font-semibold text-gray-900">
+              Pending QC Files
+            </span>
           </div>
-          <div className="text-3xl font-bold text-gray-900">{stats.qcPending}</div>
+          <div className="text-3xl font-bold text-gray-900">
+            {stats.qcPending}
+          </div>
           <div className="text-sm text-gray-500 mt-1">Files to review</div>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
@@ -253,7 +253,9 @@ const AssistantManagerDashboard: FC = () => {
             <div className="p-2.5 bg-green-50 rounded-lg">
               <Clock className="w-5 h-5 text-green-600" />
             </div>
-            <span className="font-semibold text-gray-900">Total Billable Hours</span>
+            <span className="font-semibold text-gray-900">
+              Total Billable Hours
+            </span>
           </div>
           <div className="text-3xl font-bold text-gray-900">
             {stats.billableHours.toFixed(2)}
@@ -267,7 +269,9 @@ const AssistantManagerDashboard: FC = () => {
             </div>
             <span className="font-semibold text-gray-900">Avg QC Score</span>
           </div>
-          <div className="text-3xl font-bold text-gray-900">{stats.avgQcScore}</div>
+          <div className="text-3xl font-bold text-gray-900">
+            {stats.avgQcScore}
+          </div>
           <div className="text-sm text-gray-500 mt-1">Average QC score</div>
         </div>
       </div>
@@ -294,7 +298,9 @@ const AssistantManagerDashboard: FC = () => {
           <div className="flex justify-center items-center py-16">
             <div className="flex flex-col items-center gap-3">
               <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
-              <span className="text-gray-600 font-medium">Loading QC files...</span>
+              <span className="text-gray-600 font-medium">
+                Loading QC files...
+              </span>
             </div>
           </div>
         ) : stats.latestQc.length === 0 ? (
@@ -334,25 +340,33 @@ const AssistantManagerDashboard: FC = () => {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-500 mb-1">Agent</p>
+                        <p className="text-xs font-medium text-gray-500 mb-1">
+                          Agent
+                        </p>
                         <p className="text-sm font-semibold text-gray-900">
                           {file.user_name || "-"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-500 mb-1">Project</p>
+                        <p className="text-xs font-medium text-gray-500 mb-1">
+                          Project
+                        </p>
                         <p className="text-sm font-medium text-gray-700">
                           {file.project_name || "-"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-500 mb-1">Task</p>
+                        <p className="text-xs font-medium text-gray-500 mb-1">
+                          Task
+                        </p>
                         <p className="text-sm font-medium text-gray-700">
                           {file.task_name || "-"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-500 mb-1">File</p>
+                        <p className="text-xs font-medium text-gray-500 mb-1">
+                          File
+                        </p>
                         {file.tracker_file ? (
                           <a
                             href={file.tracker_file}
