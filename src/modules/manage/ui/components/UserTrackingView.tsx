@@ -22,7 +22,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import api from "../../../../services/api";
 import { useAuth } from "../../../../context/AuthContext";
-import LoadingSpinner from "../../../../components/common/LoadingSpinner";
+import Loading from "../../../../components/common/Loading";
 
 interface UserType {
   user_id: string | number;
@@ -152,7 +152,12 @@ const UserTrackingView: React.FC = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <Loading 
+        title="Loading users..." 
+        description="Fetching user permissions and role information"
+      />
+    );
   }
 
   return (

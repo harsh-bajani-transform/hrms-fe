@@ -9,7 +9,7 @@ import { createTaskColumns } from "./ProjectAccordionItemColumns";
 import { fetchAgentProjects } from "../../services/agentService";
 import { useAuth } from "@/context/AuthContext";
 import type { ProjectRef, TaskRef } from "../../../dashboard/types";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
+import Loading from "@/components/common/Loading";
 import ErrorMessage from "@/components/common/ErrorMessage";
 
 
@@ -167,7 +167,11 @@ const AgentProjectList: React.FC = () => {
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto py-10 px-4">
-        <LoadingSpinner />
+        <Loading 
+          title="Loading projects..." 
+          description="Fetching your assigned projects and tasks"
+          size="lg"
+        />
       </div>
     );
   }
