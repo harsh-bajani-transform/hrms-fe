@@ -51,7 +51,7 @@ export const fetchDailyBillableReport = async (
   }
 
   const res = await api.post<ApiEnvelope<DailyBillableReportData>>(
-    "/python/tracker/view_daily",
+    "/tracker/view_daily",
     reqBody,
   );
   return res.data;

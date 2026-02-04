@@ -119,8 +119,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
         emptyIcon={User}
         showPagination={true}
         pageSize={10}
-        className="shadow-sm"
-        headerClassName="bg-gradient-to-r from-blue-50 to-indigo-50 text-xs font-semibold text-gray-700 uppercase tracking-wide"
+        headerClassName="border-b border-gray-200 text-xs font-semibold text-gray-700 uppercase tracking-wide"
       />
 
       {/* Modals */}

@@ -6,7 +6,7 @@ import api from "../../../services/api";
  * @returns API response with user list
  */
 export const fetchUserList = async (user_id: number | string) => {
-  const response = await api.post("/permission/user_list", { user_id });
+  const response = await api.post("/permission/user_list", { logged_in_user_id: user_id });
   return response.data;
 };
 

@@ -125,9 +125,16 @@ const UserTrackingView = () => {
       setLoading(true)
 
       const response: unknown = await fetchUserList(numericUserId)
+      console.log('[UserTracking] API Response:', response)
 
       if (asRecord(response) && response.status === 200) {
-        setUsers(Array.isArray(response.data) ? (response.data as PermissionUser[]) : [])
+        const responseData = asRecord(response.data) ? response.data : null
+        const usersArray = responseData && Array.isArray(responseData.users) 
+          ? (responseData.users as PermissionUser[]) 
+          : []
+        
+        console.log('[UserTracking] Parsed users:', usersArray)
+        setUsers(usersArray)
       } else {
         toast.error('Failed to load users')
       }
