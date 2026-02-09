@@ -142,7 +142,7 @@ const FilterBar = ({
                   handleDateRangeChange("start", "");
                   handleDateRangeChange("end", "");
                 }}
-                className="h-11 px-4 border-gray-300 hover:bg-gray-50"
+                className="px-4 border-gray-300 hover:bg-gray-50"
                 title="Clear date filter"
               >
                 Clear

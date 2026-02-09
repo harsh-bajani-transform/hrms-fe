@@ -460,15 +460,14 @@ const AgentBillableReport = () => {
                 <div className="flex items-center gap-3 ml-auto lg:ml-0">
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="h-11 px-5 font-semibold text-gray-600 hover:bg-gray-50 rounded-lg border-gray-200"
+                    className="px-5 font-semibold text-gray-600 hover:bg-gray-50 rounded-lg border-gray-200"
                     onClick={() => setMonthlyMonth("")}
                   >
                     Reset
                   </Button>
                   <Button
                     variant="default"
-                    className="bg-emerald-600 hover:bg-emerald-700 font-semibold gap-2 h-11 px-6 shadow-sm rounded-lg transition-all"
+                    className="bg-emerald-600 hover:bg-emerald-700 font-semibold gap-2 px-6 shadow-sm rounded-lg transition-all"
                     onClick={handleExportMonthlyTable}
                   >
                     <FileDown className="w-4 h-4" />

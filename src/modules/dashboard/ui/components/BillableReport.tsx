@@ -607,7 +607,7 @@ const BillableReport: React.FC = () => {
                 </label>
                 <Input
                   type="date"
-                  className="h-11 border-gray-300"
+                  className="border-gray-300"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                 />
@@ -618,7 +618,7 @@ const BillableReport: React.FC = () => {
                 </label>
                 <Input
                   type="date"
-                  className="h-11 border-gray-300"
+                  className="border-gray-300"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                 />
@@ -631,7 +631,7 @@ const BillableReport: React.FC = () => {
                 </label>
                 <Input
                   type="month"
-                  className="h-11 border-gray-300"
+                  className="border-gray-300"
                   value={monthFilter}
                   onChange={(e) => setMonthFilter(e.target.value)}
                 />
@@ -644,7 +644,7 @@ const BillableReport: React.FC = () => {
                     Filter by Team
                   </label>
                   <Select value={teamFilter} onValueChange={setTeamFilter}>
-                    <SelectTrigger className="h-11 border-gray-300">
+                    <SelectTrigger className="border-gray-300">
                       <SelectValue placeholder="All Teams" />
                     </SelectTrigger>
                     <SelectContent>
@@ -664,14 +664,14 @@ const BillableReport: React.FC = () => {
             <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t border-gray-200">
               <Button
                 variant="default"
-                className="bg-green-600 hover:bg-green-700 h-11 px-6"
+                className="bg-green-600 hover:bg-green-700 px-6"
                 onClick={handleExportAllUsers}
               >
                 Export All Data
               </Button>
               <Button
                 variant="outline"
-                className="h-11 px-6 border-gray-300"
+                className="px-6 border-gray-300"
                 onClick={() => {
                   setStartDate("");
                   setEndDate("");

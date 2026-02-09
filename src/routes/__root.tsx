@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/sonner"
 
 const RootLayout = () => (
   <>
-    <Toaster position="top-right"  />
+    <Toaster position="top-center"  />
     <Outlet />
     <TanStackRouterDevtools />
   </>
