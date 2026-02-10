@@ -66,8 +66,10 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
     task: TaskType | null;
   }>({ isOpen: false, project: null, task: null });
 
-  const filteredProjects = projects.filter((p) =>
-    p.project_name?.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredProjects = projects.filter(
+    (p) =>
+      p.project_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.project_code?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleDeleteProject = async (proj: ProjectType) => {
@@ -187,8 +189,8 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
       {/* Projects List with Accordion */}
       <div className="grid grid-cols-1 gap-4">
         {loading ? (
-          <Loading 
-            title="Loading projects..." 
+          <Loading
+            title="Loading projects..."
             description="Fetching project details and tasks"
             fullHeight={false}
           />
@@ -217,8 +219,13 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
                       <Briefcase className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 text-lg">
+                      <h3 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
                         {p.project_name}
+                        {p.project_code && (
+                          <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border border-slate-200">
+                            {p.project_code}
+                          </span>
+                        )}
                       </h3>
                       <div className="flex items-center gap-4 mt-1">
                         <div className="flex items-center gap-1.5 text-xs text-gray-500">
@@ -292,6 +299,11 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
                 </div>
 
                 <AccordionContent className="border-t border-slate-50 bg-slate-50/50 p-6 pt-0">
+                  {p.project_description && (
+                    <div className="mt-6 p-4 bg-white rounded-xl border border-slate-100 text-sm text-slate-500 leading-relaxed shadow-xs italic">
+                      {p.project_description}
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 mt-6">
                     <Card>
                       <CardHeader className="p-4 pb-2">

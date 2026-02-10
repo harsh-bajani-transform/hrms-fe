@@ -72,10 +72,16 @@ export function createColumns(): ColumnDef<Agent, unknown>[] {
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-1.5 font-bold text-slate-800">
               <span className="text-indigo-600">
-                {row.original.monthlyAchievedTarget}
+                {row.original.monthlyAchievedTarget != null
+                  ? Number(row.original.monthlyAchievedTarget).toFixed(2)
+                  : "0.00"}
               </span>
               <span className="text-slate-300 font-normal">/</span>
-              <span>{row.original.monthlyTotalTarget}</span>
+              <span>
+                {row.original.monthlyTotalTarget != null
+                  ? Number(row.original.monthlyTotalTarget).toFixed(2)
+                  : "0.00"}
+              </span>
             </div>
             <div className="w-24 h-1 bg-slate-100 rounded-full mt-2 overflow-hidden">
               <div

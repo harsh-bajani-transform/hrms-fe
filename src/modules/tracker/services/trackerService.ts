@@ -5,8 +5,15 @@ import api from "../../../services/api";
  * @param payload - Tracker entry data
  * @returns API response
  */
-export const addTrackerEntry = async (payload: Record<string, unknown>) => {
-  const response = await api.post("/tracker/add", payload);
+export const addTrackerEntry = async (
+  payload: Record<string, unknown> | FormData,
+) => {
+  const response = await api.post("/tracker/add", payload, {
+    headers:
+      payload instanceof FormData
+        ? { "Content-Type": "multipart/form-data" }
+        : {},
+  });
   return response.data;
 };
 

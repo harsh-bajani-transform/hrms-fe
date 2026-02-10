@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { format } from "date-fns";
 import {
   ChevronDown,
   ChevronUp,
@@ -11,6 +10,8 @@ import { toast } from "sonner";
 import api from "../../../../services/api";
 import { useAuth } from "../../../../context/AuthContext";
 import { log, logError } from "../../../../config/environment";
+import { DataTable } from "@/components/ui/data-table";
+import { createQATrackerColumns } from "./QAAgentListColumns";
 
 import type {
   UserRef as Agent,
@@ -135,27 +136,35 @@ const QAAgentList: React.FC = () => {
     }
   }, [user?.user_id]);
 
-  const toggleAgent = (agentId: number | string) => {
-    const isExpanding = !expandedAgents[agentId];
+  const toggleAgent = React.useCallback((agentId: number | string) => {
     setExpandedAgents((prev) => ({
       ...prev,
-      [agentId]: isExpanding,
+      [agentId]: !prev[agentId],
     }));
-  };
+  }, []);
 
-  const handleQCForm = (tracker: Tracker) => {
+  const handleQCForm = React.useCallback((tracker: Tracker) => {
     log("[QAAgentList] Opening QC Form for tracker:", tracker.tracker_id);
     toast.success("QC Form functionality coming soon!");
-  };
+  }, []);
+
+  const columns = React.useMemo(
+    () =>
+      createQATrackerColumns({
+        handleQCForm,
+        dropdownTaskNameMap,
+      }),
+    [handleQCForm, dropdownTaskNameMap],
+  );
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-50 rounded-lg">
-            <UsersIcon className="w-6 h-6 text-blue-600" />
+          <div className="p-2 bg-slate-100 rounded-lg border border-slate-200">
+            <UsersIcon className="w-6 h-6 text-slate-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-slate-800">
             Agent File Report
           </h2>
         </div>
@@ -164,14 +173,14 @@ const QAAgentList: React.FC = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16">
           <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent mb-4"></div>
-          <span className="text-gray-600 font-medium">
-            Loading agents...
-          </span>
+          <span className="text-gray-600 font-medium">Loading agents...</span>
         </div>
       ) : agents.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
           <UsersIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 font-medium text-lg">No assigned agents found</p>
+          <p className="text-gray-500 font-medium text-lg">
+            No assigned agents found
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -187,7 +196,7 @@ const QAAgentList: React.FC = () => {
               >
                 {/* Agent Card Header */}
                 <div
-                  className="flex items-center justify-between px-6 py-5 cursor-pointer select-none bg-gradient-to-r from-blue-50 to-white border-b border-gray-200 hover:bg-blue-50 transition-colors"
+                  className="flex items-center justify-between px-6 py-5 cursor-pointer select-none bg-white border-b border-gray-100 hover:bg-slate-50 transition-colors"
                   onClick={() => {
                     if (agent.user_id !== undefined) {
                       toggleAgent(agent.user_id);
@@ -195,19 +204,19 @@ const QAAgentList: React.FC = () => {
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <UsersIcon className="w-6 h-6 text-blue-700" />
-                    <span className="font-bold text-blue-800 text-xl tracking-tight drop-shadow-sm">
+                    <UsersIcon className="w-6 h-6 text-slate-400" />
+                    <span className="font-semibold text-slate-900 text-lg tracking-tight">
                       {agent.user_name}
                     </span>
                   </div>
                   <div className="flex items-center">
-                    <span className="inline-block rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-xs font-semibold mr-3 shadow-sm">
+                    <span className="inline-block rounded-full bg-slate-100 text-slate-600 px-3 py-1 text-xs font-medium mr-3 border border-slate-200">
                       {trackers.length} file{trackers.length !== 1 ? "s" : ""}
                     </span>
                     {isExpanded ? (
-                      <ChevronUp className="w-6 h-6 text-blue-600" />
+                      <ChevronUp className="w-5 h-5 text-slate-400" />
                     ) : (
-                      <ChevronDown className="w-6 h-6 text-blue-600" />
+                      <ChevronDown className="w-5 h-5 text-slate-400" />
                     )}
                   </div>
                 </div>
@@ -220,87 +229,18 @@ const QAAgentList: React.FC = () => {
                         No tracker data for this agent.
                       </div>
                     ) : (
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm rounded-xl overflow-hidden shadow border border-slate-200">
-                          <thead className="bg-linear-to-r from-blue-100 to-blue-50 border-b border-slate-200">
-                            <tr>
-                              <th className="px-5 py-3 text-left font-bold text-blue-800 uppercase tracking-wider">
-                                Date/Time
-                              </th>
-                              <th className="px-5 py-3 text-left font-bold text-blue-800 uppercase tracking-wider">
-                                Agent Name
-                              </th>
-                              <th className="px-5 py-3 text-left font-bold text-blue-800 uppercase tracking-wider">
-                                Project Name
-                              </th>
-                              <th className="px-5 py-3 text-left font-bold text-blue-800 uppercase tracking-wider">
-                                Task Name
-                              </th>
-                              <th className="px-5 py-3 text-center font-bold text-blue-800 uppercase tracking-wider">
-                                File
-                              </th>
-                              <th className="px-5 py-3 text-center font-bold text-blue-800 uppercase tracking-wider">
-                                Action
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {trackers.map((tracker, index) => (
-                              <tr
-                                key={tracker.tracker_id || index}
-                                className="border-b border-slate-100 hover:bg-blue-50/60 transition-colors group"
-                              >
-                                <td className="px-5 py-3 text-slate-700 whitespace-nowrap">
-                                  {tracker.date_time
-                                    ? format(
-                                        new Date(tracker.date_time),
-                                        "M/d/yyyy h:mma",
-                                      )
-                                    : "-"}
-                                </td>
-                                <td className="px-5 py-3 text-slate-700 font-bold whitespace-nowrap">
-                                  {tracker.user_name || agent.user_name}
-                                </td>
-                                <td className="px-5 py-3 text-slate-700 whitespace-nowrap">
-                                  {tracker.project_name || "-"}
-                                </td>
-                                <td className="px-5 py-3 text-slate-700 whitespace-nowrap">
-                                  {tracker.task_name ||
-                                    dropdownTaskNameMap[
-                                      String(tracker.task_id)
-                                    ] ||
-                                    "-"}
-                                </td>
-                                <td className="px-5 py-3 text-center">
-                                  {tracker.tracker_file ? (
-                                    <a
-                                      href={tracker.tracker_file}
-                                      download
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center justify-center text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 group-hover:bg-blue-100 rounded-full p-2 shadow-sm cursor-pointer"
-                                      title="Download file"
-                                    >
-                                      <Download className="w-5 h-5" />
-                                    </a>
-                                  ) : (
-                                    <span className="text-slate-300">—</span>
-                                  )}
-                                </td>
-                                <td className="px-5 py-3 text-center">
-                                  <button
-                                    onClick={() => handleQCForm(tracker)}
-                                    className="px-4 py-2 bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white text-xs font-bold rounded-lg shadow-md transition-all flex items-center gap-2 mx-auto focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-                                  >
-                                    <FileText className="w-4 h-4" />
-                                    QC Form
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                      <DataTable
+                        columns={columns}
+                        data={trackers}
+                        loading={false}
+                        emptyMessage="No tracker data for this agent."
+                        showPagination={true}
+                        pageSize={5}
+                        containerClassName="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white"
+                        headerClassName="bg-slate-50/80"
+                        rowClassName="border-slate-100"
+                        rowHoverClassName="hover:bg-blue-50/50 transition-colors"
+                      />
                     )}
                   </div>
                 )}

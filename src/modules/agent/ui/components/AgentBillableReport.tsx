@@ -15,7 +15,10 @@ import {
 } from "../../../dashboard/services/billableReportService";
 import { useAuth } from "../../../../context/AuthContext";
 import { DataTable } from "@/components/ui/data-table";
-import { createDailyColumns, createMonthlyColumns } from "./AgentBillableReportColumns";
+import {
+  createDailyColumns,
+  createMonthlyColumns,
+} from "./AgentBillableReportColumns";
 
 import type { TrackerRow } from "../../../dashboard/types";
 import type { MonthlyBillableReportRow } from "../../../dashboard/services/billableReportService";
@@ -79,9 +82,24 @@ const AgentBillableReport = () => {
   }, [activeToggle]);
 
   // State for date range filter
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
-  const [monthFilter, setMonthFilter] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>(
+    dayjs().startOf("month").format("YYYY-MM-DD"),
+  );
+  const [endDate, setEndDate] = useState<string>(
+    dayjs().endOf("month").format("YYYY-MM-DD"),
+  );
+  const [monthFilter, setMonthFilter] = useState<string>(
+    dayjs().format("YYYY-MM"),
+  );
+
+  const handleMonthFilterChange = (val: string) => {
+    setMonthFilter(val);
+    if (val) {
+      const d = dayjs(val);
+      setStartDate(d.startOf("month").format("YYYY-MM-DD"));
+      setEndDate(d.endOf("month").format("YYYY-MM-DD"));
+    }
+  };
 
   const [dailyData, setDailyData] = useState<TrackerRow[]>([]);
   const [loadingDaily, setLoadingDaily] = useState<boolean>(false);
@@ -135,7 +153,9 @@ const AgentBillableReport = () => {
   >([]);
   const [loadingMonthly, setLoadingMonthly] = useState<boolean>(false);
   const [errorMonthly, setErrorMonthly] = useState<string | null>(null);
-  const [monthlyMonth, setMonthlyMonth] = useState<string>("");
+  const [monthlyMonth, setMonthlyMonth] = useState<string>(
+    dayjs().format("YYYY-MM"),
+  );
 
   // Fetch monthly report data
   useEffect(() => {
@@ -191,7 +211,10 @@ const AgentBillableReport = () => {
         "Date-Time": row.date_time
           ? dayjs(row.date_time).format("DD-MM-YYYY hh:mm A")
           : "-",
-        "Assign Hours": "-",
+        "Assign Hours":
+          row.tenure_target != null
+            ? Number(row.tenure_target).toFixed(2)
+            : "-",
         "Worked Hours": row.billable_hours
           ? Number(row.billable_hours).toFixed(2)
           : "-",
@@ -200,6 +223,35 @@ const AgentBillableReport = () => {
           ? Number(row.tenure_target).toFixed(2)
           : "-",
       }));
+
+      if (exportData.length > 0) {
+        const totalWorked = exportData.reduce(
+          (sum, r) => sum + (Number.parseFloat(String(r["Worked Hours"])) || 0),
+          0,
+        );
+        const totalRequired = exportData.reduce(
+          (sum, r) =>
+            sum + (Number.parseFloat(String(r["Daily Required Hours"])) || 0),
+          0,
+        );
+
+        const validQC = trackers.filter(
+          (r: any) => !Number.isNaN(Number.parseFloat(r.qc_score)),
+        );
+        const totalQC = validQC.reduce(
+          (sum: number, r: any) => sum + (Number.parseFloat(r.qc_score) || 0),
+          0,
+        );
+        const avgQC = validQC.length > 0 ? totalQC / validQC.length : 0;
+
+        exportData.push({
+          "Date-Time": "Total",
+          "Assign Hours": "",
+          "Worked Hours": totalWorked.toFixed(2),
+          "QC score": avgQC > 0 ? avgQC.toFixed(2) : "-",
+          "Daily Required Hours": totalRequired.toFixed(2),
+        });
+      }
       const worksheet = XLSX.utils.json_to_sheet(exportData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Month Daily Report");
@@ -216,7 +268,7 @@ const AgentBillableReport = () => {
   // Monthly table columns
   const monthlyColumns = useMemo(
     () => createMonthlyColumns(handleExportMonthDailyExcel),
-    [handleExportMonthDailyExcel]
+    [handleExportMonthDailyExcel],
   );
 
   // Export handlers
@@ -236,6 +288,42 @@ const AgentBillableReport = () => {
           : "-",
         "Avg. QC Score": row.avg_qc_score ?? "-",
       }));
+
+      if (exportData.length > 0) {
+        const totalBillable = exportData.reduce(
+          (sum, r) =>
+            sum +
+            (Number.parseFloat(String(r["Billable Hours Delivered"])) || 0),
+          0,
+        );
+        const totalGoal = exportData.reduce(
+          (sum, r) => sum + (Number.parseFloat(String(r["Monthly Goal"])) || 0),
+          0,
+        );
+        const totalPending = exportData.reduce(
+          (sum, r) =>
+            sum + (Number.parseFloat(String(r["Pending Target"])) || 0),
+          0,
+        );
+
+        const validQC = monthlySummaryData.filter(
+          (r) =>
+            r.avg_qc_score != null && !Number.isNaN(Number(r.avg_qc_score)),
+        );
+        const totalQC = validQC.reduce(
+          (sum, r) => sum + (Number(r.avg_qc_score) || 0),
+          0,
+        );
+        const avgQC = validQC.length > 0 ? totalQC / validQC.length : 0;
+
+        exportData.push({
+          "Year & Month": "Total",
+          "Billable Hours Delivered": totalBillable.toFixed(2),
+          "Monthly Goal": totalGoal.toFixed(2),
+          "Pending Target": totalPending.toFixed(2),
+          "Avg. QC Score": avgQC > 0 ? avgQC.toFixed(2) : "-",
+        });
+      }
       const worksheet = XLSX.utils.json_to_sheet(exportData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Report");
@@ -252,17 +340,49 @@ const AgentBillableReport = () => {
         "Date-Time": row.work_date
           ? dayjs(row.work_date).format("DD-MM-YYYY")
           : "-",
-        "Assign Hours": "-",
+        "Assign Hours":
+          row.tenure_target != null
+            ? Number(row.tenure_target).toFixed(2)
+            : "-",
         "Worked Hours":
           row.cumulative_billable_hours_till_day != null
             ? Number(row.cumulative_billable_hours_till_day).toFixed(2)
             : "-",
-        "QC score": "-",
+        "QC score": row.qc_score ? Number(row.qc_score).toFixed(2) : "-",
         "Daily Required Hours":
           row.daily_required_hours != null
             ? Number(row.daily_required_hours).toFixed(2)
             : "-",
       }));
+
+      if (exportData.length > 0) {
+        const totalWorked = exportData.reduce(
+          (sum, r) => sum + (Number.parseFloat(String(r["Worked Hours"])) || 0),
+          0,
+        );
+        const totalRequired = exportData.reduce(
+          (sum, r) =>
+            sum + (Number.parseFloat(String(r["Daily Required Hours"])) || 0),
+          0,
+        );
+
+        const validQC = filteredDailyData.filter(
+          (r) => r.qc_score != null && !Number.isNaN(Number(r.qc_score)),
+        );
+        const totalQC = validQC.reduce(
+          (sum, r) => sum + (Number(r.qc_score) || 0),
+          0,
+        );
+        const avgQC = validQC.length > 0 ? totalQC / validQC.length : 0;
+
+        exportData.push({
+          "Date-Time": "Total",
+          "Assign Hours": "",
+          "Worked Hours": totalWorked.toFixed(2),
+          "QC score": avgQC > 0 ? avgQC.toFixed(2) : "-",
+          "Daily Required Hours": totalRequired.toFixed(2),
+        });
+      }
       const worksheet = XLSX.utils.json_to_sheet(exportData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Daily Report");
@@ -357,40 +477,39 @@ const AgentBillableReport = () => {
                       type="month"
                       className="w-full bg-gray-50 border-gray-200 focus:border-blue-400 transition-all rounded-lg"
                       value={monthFilter}
-                      onChange={(e) => setMonthFilter(e.target.value)}
+                      onChange={(e) => handleMonthFilterChange(e.target.value)}
                     />
                   </div>
-                <div className="flex items-center gap-3 ml-auto lg:ml-0">
-                  <Button
-                    variant="outline"
-                    className=" px-5 font-semibold text-gray-600 hover:bg-gray-50 rounded-lg border-gray-200"
-                    onClick={() => {
-                      setStartDate("");
-                      setEndDate("");
-                      setMonthFilter("");
-                    }}
-                  >
-                    Reset
-                  </Button>
-                  <Button
-                    variant="default"
-                    className="bg-emerald-600 hover:bg-emerald-700 font-semibold gap-2 px-6 shadow-sm rounded-lg transition-all"
-                    onClick={handleExportDailyExcel}
-                  >
-                    <FileDown className="w-4 h-4" />
-                    Export
-                  </Button>
+                  <div className="flex items-center gap-3 ml-auto lg:ml-0">
+                    <Button
+                      variant="outline"
+                      className=" px-5 font-semibold text-gray-600 hover:bg-gray-50 rounded-lg border-gray-200"
+                      onClick={() => {
+                        setStartDate("");
+                        setEndDate("");
+                        setMonthFilter("");
+                      }}
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      variant="default"
+                      className="bg-emerald-600 hover:bg-emerald-700 font-semibold gap-2 px-6 shadow-sm rounded-lg transition-all"
+                      onClick={handleExportDailyExcel}
+                    >
+                      <FileDown className="w-4 h-4" />
+                      Export
+                    </Button>
+                  </div>
                 </div>
-                </div>
-
               </div>
             </div>
           </CardHeader>
 
           <CardContent className="p-0">
             {loadingDaily ? (
-              <Loading 
-                title="Analyzing daily performance..." 
+              <Loading
+                title="Analyzing daily performance..."
                 description="Loading your billable hours and targets"
                 fullHeight={false}
               />
@@ -480,8 +599,8 @@ const AgentBillableReport = () => {
 
           <CardContent className="p-0">
             {loadingMonthly ? (
-              <Loading 
-                title="Generating monthly insights..." 
+              <Loading
+                title="Generating monthly insights..."
                 description="Compiling your monthly performance summary"
                 fullHeight={false}
               />

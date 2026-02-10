@@ -4,10 +4,10 @@ import {
   useState,
   type ChangeEvent,
   type FormEvent,
+  useCallback,
 } from "react";
 import { toast } from "sonner";
 import { fetchDropdowns, addTracker } from "../../services/agentService";
-import { fileToBase64 } from "../../../../lib/fileToBase64";
 import { useAuth } from "../../../../context/AuthContext";
 
 import TrackerTable from "../components/TrackerTable";
@@ -36,9 +36,9 @@ import {
   type AgentTabId,
   type AgentTaskOption,
   type AgentProjectWithTasks,
-  type AddTrackerPayload,
 } from "../../types";
 import AgentBillableReport from "../components/AgentBillableReport";
+import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 
 export interface AgentDashboardViewProps {
   embedded?: boolean;
@@ -58,6 +58,7 @@ const asRecord = (v: unknown): v is Record<string, unknown> =>
 
 const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
   const { user } = useAuth();
+  const { device_id, device_type } = useDeviceInfo();
   const isAdmin =
     user?.role_name === "admin" ||
     user?.role_name === "superadmin" ||
@@ -75,14 +76,12 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
   const [productionTarget, setProductionTarget] = useState<string>("");
 
   const [file, setFile] = useState<File | null>(null);
-  const [fileBase64, setFileBase64] = useState<string | null>(null);
 
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const [errors, setErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<FieldTouched>({});
-  const [, forceUpdate] = useState<number>(0);
 
   // Date state for header (default to today)
   const [entryDate] = useState(() => {
@@ -184,41 +183,42 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
     if (!fileObj) return;
 
     setFile(fileObj);
-
-    try {
-      const base64 = await fileToBase64(fileObj);
-      setFileBase64(base64);
-    } catch (error) {
-      console.error("[AgentDashboard] Error converting file:", error);
-      setFileBase64(null);
-      toast.error("Failed to process file");
-    }
   };
 
   // Live validation function
-  const validate = (): FieldErrors => {
-    const newErrors: FieldErrors = {};
+  const validate = useCallback(
+    (projectVal?: string, taskVal?: string): FieldErrors => {
+      const newErrors: FieldErrors = {};
+      const pVal = projectVal ?? selectedProject;
+      const tVal = taskVal ?? selectedTask;
 
-    if (!selectedProject) newErrors.selectedProject = "Project is required.";
-    if (!selectedTask) newErrors.selectedTask = "Task is required.";
-    if (!baseTarget) newErrors.baseTarget = "Base Target is required.";
-    if (!productionTarget) {
-      newErrors.productionTarget = "Production Target is required.";
-    } else if (
-      Number.isNaN(Number(productionTarget)) ||
-      Number(productionTarget) < 0
-    ) {
-      newErrors.productionTarget = "Enter a valid number.";
-    }
+      if (!pVal || pVal === "undefined" || isNaN(Number(pVal))) {
+        newErrors.selectedProject = "Project is required.";
+      }
+      if (!tVal || tVal === "undefined" || isNaN(Number(tVal))) {
+        newErrors.selectedTask = "Task is required.";
+      }
+      if (!baseTarget && baseTarget !== 0) {
+        newErrors.baseTarget = "Base Target is required.";
+      }
+      if (!productionTarget) {
+        newErrors.productionTarget = "Production Target is required.";
+      } else if (
+        Number.isNaN(Number(productionTarget)) ||
+        Number(productionTarget) < 0
+      ) {
+        newErrors.productionTarget = "Enter a valid number.";
+      }
 
-    return newErrors;
-  };
+      return newErrors;
+    },
+    [selectedProject, selectedTask, baseTarget, productionTarget],
+  );
 
   // Live validation on field change
   useEffect(() => {
     setErrors(validate());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedProject, selectedTask, baseTarget, productionTarget]);
+  }, [validate]);
 
   // Handle blur for live validation
   const handleBlur = (field: FieldName) => {
@@ -237,55 +237,69 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
       productionTarget: true,
     });
 
-    setTimeout(async () => {
-      const clientErrors = validate();
-      setErrors(clientErrors);
-      forceUpdate((n) => n + 1);
+    // Use a small delay to ensure states are synchronized if needed,
+    // though here we can just call validate with current values.
+    const clientErrors = validate();
+    setErrors(clientErrors);
 
-      if (Object.keys(clientErrors).length > 0) {
-        return;
+    if (Object.keys(clientErrors).length > 0) {
+      toast.error("Please fix the errors before submitting.");
+      return;
+    }
+
+    const pId = Number(selectedProject);
+    const tId = Number(selectedTask);
+
+    if (isNaN(pId) || isNaN(tId)) {
+      toast.error("Invalid Project or Task selected.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    const formData = new FormData();
+    formData.append("project_id", String(pId));
+    formData.append("task_id", String(tId));
+    formData.append("user_id", String(user?.user_id || ""));
+    formData.append("production", String(productionTarget));
+    formData.append("tenure_target", String(baseTarget || 0));
+    formData.append("logged_in_user_id", String(user?.user_id || ""));
+    formData.append("device_id", device_id || "web");
+    formData.append("device_type", device_type || "Laptop");
+
+    if (file) {
+      formData.append("tracker_file", file);
+    }
+
+    try {
+      const res = await addTracker(formData);
+
+      if (
+        asRecord(res) &&
+        asRecord(res.data) &&
+        (res.data.status === 201 || res.data.status === 200)
+      ) {
+        toast.success("Tracker added successfully!");
+        setSelectedProject("");
+        setSelectedTask("");
+        setBaseTarget("");
+        setProductionTarget("");
+        setFile(null);
+        setTouched({});
+        setTimeout(() => setViewAll(true), 500);
+      } else {
+        const message =
+          asRecord(res) && asRecord(res.data) ? res.data.message : undefined;
+        toast.error(
+          (typeof message === "string" && message) || "Failed to add tracker.",
+        );
       }
-
-      setSubmitting(true);
-
-      const payload: AddTrackerPayload = {
-        project_id: Number(selectedProject),
-        task_id: Number(selectedTask),
-        user_id: user?.user_id,
-        production: Number(productionTarget),
-        tenure_target: Number(baseTarget || 0),
-        ...(fileBase64 ? { tracker_file: fileBase64 } : {}),
-      };
-
-      try {
-        const res = await addTracker(payload);
-
-        if (asRecord(res) && asRecord(res.data) && res.data.status === 201) {
-          toast.success("Tracker added successfully!");
-          setSelectedProject("");
-          setSelectedTask("");
-          setBaseTarget("");
-          setProductionTarget("");
-          setFile(null);
-          setFileBase64(null);
-          setTouched({});
-          setTimeout(() => setViewAll(true), 500);
-        } else {
-          const message =
-            asRecord(res) && asRecord(res.data) ? res.data.message : undefined;
-          toast.error(
-            (typeof message === "string" && message) ||
-              "Failed to add tracker.",
-          );
-        }
-      } catch (err: unknown) {
-        console.error("[AgentDashboard] Error submitting tracker:", err);
-        // Error handling logic...
-        toast.error("Failed to add tracker.");
-      } finally {
-        setSubmitting(false);
-      }
-    }, 0);
+    } catch (err: unknown) {
+      console.error("[AgentDashboard] Error submitting tracker:", err);
+      toast.error("Failed to add tracker.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleViewAll = () => setViewAll(true);
@@ -329,7 +343,9 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
                         className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border-white/20 text-white h-fit"
                       >
                         <CalendarIcon className="w-4 h-4" />
-                        <span className="font-semibold text-sm">{entryDate}</span>
+                        <span className="font-semibold text-sm">
+                          {entryDate}
+                        </span>
                       </Badge>
                     </div>
                   </CardHeader>
@@ -339,7 +355,10 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
                         {/* Left Column */}
                         <div className="space-y-6">
                           <div className="space-y-2">
-                            <Label htmlFor="project-select" className="text-sm font-medium text-gray-700">
+                            <Label
+                              htmlFor="project-select"
+                              className="text-sm font-medium text-gray-700"
+                            >
                               Project Name{" "}
                               <span className="text-rose-500">*</span>
                             </Label>
@@ -372,7 +391,10 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="task-select" className="text-sm font-medium text-gray-700">
+                            <Label
+                              htmlFor="task-select"
+                              className="text-sm font-medium text-gray-700"
+                            >
                               Task Name <span className="text-rose-500">*</span>
                             </Label>
                             <Select
@@ -407,7 +429,10 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
                         {/* Right Column */}
                         <div className="space-y-6">
                           <div className="space-y-2">
-                            <Label htmlFor="base-target" className="text-sm font-medium text-gray-700">
+                            <Label
+                              htmlFor="base-target"
+                              className="text-sm font-medium text-gray-700"
+                            >
                               Base Target
                             </Label>
                             <div className="relative">
@@ -430,7 +455,10 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="production-target" className="text-sm font-medium text-gray-700">
+                            <Label
+                              htmlFor="production-target"
+                              className="text-sm font-medium text-gray-700"
+                            >
                               Production Target{" "}
                               <span className="text-rose-500">*</span>
                             </Label>
@@ -458,7 +486,10 @@ const AgentDashboardView = ({ embedded = false }: AgentDashboardViewProps) => {
 
                       {/* File Upload Area */}
                       <div className="space-y-2 pt-2">
-                        <Label htmlFor="tracker-file" className="text-sm font-medium text-gray-700">
+                        <Label
+                          htmlFor="tracker-file"
+                          className="text-sm font-medium text-gray-700"
+                        >
                           Project Files
                         </Label>
                         <div

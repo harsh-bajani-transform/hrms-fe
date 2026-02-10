@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { format } from "date-fns";
+import dayjs from "dayjs";
 import {
   Card,
   CardContent,
@@ -78,8 +79,12 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
   // Filter states
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [selectedTask, setSelectedTask] = useState<string>("");
-  const [startDate, setStartDate] = useState<string>(getTodayDate());
-  const [endDate, setEndDate] = useState<string>(getTodayDate());
+  const [startDate, setStartDate] = useState<string>(
+    dayjs().startOf("month").format("YYYY-MM-DD"),
+  );
+  const [endDate, setEndDate] = useState<string>(
+    dayjs().endOf("month").format("YYYY-MM-DD"),
+  );
 
   // Get tasks for selected project
   const availableTasks = useMemo<TaskRef[]>(() => {
@@ -115,16 +120,19 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
   );
 
   // Check if tracker entry is from today
-  const isToday = useCallback((dateTime: string | null | undefined): boolean => {
-    if (!dateTime) return false;
-    const trackerDate = new Date(dateTime);
-    const today = new Date();
-    return (
-      trackerDate.getFullYear() === today.getFullYear() &&
-      trackerDate.getMonth() === today.getMonth() &&
-      trackerDate.getDate() === today.getDate()
-    );
-  }, []);
+  const isToday = useCallback(
+    (dateTime: string | null | undefined): boolean => {
+      if (!dateTime) return false;
+      const trackerDate = new Date(dateTime);
+      const today = new Date();
+      return (
+        trackerDate.getFullYear() === today.getFullYear() &&
+        trackerDate.getMonth() === today.getMonth() &&
+        trackerDate.getDate() === today.getDate()
+      );
+    },
+    [],
+  );
   // Fetch tracker data with filters
   useEffect(() => {
     if (userId == null) {
@@ -395,7 +403,7 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
         getTaskName,
         isToday,
       }),
-    [handleDelete, getProjectName, getTaskName, isToday]
+    [handleDelete, getProjectName, getTaskName, isToday],
   );
 
   return (
@@ -408,8 +416,12 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
               <FileText className="w-7 h-7 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Tracker History</h2>
-              <p className="text-gray-600 mt-1">View and manage your production entries</p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Tracker History
+              </h2>
+              <p className="text-gray-600 mt-1">
+                View and manage your production entries
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -440,9 +452,11 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
           <div className="p-2 bg-blue-50 rounded-lg">
             <Filter className="w-5 h-5 text-blue-600" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">Filter Options</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Filter Options
+          </h3>
         </div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">
@@ -513,7 +527,7 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
             </Select>
           </div>
         </div>
-        
+
         <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
           <Button
             onClick={handleClearFilters}

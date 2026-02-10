@@ -1,4 +1,10 @@
-import { useState, useMemo } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -6,19 +12,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "../../../../context/AuthContext";
+import { useState, useMemo } from "react";
 import type { MonthlyBillableReportRow } from "../../services/billableReportService";
+import { DataTable } from "@/components/ui/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 
-type Month = { label: string; year: string };
+interface MonthObj {
+  label: string;
+  year: string;
+}
 
-type TeamOption = { label: string; value?: string };
+interface TeamOption {
+  label: string;
+  value: string;
+}
 
 export interface MonthCardProps {
-  month: Month;
+  month: MonthObj;
   users: MonthlyBillableReportRow[];
-  onExport: (user: MonthlyBillableReportRow) => void;
-  onExportMonth?: (month: Month, users: MonthlyBillableReportRow[]) => void;
+  onExport?: (user: MonthlyBillableReportRow) => void;
+  onExportMonth?: (month: MonthObj, users: MonthlyBillableReportRow[]) => void;
   teamOptions?: TeamOption[];
 }
 
@@ -29,180 +42,149 @@ export default function MonthCard({
   onExportMonth,
   teamOptions = [],
 }: MonthCardProps) {
-  const [expanded, setExpanded] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState("");
-  const { user } = useAuth();
+  const [teamFilter, setTeamFilter] = useState<string>("");
 
-  const isAgent = Number(user?.role_id) === 6 || user?.role_name === "agent";
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      if (!teamFilter || teamFilter === "_all") return true;
+      return u.team_name === teamFilter;
+    });
+  }, [users, teamFilter]);
 
-  const teams = useMemo((): Array<{ label: string; value: string }> => {
-    if (teamOptions.length > 0) {
-      return [
-        { label: "All Teams", value: "" },
-        ...teamOptions.map((t) => ({ label: t.label, value: t.label })),
-      ];
-    }
-
-    const unique = Array.from(
-      new Set(users.map((u) => u.team_name).filter(Boolean)),
-    ) as string[];
-
-    return [
-      { label: "All Teams", value: "" },
-      ...unique.map((team) => ({ label: team, value: team })),
-    ];
-  }, [users, teamOptions]);
-
-  const filteredUsers =
-    !isAgent && selectedTeam
-      ? users.filter((u) => u.team_name === selectedTeam)
-      : users;
-
-  return (
-    <div className="relative bg-white border-l-4 border-blue-600 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 mb-6 overflow-hidden">
-      <div
-        className="flex items-center gap-4 px-6 py-5 select-none bg-linear-to-r from-blue-50 to-white border-b border-gray-200"
-        style={{ minHeight: 72 }}
-      >
-        <div className="flex flex-col justify-center">
-          <span className="text-2xl font-bold text-blue-700 leading-none">
-            {month.label}
-          </span>
-          <span className="text-sm text-gray-600 font-medium mt-1">
-            {month.year}
-          </span>
-        </div>
-        <div className="flex-1" />
-        {!isAgent && (
-          <div className="flex items-center gap-2">
-            <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-              <SelectTrigger className="h-11 w-48 border-gray-300">
-                <SelectValue placeholder="Filter by Team" />
-              </SelectTrigger>
-              <SelectContent>
-                {teams.map((t) => (
-                  <SelectItem key={t.label} value={t.value || "_all"}>
-                    {t.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+  const monthlyColumns: ColumnDef<MonthlyBillableReportRow>[] = useMemo(
+    () => [
+      {
+        header: "User Name / Team",
+        accessorFn: (row) => row.user_name,
+        cell: ({ row }) => (
+          <div>
+            <div className="font-medium text-gray-900">
+              {row.original.user_name}
+            </div>
+            <div className="text-xs text-gray-500 font-normal">
+              {row.original.team_name || "No Team"}
+            </div>
+          </div>
+        ),
+      },
+      {
+        header: "Billable Hour Delivered",
+        accessorFn: (row) =>
+          row.total_billable_hours
+            ? Number(row.total_billable_hours).toFixed(2)
+            : "-",
+        cell: ({ getValue }) => (
+          <div className="text-center font-medium font-mono">
+            {getValue<string>()}
+          </div>
+        ),
+      },
+      {
+        header: "Monthly Goal",
+        accessorFn: (row) => row.monthly_target ?? "-",
+        cell: ({ getValue }) => (
+          <div className="text-center font-mono">{getValue<string>()}</div>
+        ),
+      },
+      {
+        header: "Pending Target",
+        accessorFn: (row) =>
+          row.pending_target ? Number(row.pending_target).toFixed(2) : "-",
+        cell: ({ getValue }) => (
+          <div className="text-center text-red-600 font-medium font-mono">
+            {getValue<string>()}
+          </div>
+        ),
+      },
+      {
+        header: "Avg. QC Score",
+        accessorFn: (row) =>
+          row.avg_qc_score ? Number(row.avg_qc_score).toFixed(2) : "-",
+        cell: ({ getValue }) => (
+          <div className="text-center font-mono">{getValue<string>()}</div>
+        ),
+      },
+      {
+        id: "actions",
+        header: () => <div className="text-right">Actions</div>,
+        cell: ({ row }) => (
+          <div className="text-right">
             <Button
-              variant="outline"
-              className="h-11 px-4 border-gray-300"
-              onClick={() => setSelectedTeam("")}
+              variant="ghost"
+              size="sm"
+              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs h-8 font-semibold"
+              onClick={() => onExport?.(row.original)}
             >
-              Clear
+              Export Daily
             </Button>
           </div>
-        )}
-        <Button
-          variant="default"
-          size="sm"
-          className="bg-green-600 hover:bg-green-700 h-9 px-4 mr-2"
-          onClick={(e) => {
-            e.stopPropagation();
-            onExportMonth?.(month, filteredUsers);
-          }}
-        >
-          Export Month
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="p-2 rounded-full hover:bg-blue-100 transition"
-          title={expanded ? "Collapse" : "Expand"}
-          onClick={(e) => {
-            e.stopPropagation();
-            setExpanded((prev) => !prev);
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={`lucide lucide-chevron-up w-5 h-5 transition-transform duration-200 ${expanded ? "" : "rotate-180"}`}
-            aria-hidden="true"
-          >
-            <path d="m18 15-6-6-6 6"></path>
-          </svg>
-        </Button>
-      </div>
-      {expanded && (
-        <div className="p-8 bg-white/90 rounded-b-2xl">
-          <table className="min-w-full text-sm rounded-xl overflow-hidden shadow">
-            <thead className="bg-blue-50">
-              <tr>
-                <th className="px-4 py-3 text-left font-semibold text-blue-700">
-                  User Name / Team
-                </th>
-                <th className="px-4 py-3 text-center font-semibold text-blue-700">
-                  Billable Hour Delivered
-                </th>
-                <th className="px-4 py-3 text-center font-semibold text-blue-700">
-                  Monthly Goal
-                </th>
-                <th className="px-4 py-3 text-center font-semibold text-blue-700">
-                  Pending Target
-                </th>
-                <th className="px-4 py-3 text-center font-semibold text-blue-700">
-                  Avg. QC Score
-                </th>
-                <th className="px-4 py-3 text-center font-semibold text-blue-700">
-                  Export
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.map((row, idx) => (
-                <tr
-                  key={row.user_id ?? idx}
-                  className="hover:bg-blue-50 transition group"
-                >
-                  <td className="px-4 py-3 text-black font-medium whitespace-nowrap">
-                    {row.user_name}
-                    {row.team_name ? ` / ${row.team_name}` : ""}
-                  </td>
-                  <td className="px-4 py-3 text-center text-black">
-                    {row.total_billable_hours != null
-                      ? Number(row.total_billable_hours).toFixed(2)
-                      : "-"}
-                  </td>
-                  <td className="px-4 py-3 text-center text-black">
-                    {row.monthly_target ?? "-"}
-                  </td>
-                  <td className="px-4 py-3 text-center text-black">
-                    {row.pending_target != null
-                      ? Number(row.pending_target).toFixed(2)
-                      : "-"}
-                  </td>
-                  <td className="px-4 py-3 text-center text-black">
-                    {row.avg_qc_score != null
-                      ? Number(row.avg_qc_score).toFixed(2)
-                      : "-"}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="bg-green-600 hover:bg-green-700 h-8 px-3"
-                      onClick={() => onExport(row)}
-                    >
-                      Export Daily
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        ),
+      },
+    ],
+    [onExport],
+  );
+
+  return (
+    <Accordion type="single" collapsible className="w-full mb-6">
+      <AccordionItem
+        value="item-1"
+        className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
+      >
+        <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <h4 className="text-xl font-bold text-gray-900">
+              {month.label} {month.year}
+            </h4>
+            <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full uppercase tracking-wider">
+              Monthly Summary
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {teamOptions.length > 0 && (
+              <div className="hidden md:block w-48">
+                <Select value={teamFilter} onValueChange={setTeamFilter}>
+                  <SelectTrigger className="h-9 bg-white border-gray-200 text-xs shadow-sm">
+                    <SelectValue placeholder="Filter by Team" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_all">All Teams</SelectItem>
+                    {teamOptions.map((t) => (
+                      <SelectItem key={t.label} value={t.label}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <Button
+              variant="default"
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 h-9 px-4 text-white font-semibold shadow-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onExportMonth?.(month, filteredUsers);
+              }}
+            >
+              Export Month
+            </Button>
+
+            <AccordionTrigger className="hover:no-underline hover:bg-gray-100/50 rounded-lg p-2 transition-all [&[data-state=open]>svg]:rotate-180" />
+          </div>
         </div>
-      )}
-    </div>
+
+        <AccordionContent className="p-0">
+          <DataTable
+            columns={monthlyColumns}
+            data={filteredUsers}
+            showPagination={true}
+            pageSize={10}
+            containerClassName="border-0"
+          />
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 }

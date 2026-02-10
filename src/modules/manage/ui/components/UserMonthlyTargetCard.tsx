@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import * as XLSX from "xlsx";
 import dayjs, { Dayjs } from "dayjs";
 import { Download, Calendar, User } from "lucide-react";
 import { toast } from "sonner";
@@ -12,6 +13,8 @@ import {
 } from "@/components/ui/accordion";
 import { DataTable } from "@/components/ui/data-table";
 import { createColumns, type Agent } from "./UserMonthlyTargetCardColumns";
+import { useAuth } from "../../../../context/AuthContext";
+import { fetchMonthlyBillableReport } from "../../../dashboard/services/billableReportService";
 
 interface MonthData {
   key: string;
@@ -20,115 +23,158 @@ interface MonthData {
   agents: Agent[];
 }
 
-const monthsData: MonthData[] = [
-  {
-    key: "2025-12",
-    label: "DEC 2025",
-    range: [dayjs("2025-12-01"), dayjs("2025-12-31")],
-    agents: [
-      {
-        id: 1,
-        userName: "John Doe",
-        workingDays: 22,
-        dailyRequiredHours: 8,
-        monthlyTotalTarget: 176,
-        monthlyAchievedTarget: 150,
-      },
-      {
-        id: 2,
-        userName: "Jane Smith",
-        workingDays: 20,
-        dailyRequiredHours: 7,
-        monthlyTotalTarget: 140,
-        monthlyAchievedTarget: 120,
-      },
-      {
-        id: 3,
-        userName: "Alex Johnson",
-        workingDays: 21,
-        dailyRequiredHours: 8,
-        monthlyTotalTarget: 168,
-        monthlyAchievedTarget: 160,
-      },
-    ],
-  },
-  {
-    key: "2026-01",
-    label: "JAN 2026",
-    range: [dayjs("2026-01-01"), dayjs("2026-01-31")],
-    agents: [
-      {
-        id: 4,
-        userName: "Emily Clark",
-        workingDays: 21,
-        dailyRequiredHours: 8,
-        monthlyTotalTarget: 168,
-        monthlyAchievedTarget: 140,
-      },
-      {
-        id: 5,
-        userName: "Michael Brown",
-        workingDays: 22,
-        dailyRequiredHours: 7,
-        monthlyTotalTarget: 154,
-        monthlyAchievedTarget: 130,
-      },
-    ],
-  },
-  {
-    key: "2026-02",
-    label: "FEB 2026",
-    range: [dayjs("2026-02-01"), dayjs("2026-02-28")],
-    agents: [
-      {
-        id: 6,
-        userName: "Sophia Lee",
-        workingDays: 20,
-        dailyRequiredHours: 8,
-        monthlyTotalTarget: 160,
-        monthlyAchievedTarget: 120,
-      },
-      {
-        id: 7,
-        userName: "David Kim",
-        workingDays: 19,
-        dailyRequiredHours: 7,
-        monthlyTotalTarget: 133,
-        monthlyAchievedTarget: 110,
-      },
-    ],
-  },
-];
+// Hardcoded data removed
 
 const UserMonthlyTargetCard: React.FC = () => {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
-    const state: Record<string, boolean> = {};
-    monthsData.forEach((m) => {
-      state[m.key] = true;
-    });
-    return state;
-  });
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [monthsData, setMonthsData] = useState<MonthData[]>([]);
+
+  // Generate last 3 months
+  const generateMonths = () => {
+    const months: MonthData[] = [];
+    for (let i = 0; i < 3; i++) {
+      const d = dayjs().subtract(i, "month");
+      months.push({
+        key: d.format("YYYY-MM"),
+        label: d.format("MMM YYYY").toUpperCase(),
+        range: [d.startOf("month"), d.endOf("month")],
+        agents: [],
+      });
+    }
+    return months;
+  };
+
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const [dateRanges, setDateRanges] = useState<Record<string, [Dayjs, Dayjs]>>(
-    () => {
-      const obj: Record<string, [Dayjs, Dayjs]> = {};
-      monthsData.forEach((m) => {
-        obj[m.key] = m.range;
-      });
-      return obj;
-    },
+    {},
   );
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const months = generateMonths();
+      const initialDateRanges: Record<string, [Dayjs, Dayjs]> = {};
+      const initialExpanded: Record<string, boolean> = {};
+
+      const updatedMonths = await Promise.all(
+        months.map(async (m) => {
+          initialDateRanges[m.key] = m.range;
+          initialExpanded[m.key] = m.key === dayjs().format("YYYY-MM"); // Only expand current month
+
+          const [year, month] = m.key.split("-");
+          const monthNames = [
+            "JAN",
+            "FEB",
+            "MAR",
+            "APR",
+            "MAY",
+            "JUN",
+            "JUL",
+            "AUG",
+            "SEP",
+            "OCT",
+            "NOV",
+            "DEC",
+          ];
+          const monthLabel = monthNames[Number(month) - 1];
+          const payload = {
+            month_year: `${monthLabel}${year}`,
+            logged_in_user_id: user?.user_id,
+          };
+
+          const res = await fetchMonthlyBillableReport(payload);
+          const apiAgents: Agent[] = (
+            Array.isArray(res.data) ? res.data : []
+          ).map((row: any) => ({
+            id: row.user_id || 0,
+            userName: row.user_name || "Unknown",
+            workingDays: row.working_days || 0,
+            dailyRequiredHours: row.daily_required_hours || 0,
+            monthlyTotalTarget: row.monthly_target || row.monthly_goal || 0,
+            monthlyAchievedTarget:
+              row.total_billable_hours || row.total_billable_hours_month || 0,
+          }));
+
+          return { ...m, agents: apiAgents };
+        }),
+      );
+
+      setMonthsData(updatedMonths);
+      setDateRanges(initialDateRanges);
+      setExpanded(initialExpanded);
+    } catch (err) {
+      toast.error("Failed to fetch monthly targets");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleRangeChange = (key: string, range: [Dayjs, Dayjs]) => {
     setDateRanges((prev) => ({ ...prev, [key]: range }));
   };
 
   const handleExportExcel = (monthLabel: string) => {
-    toast?.success(`Exporting ${monthLabel} data to Excel...`);
+    const monthData = monthsData.find((m) => m.label === monthLabel);
+    if (!monthData || monthData.agents.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+
+    const exportData = monthData.agents.map((agent) => ({
+      "Agent Name": agent.userName,
+      "Working Days": agent.workingDays,
+      "Daily Required Hours": Number(agent.dailyRequiredHours).toFixed(2),
+      "Monthly Goal": Number(agent.monthlyTotalTarget).toFixed(2),
+      "Achieved Target": Number(agent.monthlyAchievedTarget).toFixed(2),
+    }));
+
+    const totalWorkingDays = monthData.agents.reduce(
+      (sum, agent) => sum + Number(agent.workingDays || 0),
+      0,
+    );
+    const totalRequired = monthData.agents.reduce(
+      (sum, agent) => sum + Number(agent.dailyRequiredHours || 0),
+      0,
+    );
+    const totalGoal = monthData.agents.reduce(
+      (sum, agent) => sum + Number(agent.monthlyTotalTarget || 0),
+      0,
+    );
+    const totalAchieved = monthData.agents.reduce(
+      (sum, agent) => sum + Number(agent.monthlyAchievedTarget || 0),
+      0,
+    );
+
+    exportData.push({
+      "Agent Name": "Total",
+      "Working Days": totalWorkingDays,
+      "Daily Required Hours": totalRequired.toFixed(2),
+      "Monthly Goal": totalGoal.toFixed(2),
+      "Achieved Target": totalAchieved.toFixed(2),
+    } as any);
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Targets");
+    XLSX.writeFile(workbook, `Monthly_Target_${monthLabel}.xlsx`);
+    toast.success(`Exported ${monthLabel} data to Excel!`);
   };
 
   // Create columns
   const columns = useMemo(() => createColumns(), []);
+
+  if (loading && monthsData.length === 0) {
+    return (
+      <div className="flex justify-center p-12">Loading monthly targets...</div>
+    );
+  }
 
   return (
     <div className="w-full space-y-6">
@@ -228,7 +274,6 @@ const UserMonthlyTargetCard: React.FC = () => {
                 emptyIcon={User}
                 showPagination={true}
                 pageSize={10}
-                className="border-t-0"
                 headerClassName="bg-slate-50"
               />
             </AccordionContent>

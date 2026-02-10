@@ -63,9 +63,12 @@ export interface AgentProjectWithTasks {
 }
 
 export type AddTrackerPayload = {
-  project_id: number;
-  task_id: number;
+  project_id: number | string;
+  task_id: number | string;
   user_id: string | number | undefined; // was User['user_id']
+  logged_in_user_id?: string | number | undefined;
+  device_id?: string;
+  device_type?: string;
   production: number;
   tenure_target: number;
   tracker_file?: string;

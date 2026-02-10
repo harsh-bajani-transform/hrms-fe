@@ -18,6 +18,7 @@ import QAAgentList from "../components/QAAgentList";
 import AssistantManagerDashboard from "../components/AssistantManagerDashboard";
 import QAAgentDashboard from "../components/QAAgentDashboard";
 import ManageView from "../../../manage/ui/views/ManageView";
+import UserMonthlyTargetCard from "../../../manage/ui/components/UserMonthlyTargetCard";
 import AgentBillableReport from "../../../agent/ui/components/AgentBillableReport";
 import AppLayout from "../../../../components/layout/AppLayout";
 
@@ -339,20 +340,25 @@ const DashboardView = () => {
             {activeTab === "billable_report" &&
               (isAgent ? <AgentBillableReport /> : <BillableReport />)}
 
+            {activeTab === "monthly_target" && <UserMonthlyTargetCard />}
+
             {activeTab === "manage" && <ManageView />}
 
             {/* Fallback for other tabs */}
-            {activeTab !== "overview" && activeTab !== "manage" && (
-              <div className="bg-white p-12 rounded-lg shadow-sm border border-dashed border-slate-300 text-center">
-                <h3 className="text-lg font-medium text-slate-500">
-                  {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}{" "}
-                  Module Coming Soon
-                </h3>
-                <p className="text-slate-400 mt-2">
-                  We are currently migrating this section.
-                </p>
-              </div>
-            )}
+            {activeTab !== "overview" &&
+              activeTab !== "manage" &&
+              activeTab !== "billable_report" &&
+              activeTab !== "monthly_target" && (
+                <div className="bg-white p-12 rounded-lg shadow-sm border border-dashed border-slate-300 text-center">
+                  <h3 className="text-lg font-medium text-slate-500">
+                    {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}{" "}
+                    Module Coming Soon
+                  </h3>
+                  <p className="text-slate-400 mt-2">
+                    We are currently migrating this section.
+                  </p>
+                </div>
+              )}
           </>
         )}
       </div>

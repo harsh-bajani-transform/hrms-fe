@@ -21,8 +21,15 @@ export const fetchAgentProjects = async (
   return res.data;
 };
 
-export const addTracker = async (payload: Record<string, unknown>) => {
-  const res = await api.post("/tracker/add", payload);
+export const addTracker = async (
+  payload: Record<string, unknown> | FormData,
+) => {
+  const res = await api.post("/tracker/add", payload, {
+    headers:
+      payload instanceof FormData
+        ? { "Content-Type": "multipart/form-data" }
+        : {},
+  });
   return res; // Changed to return the full response object to match existing logic checking res.data.status
 };
 

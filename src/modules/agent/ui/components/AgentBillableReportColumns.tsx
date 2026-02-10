@@ -27,9 +27,11 @@ export function createDailyColumns(): ColumnDef<TrackerRow, unknown>[] {
     dailyColumnHelper.display({
       id: "assigned_hours",
       header: () => <div className="text-center">Assigned (Hrs)</div>,
-      cell: () => (
-        <div className="px-6 py-4 text-center text-gray-400 font-medium italic">
-          —
+      cell: (info) => (
+        <div className="px-6 py-4 text-center text-gray-900 font-medium">
+          {info.row.original.tenure_target != null
+            ? Number(info.row.original.tenure_target).toFixed(2)
+            : "—"}
         </div>
       ),
     }),
@@ -47,7 +49,7 @@ export function createDailyColumns(): ColumnDef<TrackerRow, unknown>[] {
             </Badge>
           </div>
         ),
-      }
+      },
     ) as ColumnDef<TrackerRow, unknown>,
     dailyColumnHelper.display({
       id: "qc_score",
@@ -58,30 +60,25 @@ export function createDailyColumns(): ColumnDef<TrackerRow, unknown>[] {
         </div>
       ),
     }),
-    dailyColumnHelper.accessor(
-      (row) => row.daily_required_hours as unknown,
-      {
-        id: "daily_required_hours",
-        header: () => <div className="text-center">Daily Target (Hrs)</div>,
-        cell: (info) => (
-          <div className="px-6 py-4 text-center">
-            <Badge
-              variant="outline"
-              className="font-semibold text-gray-700 border-gray-300"
-            >
-              {info.getValue() != null
-                ? Number(info.getValue()).toFixed(2)
-                : "-"}
-            </Badge>
-          </div>
-        ),
-      }
-    ) as ColumnDef<TrackerRow, unknown>,
+    dailyColumnHelper.accessor((row) => row.daily_required_hours as unknown, {
+      id: "daily_required_hours",
+      header: () => <div className="text-center">Daily Target (Hrs)</div>,
+      cell: (info) => (
+        <div className="px-6 py-4 text-center">
+          <Badge
+            variant="outline"
+            className="font-semibold text-gray-700 border-gray-300"
+          >
+            {info.getValue() != null ? Number(info.getValue()).toFixed(2) : "-"}
+          </Badge>
+        </div>
+      ),
+    }) as ColumnDef<TrackerRow, unknown>,
   ];
 }
 
 export function createMonthlyColumns(
-  handleExportMonthDailyExcel: (monthYear: string) => void
+  handleExportMonthDailyExcel: (monthYear: string) => void,
 ): ColumnDef<MonthlyBillableReportRow, unknown>[] {
   return [
     monthlyColumnHelper.accessor((row) => row.month_year, {
@@ -103,7 +100,7 @@ export function createMonthlyColumns(
         return (
           <div className="px-6 py-4 text-center">
             <Badge className="bg-blue-50 text-blue-700 border-blue-200 font-semibold">
-              {value ? Number(value).toFixed(2) : "-"}
+              {value != null ? Number(value).toFixed(2) : "-"}
             </Badge>
           </div>
         );
@@ -121,7 +118,7 @@ export function createMonthlyColumns(
               variant="outline"
               className="font-semibold border-gray-300 text-gray-700"
             >
-              {goal ?? "-"}
+              {goal != null ? Number(goal).toFixed(2) : "-"}
             </Badge>
           </div>
         );
@@ -135,7 +132,7 @@ export function createMonthlyColumns(
         return (
           <div className="px-6 py-4 text-center">
             <Badge className="bg-amber-50 text-amber-700 border-amber-200 font-semibold">
-              {value ? Number(value).toFixed(2) : "-"}
+              {value != null ? Number(value).toFixed(2) : "-"}
             </Badge>
           </div>
         );

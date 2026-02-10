@@ -20,8 +20,10 @@ export interface ProjectType {
   tasks?: TaskType[];
   // For compatibility with ProjectFormModal's ProjectType
   owner_id?: string | number;
-  apm_id?: string | number;
-  qa_id?: string | number;
+  apm_id?: string | number | (string | number)[];
+  qa_id?: string | number | (string | number)[];
+  project_code?: string;
+  project_description?: string;
   project_file?: string | null;
   [key: string]: unknown;
 }
