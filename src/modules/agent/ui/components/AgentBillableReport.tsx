@@ -395,7 +395,7 @@ const AgentBillableReport = () => {
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 space-y-8 animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-2 ">
         <div className="space-y-1">
           <h2 className="text-2xl font-semibold text-gray-900">
             Performance Reports
@@ -429,7 +429,7 @@ const AgentBillableReport = () => {
       {/* Daily Report View */}
       {activeToggle === "daily" && (
         <Card className="shadow-sm border-gray-200 overflow-hidden rounded-xl min-h-125 bg-white">
-          <CardHeader className="border-b border-gray-200 bg-gray-50 p-8">
+          <CardHeader className="border-b border-gray-200 p-6">
             <div className="flex flex-col gap-8">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
@@ -546,7 +546,7 @@ const AgentBillableReport = () => {
       {/* Monthly Report View */}
       {activeToggle === "monthly" && (
         <Card className="shadow-sm border-gray-200 overflow-hidden rounded-xl min-h-125 bg-white">
-          <CardHeader className="border-b border-gray-200 bg-gray-50 p-8">
+          <CardHeader className="border-b border-gray-200 p-6">
             <div className="flex flex-col gap-8">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">

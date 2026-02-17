@@ -28,6 +28,23 @@ export const deleteTrackerEntry = async (tracker_id: number | string) => {
 };
 
 /**
+ * Update a tracker entry
+ * @param payload - Tracker entry data (FormData for files)
+ * @returns API response
+ */
+export const updateTrackerEntry = async (
+  payload: Record<string, unknown> | FormData,
+) => {
+  const response = await api.post("/tracker/update", payload, {
+    headers:
+      payload instanceof FormData
+        ? { "Content-Type": "multipart/form-data" }
+        : {},
+  });
+  return response.data;
+};
+
+/**
  * Fetch tracker entries with filters
  * @param filters - Filter parameters
  * @returns API response with tracker data

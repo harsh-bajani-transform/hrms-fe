@@ -1,7 +1,8 @@
 import { format } from "date-fns";
-import { Download } from "lucide-react";
+import { Download, Edit2, Trash2 } from "lucide-react";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { TrackerRow } from "../../../dashboard/types";
 
 const columnHelper = createColumnHelper<TrackerRow>();
@@ -10,9 +11,17 @@ interface DropdownTaskMap {
   [taskId: string]: number | string | undefined;
 }
 
-export function createColumns(
-  dropdownTaskMap: DropdownTaskMap
-): ColumnDef<TrackerRow, unknown>[] {
+interface CreateColumnsParams {
+  dropdownTaskMap: DropdownTaskMap;
+  onEdit: (tracker: TrackerRow) => void;
+  onDelete: (tracker: TrackerRow) => void;
+}
+
+export function createColumns({
+  dropdownTaskMap,
+  onEdit,
+  onDelete,
+}: CreateColumnsParams): ColumnDef<TrackerRow, unknown>[] {
   return [
     columnHelper.display({
       id: "dateTime",
@@ -108,6 +117,32 @@ export function createColumns(
           ) : (
             <span className="text-slate-400">—</span>
           )}
+        </div>
+      ),
+    }),
+    columnHelper.display({
+      id: "actions",
+      header: () => <div className="text-center">Actions</div>,
+      cell: ({ row }) => (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            onClick={() => onEdit(row.original)}
+            title="Edit"
+          >
+            <Edit2 className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+            onClick={() => onDelete(row.original)}
+            title="Delete"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
         </div>
       ),
     }),

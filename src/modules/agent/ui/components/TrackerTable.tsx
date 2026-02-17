@@ -6,11 +6,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Download,
   FileDown,
   Filter,
   Calendar as CalendarIcon,
-  ArrowLeft,
   FileText,
   PlusCircle,
   Briefcase,
@@ -21,7 +19,6 @@ import { format } from "date-fns";
 import dayjs from "dayjs";
 import {
   Card,
-  CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
@@ -55,7 +52,7 @@ import type { AgentProjectWithTasks, AgentTrackerRow } from "../../types";
 export interface TrackerTableProps {
   userId: Id | null | undefined;
   projects: AgentProjectWithTasks[];
-  onClose: () => void;
+  onAddEntry?: () => void;
 }
 
 const asRecord = (v: unknown): v is Record<string, unknown> =>
@@ -67,7 +64,7 @@ const getTodayDate = (): string => {
   return today.toISOString().split("T")[0] ?? "";
 };
 
-const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
+const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
   const { user } = useAuth();
 
   const [trackers, setTrackers] = useState<AgentTrackerRow[]>([]);
@@ -409,7 +406,7 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-300">
       {/* Page Header */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="p-2">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-blue-50 rounded-lg">
@@ -425,6 +422,15 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {onAddEntry && (
+              <Button
+                onClick={onAddEntry}
+                className="h-11 px-6 bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-100"
+              >
+                <PlusCircle className="w-4 h-4 mr-2" />
+                Add Entry
+              </Button>
+            )}
             <Button
               onClick={handleExportToExcel}
               disabled={loading || trackers.length === 0}
@@ -434,17 +440,54 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
               <FileDown className="w-4 h-4 mr-2" />
               Export Excel
             </Button>
-            <Button
-              onClick={onClose}
-              variant="default"
-              className="h-11 px-6 bg-blue-600 hover:bg-blue-700"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Entry
-            </Button>
           </div>
         </div>
       </div>
+
+      {/* Totals Summary */}
+      {!loading && trackers.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4 duration-500 delay-150">
+          <Card className="border-blue-100 bg-blue-50/30 overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+              <CalendarIcon className="w-12 h-12 text-blue-900" />
+            </div>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-blue-600 font-bold uppercase tracking-widest text-[10px]">
+                Avg Hourly Target
+              </CardDescription>
+              <CardTitle className="text-3xl font-bold text-blue-900">
+                {totals.tenureTarget.toFixed(1)}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="border-emerald-100 bg-emerald-50/30 overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+              <PlusCircle className="w-12 h-12 text-emerald-900" />
+            </div>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-emerald-600 font-bold uppercase tracking-widest text-[10px]">
+                Total Production
+              </CardDescription>
+              <CardTitle className="text-3xl font-bold text-emerald-900">
+                {totals.production.toFixed(0)}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="border-slate-100 bg-slate-50/50 overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+              <Briefcase className="w-12 h-12 text-slate-900" />
+            </div>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-slate-600 font-bold uppercase tracking-widest text-[10px]">
+                Total Billable Hours
+              </CardDescription>
+              <CardTitle className="text-3xl font-bold text-slate-900">
+                {totals.billableHours.toFixed(2)}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
+      )}
 
       {/* Filter Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -559,51 +602,6 @@ const TrackerTable = ({ userId, projects, onClose }: TrackerTableProps) => {
         rowClassName="border-gray-100 group"
         rowHoverClassName="hover:bg-blue-50/50 transition-colors"
       />
-
-      {/* Totals Summary */}
-      {!loading && trackers.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4 duration-500 delay-150">
-          <Card className="border-blue-100 bg-blue-50/30 overflow-hidden relative group">
-            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
-              <CalendarIcon className="w-12 h-12 text-blue-900" />
-            </div>
-            <CardHeader className="pb-2">
-              <CardDescription className="text-blue-600 font-bold uppercase tracking-widest text-[10px]">
-                Avg Hourly Target
-              </CardDescription>
-              <CardTitle className="text-3xl font-bold text-blue-900">
-                {totals.tenureTarget.toFixed(1)}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="border-emerald-100 bg-emerald-50/30 overflow-hidden relative group">
-            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
-              <PlusCircle className="w-12 h-12 text-emerald-900" />
-            </div>
-            <CardHeader className="pb-2">
-              <CardDescription className="text-emerald-600 font-bold uppercase tracking-widest text-[10px]">
-                Total Production
-              </CardDescription>
-              <CardTitle className="text-3xl font-bold text-emerald-900">
-                {totals.production.toFixed(0)}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="border-slate-100 bg-slate-50/50 overflow-hidden relative group">
-            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
-              <Briefcase className="w-12 h-12 text-slate-900" />
-            </div>
-            <CardHeader className="pb-2">
-              <CardDescription className="text-slate-600 font-bold uppercase tracking-widest text-[10px]">
-                Total Billable Hours
-              </CardDescription>
-              <CardTitle className="text-3xl font-bold text-slate-900">
-                {totals.billableHours.toFixed(2)}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
-      )}
 
       {/* Delete Confirmation */}
       <Dialog

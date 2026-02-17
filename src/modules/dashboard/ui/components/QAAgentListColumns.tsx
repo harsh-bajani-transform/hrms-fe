@@ -54,6 +54,24 @@ export const createQATrackerColumns = ({
     ),
   },
   {
+    id: "assignedHours",
+    header: "Assigned Hours",
+    cell: ({ row }) => (
+      <div className="text-slate-700 whitespace-nowrap">
+        {`${row.original.assigned_hours ?? "-"}`}
+      </div>
+    ),
+  },
+  {
+    id: "qcScore",
+    header: "QC Score",
+    cell: ({ row }) => (
+      <div className="text-slate-700 whitespace-nowrap">
+        {`${row.original.qc_score ?? "-"}`}
+      </div>
+    ),
+  },
+  {
     id: "file",
     header: () => <div className="text-center">File</div>,
     cell: ({ row }) => (

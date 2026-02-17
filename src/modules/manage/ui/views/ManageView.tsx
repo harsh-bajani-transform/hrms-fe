@@ -144,7 +144,8 @@ const ManageView: React.FC = () => {
           Access Restricted
         </h2>
         <p className="text-gray-600 text-center max-w-md">
-          You do not have permission to access this management area. Please contact your administrator if you believe this is an error.
+          You do not have permission to access this management area. Please
+          contact your administrator if you believe this is an error.
         </p>
       </div>
     );
@@ -153,16 +154,14 @@ const ManageView: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Page Header */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="p-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-blue-50 rounded-lg">
               <Settings className="w-7 h-7 text-blue-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Management Center
-              </h1>
+              <h1 className="text-2xl font-bold">Management Center</h1>
               <p className="text-gray-600 mt-1">
                 Manage users, projects, and system settings
               </p>
@@ -177,8 +176,8 @@ const ManageView: React.FC = () => {
           <Button
             variant={activeTab === "users" ? "default" : "ghost"}
             className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
-              activeTab === "users" 
-                ? "bg-blue-600 text-white shadow-sm" 
+              activeTab === "users"
+                ? "bg-blue-600 text-white shadow-sm"
                 : "text-gray-700 hover:bg-gray-100"
             }`}
             onClick={() => setActiveTab("users")}
@@ -188,8 +187,8 @@ const ManageView: React.FC = () => {
           <Button
             variant={activeTab === "projects" ? "default" : "ghost"}
             className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
-              activeTab === "projects" 
-                ? "bg-blue-600 text-white shadow-sm" 
+              activeTab === "projects"
+                ? "bg-blue-600 text-white shadow-sm"
                 : "text-gray-700 hover:bg-gray-100"
             }`}
             onClick={() => setActiveTab("projects")}
@@ -199,8 +198,8 @@ const ManageView: React.FC = () => {
           <Button
             variant={activeTab === "tracking" ? "default" : "ghost"}
             className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
-              activeTab === "tracking" 
-                ? "bg-blue-600 text-white shadow-sm" 
+              activeTab === "tracking"
+                ? "bg-blue-600 text-white shadow-sm"
                 : "text-gray-700 hover:bg-gray-100"
             }`}
             onClick={() => setActiveTab("tracking")}
@@ -210,8 +209,8 @@ const ManageView: React.FC = () => {
           <Button
             variant={activeTab === "monthly_target" ? "default" : "ghost"}
             className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
-              activeTab === "monthly_target" 
-                ? "bg-blue-600 text-white shadow-sm" 
+              activeTab === "monthly_target"
+                ? "bg-blue-600 text-white shadow-sm"
                 : "text-gray-700 hover:bg-gray-100"
             }`}
             onClick={() => setActiveTab("monthly_target")}

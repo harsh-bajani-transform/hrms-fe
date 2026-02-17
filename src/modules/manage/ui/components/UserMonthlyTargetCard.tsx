@@ -179,12 +179,17 @@ const UserMonthlyTargetCard: React.FC = () => {
   return (
     <div className="w-full space-y-6">
       <div className="mb-2 ">
-        <h2 className="text-2xl flex items-center gap-2 font-bold text-blue-600 tracking-tight">
-          <User /> User Monthly Targets
-        </h2>
-        <p className="text-slate-500 text-sm">
-          Review and manage monthly production goals for agents.
-        </p>
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-50 rounded-lg">
+            <User className="w-7 h-7 text-blue-600" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold">User Monthly Targets</h2>
+            <p className="text-slate-600 mt-1">
+              Review and manage monthly production goals for agents.
+            </p>
+          </div>
+        </div>
       </div>
       <Accordion
         type="multiple"

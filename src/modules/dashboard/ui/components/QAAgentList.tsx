@@ -12,6 +12,7 @@ import { useAuth } from "../../../../context/AuthContext";
 import { log, logError } from "../../../../config/environment";
 import { DataTable } from "@/components/ui/data-table";
 import { createQATrackerColumns } from "./QAAgentListColumns";
+import DailyEntryFormModal from "../../../../components/common/DailyEntryFormModal";
 
 import type {
   UserRef as Agent,
@@ -40,6 +41,10 @@ const QAAgentList: React.FC = () => {
   const [agentTrackers, setAgentTrackers] = useState<AgentTrackersMap>({});
   const [dropdownTaskNameMap, setDropdownTaskNameMap] =
     useState<DropdownTaskNameMap>({});
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTracker, setSelectedTracker] = useState<Tracker | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -134,7 +139,7 @@ const QAAgentList: React.FC = () => {
     if (user?.user_id) {
       fetchDashboardData();
     }
-  }, [user?.user_id]);
+  }, [user?.user_id, refreshTrigger]);
 
   const toggleAgent = React.useCallback((agentId: number | string) => {
     setExpandedAgents((prev) => ({
@@ -145,7 +150,8 @@ const QAAgentList: React.FC = () => {
 
   const handleQCForm = React.useCallback((tracker: Tracker) => {
     log("[QAAgentList] Opening QC Form for tracker:", tracker.tracker_id);
-    toast.success("QC Form functionality coming soon!");
+    setSelectedTracker(tracker);
+    setIsModalOpen(true);
   }, []);
 
   const columns = React.useMemo(
@@ -159,14 +165,15 @@ const QAAgentList: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-slate-100 rounded-lg border border-slate-200">
-            <UsersIcon className="w-6 h-6 text-slate-600" />
+      <div className="p-2">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-50 rounded-lg">
+            <UsersIcon className="w-7 h-7 text-blue-600" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-800">
-            Agent File Report
-          </h2>
+          <div>
+            <h2 className="text-2xl font-bold">Agent File Report</h2>
+            <p className="text-slate-600 mt-1">View and manage agent files</p>
+          </div>
         </div>
       </div>
 
@@ -249,6 +256,43 @@ const QAAgentList: React.FC = () => {
           })}
         </div>
       )}
+
+      {selectedTracker && (
+        <DailyEntryFormModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedTracker(null);
+          }}
+          onSubmit={() => {
+            setRefreshTrigger((prev) => prev + 1);
+          }}
+          isEditMode={
+            !!(selectedTracker?.qc_score || selectedTracker?.assigned_hours)
+          }
+          initialData={{
+            ...(selectedTracker?.qc_score !== undefined &&
+              selectedTracker?.qc_score !== null && {
+                qcScore: selectedTracker.qc_score as string | number,
+              }),
+            ...(selectedTracker?.assigned_hours !== undefined &&
+              selectedTracker?.assigned_hours !== null && {
+                assignHours: selectedTracker.assigned_hours as string | number,
+              }),
+          }}
+          user={{
+            user_id: (selectedTracker?.user_id as string | number) || "",
+            user_name: selectedTracker?.user_name || "",
+          }}
+          userId={(selectedTracker?.user_id as string | number) || ""}
+          date={
+            selectedTracker?.date_time
+              ? selectedTracker.date_time.slice(0, 10)
+              : null
+          }
+        />
+      )}
+
       {/* Loader spinner style */}
       <style>{`
 				.loader {

@@ -57,7 +57,10 @@ const QATrackerReport: React.FC = () => {
   const [dropdownTaskMap, setDropdownTaskMap] = useState<DropdownTaskMap>({});
 
   // Create columns with the dropdownTaskMap
-  const columns = useMemo(() => createColumns(dropdownTaskMap), [dropdownTaskMap]);
+  const columns = useMemo(
+    () => createColumns(dropdownTaskMap),
+    [dropdownTaskMap],
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -213,11 +216,14 @@ const QATrackerReport: React.FC = () => {
 
   return (
     <div className="space-y-10 max-w-6xl mx-auto py-8">
-      <div className="mb-8 flex items-center gap-3">
-        <UsersIcon className="w-9 h-9 text-blue-600" />
-        <h2 className="text-3xl font-semibold text-blue-600">
-          QA Tracker Report
-        </h2>
+      <div className="mb-8 flex items-center gap-4">
+        <div className="p-3 bg-blue-50 rounded-lg">
+          <UsersIcon className="w-7 h-7 text-blue-600" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold">QA Tracker Report</h2>
+          <p className="text-slate-600 mt-1">View and manage QA tracker</p>
+        </div>
       </div>
 
       {/* Filter Section */}
