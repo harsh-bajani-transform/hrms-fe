@@ -1,4 +1,4 @@
-import React, { useEffect, useState, FC } from "react";
+import { useEffect, useState, FC } from "react";
 import { format } from "date-fns";
 import {
   FileText,
@@ -15,11 +15,7 @@ import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 import api from "../../../../services/api";
 import { getFriendlyErrorMessage } from "../../../../utils/errorMessages";
 import ErrorMessage from "../../../../components/common/ErrorMessage";
-import type {
-  TrackerRow,
-  DashboardSummary,
-  TaskRef,
-} from "../../../dashboard/types";
+import type { TrackerRow, TaskRef } from "../../../dashboard/types";
 
 const AssistantManagerDashboard: FC = () => {
   const { user } = useAuth();
@@ -60,7 +56,10 @@ const AssistantManagerDashboard: FC = () => {
           dropdown_type: "projects with tasks",
           logged_in_user_id: user?.user_id,
         });
-        console.log("[AssistantManagerDashboard] Dropdown response:", response.data);
+        console.log(
+          "[AssistantManagerDashboard] Dropdown response:",
+          response.data,
+        );
       } catch (err) {
         console.error("Error loading dropdowns:", err);
       }

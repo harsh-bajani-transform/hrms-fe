@@ -17,26 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { createColumns, Tracker } from "./QATrackerReportColumns";
-
-interface Agent {
-  user_id: number | string;
-  user_name: string;
-  // Add more specific fields as needed
-}
-
-interface Task {
-  task_id: number | string;
-  task_name?: string;
-  task_target?: number | string;
-}
-
-interface ProjectWithTasks {
-  tasks?: Task[];
-}
-
-interface DropdownTaskMap {
-  [taskId: string]: number | string;
-}
+import { Agent, DropdownTaskMap, ProjectWithTasks } from "../../types";
 
 const getTodayDate = () => {
   const today = new Date();

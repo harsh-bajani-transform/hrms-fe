@@ -29,25 +29,7 @@ import { fileToBase64 } from "../../../../lib/fileToBase64";
 import { addTask, updateTask } from "../../services/manageService";
 import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 
-import type { TaskType } from "../../types";
-
-interface TaskFormModalProps {
-  task?: TaskType | undefined;
-  onClose: () => void;
-  onSuccess: () => void;
-  dropdowns: {
-    users: Array<{
-      user_id?: string | number;
-      id?: string | number;
-      label: string;
-    }>;
-    projects: Array<{
-      project_id?: string | number;
-      id?: string | number;
-      label: string;
-    }>;
-  };
-}
+import type { TaskFormModalProps } from "../../types";
 
 interface FormData {
   name: string;
@@ -165,7 +147,6 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
               </p>
             </div>
           </div>
-
         </div>
 
         <form

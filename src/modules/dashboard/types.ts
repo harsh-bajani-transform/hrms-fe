@@ -1,3 +1,5 @@
+import { HourlyChartDatum } from "./ui/components/overview/HourlyChart";
+
 export interface ApiEnvelope<T> {
   status: number;
   data: T;
@@ -130,4 +132,72 @@ export interface Analytics {
   effectiveGoal: number;
   agentStats: UserRef[];
   prevRange: { label: string };
+}
+
+export interface OverviewTabProps {
+  analytics?: Analytics;
+  hourlyChartData?: HourlyChartDatum[];
+  isAgent: boolean;
+  isQA?: boolean;
+  dateRange?: DateRange;
+}
+
+export interface QASummaryRow {
+  month_year?: string;
+  total_billable_hours_month?: number | string;
+  pending_days?: number | string;
+}
+
+export interface QATrackerViewData {
+  month_summary?: QASummaryRow[];
+  trackers?: TrackerRow[];
+}
+
+export interface QAAgentDashboardProps {
+  dateRange: {
+    start: string;
+    end: string;
+  };
+}
+
+export interface TrackerFile {
+  tracker_id: number | string;
+  date_time?: string;
+  user_name?: string;
+  project_name?: string;
+  task_name?: string;
+  tracker_file?: string;
+  task_id?: number | string;
+}
+
+export interface Stats {
+  totalAgents: number;
+  pendingQCFiles: number;
+  placeholder1: number;
+  placeholder2: number;
+}
+
+export type TaskMapValue = {
+  task_name: string;
+  task_target: string | number | null;
+};
+
+export interface Agent {
+  user_id: number | string;
+  user_name: string;
+  // Add more specific fields as needed
+}
+
+export interface Task {
+  task_id: number | string;
+  task_name?: string;
+  task_target?: number | string;
+}
+
+export interface ProjectWithTasks {
+  tasks?: Task[];
+}
+
+export interface DropdownTaskMap {
+  [taskId: string]: number | string;
 }

@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  ChevronDown,
-  ChevronUp,
-  Download,
-  FileText,
-  Users as UsersIcon,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, Users as UsersIcon } from "lucide-react";
 import { toast } from "sonner";
 import api from "../../../../services/api";
 import { useAuth } from "../../../../context/AuthContext";

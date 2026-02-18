@@ -49,71 +49,16 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "../../../../context/AuthContext";
 import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 import { addTracker } from "../../services/agentService";
-import { AgentProjectWithTasks, AgentTaskOption } from "../../types";
-
-interface AIEvalDetail {
-  location: string;
-  issue: string;
-  impact?: string;
-  fix?: string;
-  affectedRecords?: number;
-}
-
-interface AISuggestion {
-  id: string;
-  row: number;
-  column: string;
-  severity: "high" | "medium" | "low";
-  issue: string;
-  suggestion: string;
-}
-
-interface AIEvalResult {
-  message: string;
-  qualityScore: number;
-  details: {
-    totalRecords: number;
-    issuesFound: number;
-    [key: string]: any;
-  };
-  criticalIssues?: AIEvalDetail[];
-  summary?:
-    | string
-    | {
-        summary: string;
-        suggestions?: AISuggestion[] | string[];
-        criticalIssues?: AIEvalDetail[];
-      };
-  suggestions?: AISuggestion[] | string[];
-}
-
-interface DuplicateRow {
-  row: number;
-  duplicateColumns: string[];
-  duplicateValues: Record<string, any>;
-  data: Record<string, any>;
-}
-
-interface DuplicateCheckResult {
-  hasDuplicates: boolean;
-  duplicateCount: number;
-  duplicates: DuplicateRow[];
-  totalRecords: number;
-  uniqueRecords: number;
-}
-
-interface TrackerFormModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-  projects: AgentProjectWithTasks[];
-  isSubmissionWindowOpen: boolean;
-}
-
-type FieldName = "selectedProject" | "selectedTask" | "productionTarget";
-
-type FieldErrors = Partial<Record<FieldName, string>>;
-type FieldTouched = Partial<Record<FieldName, boolean>>;
+import {
+  AIEvalResult,
+  AgentProjectWithTasks,
+  AgentTaskOption,
+  DuplicateCheckResult,
+  FieldErrors,
+  FieldName,
+  FieldTouched,
+  TrackerFormModalProps,
+} from "../../types";
 
 const asRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null;
@@ -158,7 +103,6 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
   const [expandedSection, setExpandedSection] = useState<
     "eval" | "dup" | "none"
   >("none");
-  const [detailsMode, setDetailsMode] = useState<"eval" | "dup">("eval");
 
   const [entryDate] = useState(() => {
     const d = new Date();
@@ -200,7 +144,6 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
       setDuplicateCheckError("");
       setDuplicateCheckResult(null);
       setExpandedSection("none");
-      setDetailsMode("eval");
     }
   }, [isOpen]);
 
@@ -303,7 +246,6 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
         }
 
         setAiEvalResult(evalData);
-        setDetailsMode("eval");
         toast.success("AI Evaluation completed!");
       } else {
         throw new Error(res.message || "AI Evaluation failed");
@@ -354,12 +296,12 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
       setDuplicateCheckProgress(100);
 
       if (res.success) {
-        setDuplicateCheckSuccess(true);
         setDuplicateCheckResult(res.data);
-        setDetailsMode("dup");
         if (res.data.hasDuplicates) {
+          setDuplicateCheckSuccess(false);
           toast.error(`Found ${res.data.duplicateCount} duplicates`);
         } else {
+          setDuplicateCheckSuccess(true);
           toast.success("Duplicate check passed!");
         }
       } else {
@@ -464,10 +406,12 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
 
     // File requirements
     if (file) {
-      if (!aiEvalSuccess || !duplicateCheckSuccess) return false;
+      // Must have run both AND BOTH must be strictly successful
+      if (aiEvalSuccess !== true || duplicateCheckSuccess !== true)
+        return false;
     }
 
-    // Submission window (Optional: allow override for admins? For now strict as per requirements)
+    // Submission window
     if (!isSubmissionWindowOpen) return false;
 
     return true;
@@ -672,26 +616,9 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
                   {/* Step 1: AI Evaluation */}
                   <div className="p-4 rounded border border-slate-200 bg-slate-50 space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold uppercase text-slate-500">
-                          Step 1: AI Evaluation
-                        </span>
-                        {aiEvalResult && duplicateCheckResult && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              setDetailsMode(
-                                detailsMode === "eval" ? "dup" : "eval",
-                              )
-                            }
-                            className="h-5 px-1.5 text-[9px] bg-white border border-slate-200 hover:bg-slate-100 font-bold"
-                          >
-                            Switch to {detailsMode === "eval" ? "Dups" : "AI"}
-                          </Button>
-                        )}
-                      </div>
+                      <span className="text-xs font-bold uppercase text-slate-500">
+                        Step 1: AI Evaluation
+                      </span>
                       {aiEvalSuccess === true ? (
                         <CheckCircle className="w-4 h-4 text-emerald-500" />
                       ) : aiEvalSuccess === false ? (
@@ -726,7 +653,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
                       </p>
                     )}
 
-                    {aiEvalResult && detailsMode === "eval" && (
+                    {aiEvalResult && (
                       <div className="pt-2">
                         <Button
                           type="button"
@@ -779,10 +706,67 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
                               )}
                           </div>
                         )}
+                        <div className="mt-2 text-[9px] text-slate-500 italic bg-blue-50/50 p-1.5 rounded border border-blue-100/50">
+                          For detailed analysis, please visit the{" "}
+                          <span className="font-bold text-blue-600">
+                            AI Evaluation
+                          </span>{" "}
+                          tab.
+                        </div>
                       </div>
                     )}
+                  </div>
 
-                    {duplicateCheckResult && detailsMode === "dup" && (
+                  {/* Step 2: Duplicate Check */}
+                  <div className="p-4 rounded border border-slate-200 bg-slate-50 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase text-slate-500">
+                        Step 2: Duplicate Check
+                      </span>
+                      {duplicateCheckSuccess === true ? (
+                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                      ) : duplicateCheckSuccess === false ? (
+                        <AlertCircle className="w-4 h-4 text-rose-500" />
+                      ) : null}
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={handleDuplicateCheck}
+                      disabled={
+                        !aiEvalSuccess ||
+                        isAIEvaluating ||
+                        isDuplicateChecking ||
+                        duplicateCheckSuccess === true
+                      }
+                      variant={
+                        duplicateCheckSuccess === true ? "outline" : "default"
+                      }
+                      className="w-full h-9 text-xs font-bold shadow-sm"
+                    >
+                      {isDuplicateChecking ? (
+                        <Loader2 className="w-3 h-3 animate-spin mr-2" />
+                      ) : (
+                        <FileSearch className="w-3 h-3 mr-2" />
+                      )}
+                      {duplicateCheckSuccess === true
+                        ? "Check Passed"
+                        : duplicateCheckSuccess === false
+                          ? "Check Failed (Dups Found)"
+                          : "Check Duplicates"}
+                    </Button>
+                    {isDuplicateChecking && (
+                      <Progress
+                        value={duplicateCheckProgress}
+                        className="h-1"
+                      />
+                    )}
+                    {duplicateCheckError && (
+                      <p className="text-[10px] text-rose-500 font-medium">
+                        {duplicateCheckError}
+                      </p>
+                    )}
+
+                    {duplicateCheckResult && (
                       <div className="pt-2">
                         <Button
                           type="button"
@@ -829,53 +813,14 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
                             )}
                           </div>
                         )}
+                        <div className="mt-2 text-[9px] text-slate-500 italic bg-blue-50/50 p-1.5 rounded border border-blue-100/50">
+                          For detailed analysis, please visit the{" "}
+                          <span className="font-bold text-blue-600">
+                            AI Evaluation
+                          </span>{" "}
+                          tab.
+                        </div>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Step 2: Duplicate Check */}
-                  <div className="p-4 rounded border border-slate-200 bg-slate-50 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase text-slate-500">
-                        Step 2: Duplicate Check
-                      </span>
-                      {duplicateCheckSuccess === true ? (
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
-                      ) : duplicateCheckSuccess === false ? (
-                        <AlertCircle className="w-4 h-4 text-rose-500" />
-                      ) : null}
-                    </div>
-                    <Button
-                      type="button"
-                      onClick={handleDuplicateCheck}
-                      disabled={
-                        !aiEvalSuccess ||
-                        isAIEvaluating ||
-                        isDuplicateChecking ||
-                        duplicateCheckSuccess === true
-                      }
-                      variant={duplicateCheckSuccess ? "outline" : "default"}
-                      className="w-full h-9 text-xs font-bold"
-                    >
-                      {isDuplicateChecking ? (
-                        <Loader2 className="w-3 h-3 animate-spin mr-2" />
-                      ) : (
-                        <FileSearch className="w-3 h-3 mr-2" />
-                      )}
-                      {duplicateCheckSuccess
-                        ? "Check Passed"
-                        : "Check Duplicates"}
-                    </Button>
-                    {isDuplicateChecking && (
-                      <Progress
-                        value={duplicateCheckProgress}
-                        className="h-1"
-                      />
-                    )}
-                    {duplicateCheckError && (
-                      <p className="text-[10px] text-rose-500 font-medium">
-                        {duplicateCheckError}
-                      </p>
                     )}
                   </div>
                 </div>

@@ -154,8 +154,8 @@ const UserTrackingView: React.FC = () => {
 
   if (loading) {
     return (
-      <Loading 
-        title="Loading users..." 
+      <Loading
+        title="Loading users..."
         description="Fetching user permissions and role information"
       />
     );

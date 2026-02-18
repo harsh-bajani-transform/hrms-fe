@@ -19,32 +19,12 @@ import QATabsNavigation, {
   QATabId,
 } from "../../../qa/ui/components/QATabsNavigation";
 import BillableReport from "./BillableReport";
-
-interface QAAgentDashboardProps {
-  dateRange: {
-    start: string;
-    end: string;
-  };
-}
-
-interface TrackerFile {
-  tracker_id: number | string;
-  date_time?: string;
-  user_name?: string;
-  project_name?: string;
-  task_name?: string;
-  tracker_file?: string;
-  task_id?: number | string;
-}
-
-interface Stats {
-  totalAgents: number;
-  pendingQCFiles: number;
-  placeholder1: number;
-  placeholder2: number;
-}
-
-type TaskMapValue = { task_name: string; task_target: string | number | null };
+import {
+  QAAgentDashboardProps,
+  Stats,
+  TaskMapValue,
+  TrackerFile,
+} from "../../types";
 
 const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
   const { user } = useAuth();

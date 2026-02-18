@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
@@ -29,7 +28,6 @@ import { createProject, updateProject } from "../../services/manageService";
 import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 import { UserDropdowns } from "../../../../hooks/useUserDropdowns";
 import { fileToBase64 } from "../../../../lib/fileToBase64";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -40,14 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, FileText, Hash, Download } from "lucide-react";
 
-import type { ProjectType } from "../../types";
-
-interface ProjectFormModalProps {
-  project?: ProjectType | undefined;
-  onClose: () => void;
-  onSuccess: () => void;
-  dropdowns: UserDropdowns;
-}
+import type { ProjectFormModalProps } from "../../types";
 
 interface FormData {
   name: string;

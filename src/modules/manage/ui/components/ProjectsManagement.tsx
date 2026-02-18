@@ -7,8 +7,6 @@ import {
   Trash2,
   Target,
   User,
-  ChevronDown,
-  ChevronUp,
   Layers,
   Download,
 } from "lucide-react";
@@ -27,7 +25,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "../../../../context/AuthContext";
 import { deleteProject, deleteTask } from "../../services/manageService";

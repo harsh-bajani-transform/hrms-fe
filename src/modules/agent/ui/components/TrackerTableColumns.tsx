@@ -3,15 +3,8 @@ import { format } from "date-fns";
 import { Download, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { AgentTrackerRow } from "../../types";
+import type { AgentTrackerRow, CreateTrackerColumnsParams } from "../../types";
 import type { Id } from "../../../dashboard/types";
-
-interface CreateTrackerColumnsParams {
-  handleDelete: (trackerId: Id | undefined) => void;
-  getProjectName: (projectId: Id) => string;
-  getTaskName: (taskId: Id, projectId: Id) => string;
-  isToday: (dateTime: string | null | undefined) => boolean;
-}
 
 export const createTrackerColumns = ({
   handleDelete,
@@ -49,7 +42,10 @@ export const createTrackerColumns = ({
     cell: ({ row }) => (
       <div className="text-gray-700">
         {row.original.task_name ||
-          getTaskName(row.original.task_id || "", row.original.project_id || "")}
+          getTaskName(
+            row.original.task_id || "",
+            row.original.project_id || "",
+          )}
       </div>
     ),
   },

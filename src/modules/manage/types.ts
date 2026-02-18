@@ -1,3 +1,5 @@
+import { UserDropdowns } from "@/hooks/useUserDropdowns";
+
 export interface TaskType {
   task_id?: string | number;
   task_name?: string;
@@ -43,4 +45,53 @@ export interface ManageUser {
   team_id?: string | number;
   is_active?: number;
   [key: string]: unknown;
+}
+
+export interface ProjectFormModalProps {
+  project?: ProjectType | undefined;
+  onClose: () => void;
+  onSuccess: () => void;
+  dropdowns: UserDropdowns;
+}
+
+export interface TaskFormModalProps {
+  task?: TaskType | undefined;
+  onClose: () => void;
+  onSuccess: () => void;
+  dropdowns: {
+    users: Array<{
+      user_id?: string | number;
+      id?: string | number;
+      label: string;
+    }>;
+    projects: Array<{
+      project_id?: string | number;
+      id?: string | number;
+      label: string;
+    }>;
+  };
+}
+
+export interface UserType {
+  user_id?: string | number;
+  user_name?: string;
+  user_email?: string;
+  user_number?: string;
+  user_address?: string;
+  user_tenure?: string;
+  role_id?: string | number;
+  designation_id?: string | number;
+  project_manager_id?: string | number;
+  assistant_manager_id?: string | number;
+  qa_id?: string | number;
+  team_id?: string | number;
+  profile_picture?: string | null;
+  [key: string]: unknown;
+}
+
+export interface UserFormModalProps {
+  user?: UserType | undefined;
+  onClose: () => void;
+  onSuccess: () => void;
+  dropdowns: UserDropdowns;
 }

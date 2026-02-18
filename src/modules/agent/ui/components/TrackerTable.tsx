@@ -50,16 +50,11 @@ import { deleteTracker, fetchTrackers } from "../../services/agentService";
 import { useAuth } from "../../../../context/AuthContext";
 
 import type { Id, TaskRef, TrackerRow } from "../../../dashboard/types";
-import type { AgentProjectWithTasks, AgentTrackerRow } from "../../types";
-
-export interface TrackerTableProps {
-  userId: Id | null | undefined;
-  projects: AgentProjectWithTasks[];
-  onAddEntry?: () => void;
-  isSubmissionWindowOpen?: boolean;
-  nextWindowTime?: string;
-  timeRemaining?: string;
-}
+import type {
+  AgentProjectWithTasks,
+  AgentTrackerRow,
+  TrackerTableProps,
+} from "../../types";
 
 const asRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null;

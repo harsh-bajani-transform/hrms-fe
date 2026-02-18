@@ -31,34 +31,8 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import {
-  Calendar,
-  FileDown,
-  TrendingUp,
-  BarChart3,
-  Clock,
-  CheckCircle2,
-  Filter,
-  Download,
-} from "lucide-react";
-
-type ToggleTab = "daily" | "monthly";
-
-type DailyExportRow = {
-  "Date-Time": string;
-  "Assign Hours": string | number;
-  "Worked Hours": string | number;
-  "QC score": string | number;
-  "Daily Required Hours": string | number;
-};
-
-type MonthlyExportRow = {
-  "Year & Month": string;
-  "Billable Hours Delivered": string | number;
-  "Monthly Goal": string | number;
-  "Pending Target": string | number;
-  "Avg. QC Score": string | number;
-};
+import { Calendar, FileDown, TrendingUp, BarChart3, Clock } from "lucide-react";
+import { DailyExportRow, MonthlyExportRow, ToggleTab } from "../../types";
 
 const AgentBillableReport = () => {
   const { user } = useAuth();

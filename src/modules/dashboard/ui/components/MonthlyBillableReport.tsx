@@ -10,13 +10,6 @@ import {
 import { fetchDropdown } from "../../../../services/dropdownService";
 import { useAuth } from "../../../../context/AuthContext";
 import MonthCard from "./MonthCard";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { TrackerRow } from "../../../dashboard/types";

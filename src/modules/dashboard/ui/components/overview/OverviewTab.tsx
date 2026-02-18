@@ -34,26 +34,10 @@ import type {
   DashboardFilterData,
   TrackerRow,
   ProjectRef,
+  OverviewTabProps,
+  QASummaryRow,
+  QATrackerViewData,
 } from "../../../types";
-
-export interface OverviewTabProps {
-  analytics?: Analytics;
-  hourlyChartData?: HourlyChartDatum[];
-  isAgent: boolean;
-  isQA?: boolean;
-  dateRange?: DateRange;
-}
-
-interface QASummaryRow {
-  month_year?: string;
-  total_billable_hours_month?: number | string;
-  pending_days?: number | string;
-}
-
-interface QATrackerViewData {
-  month_summary?: QASummaryRow[];
-  trackers?: TrackerRow[];
-}
 
 const getTodayDate = (): string => new Date().toISOString().split("T")[0] ?? "";
 
@@ -260,7 +244,9 @@ const OverviewTab = ({
         <div className="space-y-6">
           {/* Filter Section */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Date Range Filter</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Date Range Filter
+            </h3>
             <div className="flex flex-wrap items-end gap-4">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
@@ -339,14 +325,16 @@ const OverviewTab = ({
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             {qaLoading ? (
-              <Loading 
-                title="Loading QA dashboard..." 
+              <Loading
+                title="Loading QA dashboard..."
                 description="Fetching quality assurance metrics and tracker data"
                 fullHeight={false}
               />
             ) : qaTrackers.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-gray-500">No tracker data found for this range.</p>
+                <p className="text-gray-500">
+                  No tracker data found for this range.
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -488,7 +476,7 @@ const OverviewTab = ({
 
       {isAgent ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
+          <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-5">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/20 rounded-lg">
                 <Briefcase className="w-6 h-6 text-white" />

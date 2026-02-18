@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 import {
-  X,
   Upload,
   User,
   UserPlus,
@@ -18,7 +17,6 @@ import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
@@ -35,30 +33,7 @@ import { fileToBase64 } from "../../../../lib/fileToBase64";
 import { addUser, updateUser } from "../../services/manageService";
 import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 import { UserDropdowns } from "../../../../hooks/useUserDropdowns";
-
-interface UserType {
-  user_id?: string | number;
-  user_name?: string;
-  user_email?: string;
-  user_number?: string;
-  user_address?: string;
-  user_tenure?: string;
-  role_id?: string | number;
-  designation_id?: string | number;
-  project_manager_id?: string | number;
-  assistant_manager_id?: string | number;
-  qa_id?: string | number;
-  team_id?: string | number;
-  profile_picture?: string | null;
-  [key: string]: unknown;
-}
-
-interface UserFormModalProps {
-  user?: UserType | undefined;
-  onClose: () => void;
-  onSuccess: () => void;
-  dropdowns: UserDropdowns;
-}
+import { UserFormModalProps } from "../../types";
 
 interface FormData {
   name: string;
@@ -218,7 +193,6 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
               </p>
             </div>
           </div>
-
         </div>
 
         <form

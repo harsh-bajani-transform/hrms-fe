@@ -8,19 +8,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { AgentTabId } from "../../types";
-
-interface TabDef {
-  id: AgentTabId;
-  label: string;
-  icon: LucideIcon;
-  disabled?: boolean;
-}
-
-export interface AgentTabsNavigationProps {
-  activeTab: AgentTabId;
-  setActiveTab: (tab: AgentTabId) => void;
-}
+import { AgentTabId, AgentTabsNavigationProps, TabDef } from "../../types";
 
 const tabs: TabDef[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },

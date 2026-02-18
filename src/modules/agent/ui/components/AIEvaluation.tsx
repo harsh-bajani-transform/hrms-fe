@@ -8,7 +8,6 @@ import {
   AlertCircle,
   Loader2,
   X,
-  PlusCircle,
   Briefcase,
   ListChecks,
   AlertTriangle,
@@ -16,7 +15,6 @@ import {
   ChevronUp,
   Info,
   Lightbulb,
-  FileText,
   Copy,
   BarChart,
 } from "lucide-react";
@@ -40,63 +38,14 @@ import {
 import { useAuth } from "../../../../context/AuthContext";
 import { aiEvaluate, aiDuplicateCheck } from "../../services/agentService";
 import { toast } from "sonner";
-import { AgentProjectWithTasks, AgentTaskOption } from "../../types";
+import {
+  AIEvalResult,
+  AIEvaluationProps,
+  AISuggestion,
+  AgentTaskOption,
+  DuplicateCheckResult,
+} from "../../types";
 import { Badge } from "@/components/ui/badge";
-
-interface AIEvalDetail {
-  location: string;
-  issue: string;
-  impact?: string;
-  fix?: string;
-  affectedRecords?: number;
-}
-
-interface AISuggestion {
-  id: string;
-  row: number;
-  column: string;
-  severity: "high" | "medium" | "low";
-  issue: string;
-  suggestion: string;
-}
-
-interface AIEvalResult {
-  message: string;
-  qualityScore: number;
-  details: {
-    totalRecords: number;
-    issuesFound: number;
-    [key: string]: any;
-  };
-  criticalIssues?: AIEvalDetail[];
-  summary?:
-    | string
-    | {
-        summary: string;
-        suggestions?: AISuggestion[] | string[];
-        criticalIssues?: AIEvalDetail[];
-      };
-  suggestions?: AISuggestion[] | string[];
-}
-
-interface DuplicateRow {
-  row: number;
-  duplicateColumns: string[];
-  duplicateValues: Record<string, any>;
-  data: Record<string, any>;
-}
-
-interface DuplicateCheckResult {
-  hasDuplicates: boolean;
-  duplicateCount: number;
-  duplicates: DuplicateRow[];
-  totalRecords: number;
-  uniqueRecords: number;
-}
-
-interface AIEvaluationProps {
-  projects: AgentProjectWithTasks[];
-}
 
 const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
   const { user } = useAuth();
