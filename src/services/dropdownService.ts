@@ -43,7 +43,6 @@ interface UserDropdowns {
   assistantManagers: any[];
   qas: any[];
   agents: any[];
-  projectCategories: any[];
 }
 
 /**
@@ -60,7 +59,6 @@ export const fetchUserDropdowns = async (): Promise<UserDropdowns> => {
       assistantManagers,
       qas,
       agents,
-      projectCategories,
     ] = await Promise.all([
       fetchDropdown("user roles"),
       fetchDropdown("designations"),
@@ -69,7 +67,6 @@ export const fetchUserDropdowns = async (): Promise<UserDropdowns> => {
       fetchDropdown("assistant manager"),
       fetchDropdown("qa"),
       fetchDropdown("agent"),
-      fetchDropdown("project categories"),
     ]);
 
     const result: UserDropdowns = {
@@ -80,7 +77,6 @@ export const fetchUserDropdowns = async (): Promise<UserDropdowns> => {
       assistantManagers,
       qas,
       agents,
-      projectCategories,
     };
 
     return result;
@@ -94,7 +90,6 @@ export const fetchUserDropdowns = async (): Promise<UserDropdowns> => {
       assistantManagers: [],
       qas: [],
       agents: [],
-      projectCategories: [],
     };
   }
 };

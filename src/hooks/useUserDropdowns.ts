@@ -12,7 +12,6 @@ export interface UserDropdowns {
   assistantManagers: DropdownOption[];
   qas: DropdownOption[];
   agents: DropdownOption[];
-  projectCategories: DropdownOption[];
 }
 
 const emptyDropdowns: UserDropdowns = {
@@ -23,7 +22,6 @@ const emptyDropdowns: UserDropdowns = {
   assistantManagers: [],
   qas: [],
   agents: [],
-  projectCategories: [],
 };
 
 const isUserDropdowns = (value: unknown): value is UserDropdowns => {
@@ -37,8 +35,7 @@ const isUserDropdowns = (value: unknown): value is UserDropdowns => {
     Array.isArray(v.projectManagers) &&
     Array.isArray(v.assistantManagers) &&
     Array.isArray(v.qas) &&
-    Array.isArray(v.agents) &&
-    Array.isArray(v.projectCategories)
+    Array.isArray(v.agents)
   );
 };
 

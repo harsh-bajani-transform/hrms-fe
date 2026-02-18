@@ -27,7 +27,6 @@ export interface ProjectType {
   project_code?: string;
   project_description?: string;
   project_file?: string | null;
-  project_category_id?: string | number;
   [key: string]: unknown;
 }
 
