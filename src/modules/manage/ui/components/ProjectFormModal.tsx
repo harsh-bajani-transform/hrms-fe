@@ -49,6 +49,7 @@ interface FormData {
   qaIds: (string | number)[];
   monthlyTarget: string;
   projectFile: string | null;
+  projectCategoryId: string;
 }
 
 const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
@@ -82,6 +83,7 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
       : [],
     monthlyTarget: project?.monthly_hours_target?.toString() || "",
     projectFile: project?.project_file || null,
+    projectCategoryId: project?.project_category_id?.toString() || "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -102,6 +104,8 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
     if (!formData.monthlyTarget || isNaN(Number(formData.monthlyTarget)))
       newErrors.monthlyTarget =
         "Monthly target is required and must be a number";
+    if (!formData.projectCategoryId)
+      newErrors.projectCategoryId = "Project category is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -132,6 +136,7 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
         qa_id: formData.qaIds,
         monthly_hours_target: Number(formData.monthlyTarget),
         project_file: formData.projectFile,
+        project_category_id: formData.projectCategoryId,
         device_id,
         device_type,
       };
@@ -240,6 +245,36 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                 placeholder="e.g. 100"
                 className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.monthlyTarget ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
+            </div>
+
+            {/* PROJECT CATEGORY */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5" />
+                Project Category
+              </label>
+              <Select
+                value={formData.projectCategoryId}
+                onValueChange={(val) =>
+                  setFormData({ ...formData, projectCategoryId: val })
+                }
+              >
+                <SelectTrigger
+                  className={`h-11 w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.projectCategoryId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                >
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dropdowns.projectCategories?.map((c) => (
+                    <SelectItem
+                      key={c.project_category_id?.toString()}
+                      value={c.project_category_id?.toString() || ""}
+                    >
+                      {String(c.label)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* DESCRIPTION */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Users, Search } from "lucide-react";
+import { Users, Search, UserLock } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -164,12 +164,17 @@ const UserTrackingView: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-0 py-0 space-y-6">
       <div className="mb-2">
-        <h2 className="text-2xl font-bold text-indigo-700 tracking-tight">
-          User Permissions
-        </h2>
-        <p className="text-slate-500 text-sm">
-          Manage create permissions for users and projects.
-        </p>
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-50 rounded-lg">
+            <UserLock className="w-7 h-7 text-blue-700" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold">User Permissions</h2>
+            <p className="text-slate-500 text-sm">
+              Manage create permissions for users and projects.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">

@@ -1,17 +1,18 @@
-import axios from 'axios'
-import { useState, useCallback } from 'react'
-import { fetchUserDropdowns } from '../services/dropdownService'
+import axios from "axios";
+import { useState, useCallback } from "react";
+import { fetchUserDropdowns } from "../services/dropdownService";
 
-export type DropdownOption = Record<string, unknown>
+export type DropdownOption = Record<string, unknown>;
 
 export interface UserDropdowns {
-  roles: DropdownOption[]
-  designations: DropdownOption[]
-  teams: DropdownOption[]
-  projectManagers: DropdownOption[]
-  assistantManagers: DropdownOption[]
-  qas: DropdownOption[]
-  agents: DropdownOption[]
+  roles: DropdownOption[];
+  designations: DropdownOption[];
+  teams: DropdownOption[];
+  projectManagers: DropdownOption[];
+  assistantManagers: DropdownOption[];
+  qas: DropdownOption[];
+  agents: DropdownOption[];
+  projectCategories: DropdownOption[];
 }
 
 const emptyDropdowns: UserDropdowns = {
@@ -22,11 +23,12 @@ const emptyDropdowns: UserDropdowns = {
   assistantManagers: [],
   qas: [],
   agents: [],
-}
+  projectCategories: [],
+};
 
 const isUserDropdowns = (value: unknown): value is UserDropdowns => {
-  if (!value || typeof value !== 'object') return false
-  const v = value as Record<string, unknown>
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
 
   return (
     Array.isArray(v.roles) &&
@@ -35,49 +37,50 @@ const isUserDropdowns = (value: unknown): value is UserDropdowns => {
     Array.isArray(v.projectManagers) &&
     Array.isArray(v.assistantManagers) &&
     Array.isArray(v.qas) &&
-    Array.isArray(v.agents)
-  )
-}
+    Array.isArray(v.agents) &&
+    Array.isArray(v.projectCategories)
+  );
+};
 
 export const useUserDropdowns = () => {
-  const [dropdowns, setDropdowns] = useState<UserDropdowns>(emptyDropdowns)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<unknown | null>(null)
+  const [dropdowns, setDropdowns] = useState<UserDropdowns>(emptyDropdowns);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<unknown | null>(null);
 
   const loadDropdowns = useCallback(async (): Promise<UserDropdowns | null> => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
-      const data: unknown = await fetchUserDropdowns()
+      const data: unknown = await fetchUserDropdowns();
 
       if (!isUserDropdowns(data)) {
-        console.warn('⚠️ Invalid dropdown response:', data)
-        return null
+        console.warn("⚠️ Invalid dropdown response:", data);
+        return null;
       }
 
-      setDropdowns(data)
-      return data
+      setDropdowns(data);
+      return data;
     } catch (err: unknown) {
-      console.error('❌ Dropdown fetch failed:', err)
+      console.error("❌ Dropdown fetch failed:", err);
 
       if (axios.isAxiosError(err)) {
-        console.error('Error details:', err.response?.data ?? err.message)
+        console.error("Error details:", err.response?.data ?? err.message);
       } else if (err instanceof Error) {
-        console.error('Error details:', err.message)
+        console.error("Error details:", err.message);
       }
 
-      setError(err)
-      return null
+      setError(err);
+      return null;
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   return {
     dropdowns,
     loading,
     error,
     loadDropdowns,
-  }
-}
+  };
+};
