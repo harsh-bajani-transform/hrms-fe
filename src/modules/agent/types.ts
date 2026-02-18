@@ -40,6 +40,7 @@ export type AgentTabId =
   | "overview"
   | "billable_report"
   | "projects"
+  | "ai_evaluation"
   | "adherence"
   | "incentives";
 

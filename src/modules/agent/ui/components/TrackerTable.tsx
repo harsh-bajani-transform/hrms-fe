@@ -12,7 +12,10 @@ import {
   FileText,
   PlusCircle,
   Briefcase,
+  Clock,
+  AlertCircle,
 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { format } from "date-fns";
@@ -53,6 +56,9 @@ export interface TrackerTableProps {
   userId: Id | null | undefined;
   projects: AgentProjectWithTasks[];
   onAddEntry?: () => void;
+  isSubmissionWindowOpen?: boolean;
+  nextWindowTime?: string;
+  timeRemaining?: string;
 }
 
 const asRecord = (v: unknown): v is Record<string, unknown> =>
@@ -82,6 +88,50 @@ const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
   const [endDate, setEndDate] = useState<string>(
     dayjs().endOf("month").format("YYYY-MM-DD"),
   );
+
+  // Submission window states
+  const [isSubmissionWindowOpen, setIsSubmissionWindowOpen] = useState(false);
+  const [nextWindowTime, setNextWindowTime] = useState("");
+  const [timeRemaining, setTimeRemaining] = useState("");
+
+  // Submission window logic
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+
+      const isOpen = minutes < 15;
+      setIsSubmissionWindowOpen(isOpen);
+
+      if (isOpen) {
+        const remainingMinutes = 14 - minutes;
+        const remainingSeconds = 59 - seconds;
+        setTimeRemaining(`${remainingMinutes}m ${remainingSeconds}s`);
+      } else {
+        const remainingMinutes = 59 - minutes;
+        const remainingSeconds = 59 - seconds;
+        setTimeRemaining(`${remainingMinutes}m ${remainingSeconds}s`);
+      }
+
+      const nextWindow = new Date(now);
+      if (!isOpen) {
+        nextWindow.setHours(now.getHours() + 1);
+      }
+      nextWindow.setMinutes(0);
+      setNextWindowTime(
+        nextWindow.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+      );
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Get tasks for selected project
   const availableTasks = useMemo<TaskRef[]>(() => {
@@ -421,25 +471,71 @@ const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {onAddEntry && (
-              <Button
-                onClick={onAddEntry}
-                className="h-11 px-6 bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-100"
-              >
-                <PlusCircle className="w-4 h-4 mr-2" />
-                Add Entry
-              </Button>
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+            {/* Conditional alert next to button */}
+            {!isSubmissionWindowOpen && (
+              <div className="animate-in fade-in slide-in-from-right-2 duration-500">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50 border border-rose-100 rounded-full shadow-sm shrink-0">
+                  <div className="flex items-center justify-center w-5 h-5 bg-rose-500 rounded-full shrink-0">
+                    <AlertCircle className="h-3 w-3 text-white" />
+                  </div>
+                  <div className="flex flex-col leading-none">
+                    <span className="text-[9px] font-black uppercase tracking-tighter text-rose-600">
+                      Window Closed
+                    </span>
+                    <span className="text-[11px] font-bold text-rose-900 whitespace-nowrap">
+                      Opens at {nextWindowTime}{" "}
+                      <span className="text-[9px] font-normal opacity-60">
+                        ({timeRemaining})
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </div>
             )}
-            <Button
-              onClick={handleExportToExcel}
-              disabled={loading || trackers.length === 0}
-              variant="outline"
-              className="h-11 px-6 border-gray-300 bg-green-50 text-green-700 hover:bg-green-100"
-            >
-              <FileDown className="w-4 h-4 mr-2" />
-              Export Excel
-            </Button>
+            {isSubmissionWindowOpen && (
+              <div className="animate-in fade-in slide-in-from-right-2 duration-500">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full shadow-sm shrink-0">
+                  <div className="flex items-center justify-center w-5 h-5 bg-emerald-500 rounded-full shrink-0">
+                    <Clock className="h-3 w-3 text-white" />
+                  </div>
+                  <div className="flex flex-col leading-none">
+                    <span className="text-[9px] font-black uppercase tracking-tighter text-emerald-600">
+                      Window Open
+                    </span>
+                    <span className="text-[11px] font-bold text-emerald-900 whitespace-nowrap">
+                      Ends in {timeRemaining}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3">
+              {onAddEntry && (
+                <Button
+                  onClick={onAddEntry}
+                  disabled={!isSubmissionWindowOpen}
+                  className={`h-11 px-6 shadow-md transition-all ${
+                    isSubmissionWindowOpen
+                      ? "bg-blue-600 hover:bg-blue-700 shadow-blue-100"
+                      : "bg-slate-200 text-slate-400 shadow-none cursor-not-allowed border-slate-300"
+                  }`}
+                >
+                  <PlusCircle className="w-4 h-4 mr-2" />
+                  Add Entry
+                </Button>
+              )}
+              <Button
+                onClick={handleExportToExcel}
+                disabled={loading || trackers.length === 0}
+                variant="outline"
+                className="h-11 px-6 border-gray-300 bg-green-50 text-green-700 hover:bg-green-100"
+              >
+                <FileDown className="w-4 h-4 mr-2" />
+                Export Excel
+              </Button>
+            </div>
           </div>
         </div>
       </div>

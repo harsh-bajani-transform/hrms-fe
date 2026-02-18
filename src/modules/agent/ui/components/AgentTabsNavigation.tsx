@@ -4,6 +4,7 @@ import {
   DollarSign,
   FileWarning,
   LayoutGrid,
+  Sparkles,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -18,7 +19,7 @@ interface TabDef {
 
 export interface AgentTabsNavigationProps {
   activeTab: AgentTabId;
-  setActiveTab: Dispatch<SetStateAction<AgentTabId>>;
+  setActiveTab: (tab: AgentTabId) => void;
 }
 
 const tabs: TabDef[] = [
@@ -73,7 +74,9 @@ const AgentTabsNavigation = ({
               title={tab.label}
               type="button"
             >
-              <Icon className={`w-4 h-4 ${isActive ? "text-white" : tab.disabled ? "text-gray-400" : "text-gray-600"}`} />
+              <Icon
+                className={`w-4 h-4 ${isActive ? "text-white" : tab.disabled ? "text-gray-400" : "text-gray-600"}`}
+              />
               <span className="hidden sm:inline">{tab.label}</span>
             </button>
           );

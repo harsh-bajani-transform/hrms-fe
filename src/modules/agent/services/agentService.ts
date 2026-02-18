@@ -1,4 +1,4 @@
-import api from "../../../services/api";
+import api, { qcApi } from "../../../services/api";
 import type { ApiEnvelope, ProjectRef, TaskRef } from "../../dashboard/types";
 
 export const fetchDropdowns = async (payload: Record<string, unknown>) => {
@@ -40,5 +40,38 @@ export const fetchTrackers = async (payload: Record<string, unknown>) => {
 
 export const deleteTracker = async (payload: Record<string, unknown>) => {
   const res = await api.post("/tracker/delete", payload);
+  return res.data;
+};
+
+/**
+ * AI Evaluation for tracker file
+ */
+export const aiEvaluate = async (formData: FormData) => {
+  const res = await qcApi.post("/ai/evaluate", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 180000, // 3 minutes
+  });
+  return res.data;
+};
+
+/**
+ * AI Duplicate check for tracker file
+ */
+export const aiDuplicateCheck = async (formData: FormData) => {
+  const res = await qcApi.post("/ai/duplicate-check", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 180000, // 3 minutes
+  });
+  return res.data;
+};
+
+/**
+ * Process excel file to create hashes
+ */
+export const processExcel = async (formData: FormData) => {
+  const res = await api.post("/tracker/process-excel", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 300000, // 5 minutes
+  });
   return res.data;
 };

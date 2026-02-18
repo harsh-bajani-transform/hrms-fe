@@ -6,6 +6,7 @@ import {
   Menu,
   PenTool,
   Settings,
+  Sparkles,
   Users,
   X,
   type LucideIcon,
@@ -36,7 +37,8 @@ type HeaderView =
   | "ADMIN_PANEL"
   | "ENTRY"
   | "TRACKER_REPORT"
-  | "AGENT_LIST";
+  | "AGENT_LIST"
+  | "AI_EVALUATION";
 type TargetPath = "/dashboard" | "/admin" | "/entry" | "/agent";
 
 type LooseSearch = {
@@ -118,6 +120,9 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
     } else if (view === "AGENT_LIST") {
       targetPath = "/dashboard";
       dashboardSearch = { view: "agent-list" };
+    } else if (view === "AI_EVALUATION") {
+      targetPath = "/agent";
+      dashboardSearch = { tab: "ai_evaluation" };
     }
 
     // Assistant Manager: Manage lives under /dashboard?tab=manage
@@ -143,14 +148,10 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
       }
     }
 
-    if (targetPath === "/dashboard") {
-      navigate({
-        to: "/dashboard",
-        ...(dashboardSearch ? { search: dashboardSearch } : {}),
-      });
-    } else {
-      navigate({ to: targetPath });
-    }
+    navigate({
+      to: targetPath as any,
+      ...(dashboardSearch ? { search: dashboardSearch as any } : {}),
+    });
 
     setIsMobileMenuOpen(false);
   };
@@ -182,6 +183,11 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
               icon: LayoutDashboard,
             },
             { view: "ENTRY", label: "Tracker", icon: PenTool },
+            {
+              view: "AI_EVALUATION",
+              label: "AI Evaluation",
+              icon: Sparkles,
+            },
             // { view: ViewState.SCHEDULER, label: "Roster", icon: CalendarClock },
           ];
 
@@ -300,6 +306,11 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
           icon: LayoutDashboard,
         },
         { view: "ENTRY", label: "Tracker", icon: PenTool },
+        {
+          view: "AI_EVALUATION",
+          label: "AI Evaluation",
+          icon: Sparkles,
+        },
       ];
     }
 
@@ -346,7 +357,11 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
         pathname === "/admin" ||
         (pathname === "/dashboard" && search.tab === "manage");
     } else if (item.view === "ENTRY") {
-      isActive = pathname === "/entry" || pathname === "/agent";
+      isActive =
+        (pathname === "/entry" || pathname === "/agent") &&
+        search.tab !== "ai_evaluation";
+    } else if (item.view === "AI_EVALUATION") {
+      isActive = pathname === "/agent" && search.tab === "ai_evaluation";
     }
 
     return (
@@ -396,7 +411,11 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
         pathname === "/admin" ||
         (pathname === "/dashboard" && search.tab === "manage");
     } else if (item.view === "ENTRY") {
-      isActive = pathname === "/entry" || pathname === "/agent";
+      isActive =
+        (pathname === "/entry" || pathname === "/agent") &&
+        search.tab !== "ai_evaluation";
+    } else if (item.view === "AI_EVALUATION") {
+      isActive = pathname === "/agent" && search.tab === "ai_evaluation";
     }
 
     return (
