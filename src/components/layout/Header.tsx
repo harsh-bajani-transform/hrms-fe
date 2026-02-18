@@ -7,10 +7,20 @@ import {
   PenTool,
   Settings,
   Sparkles,
+  User as UserIcon,
   Users,
   X,
   type LucideIcon,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Link,
   useLocation,
@@ -149,8 +159,8 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
     }
 
     navigate({
-      to: targetPath as any,
-      ...(dashboardSearch ? { search: dashboardSearch as any } : {}),
+      to: targetPath,
+      ...(dashboardSearch ? { search: dashboardSearch } : {}),
     });
 
     setIsMobileMenuOpen(false);
@@ -466,26 +476,69 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
               <div className="hidden lg:flex items-center space-x-2">
                 {navItems.map(renderNavButton)}
               </div>
-              <div className="flex items-center gap-2 border-l border-slate-200 pl-4 min-w-[180px]">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center text-lg font-bold text-white">
-                    {getInitials()}
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (typeof handleLogout === "function") {
-                        handleLogout();
-                      } else if (window && window.sessionStorage) {
-                        window.sessionStorage.clear();
-                        window.location.assign("/");
-                      }
-                    }}
-                    className="p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors cursor-pointer"
-                    title="Logout"
+              <div className="flex items-center gap-2 border-l border-slate-200 pl-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-3 p-1 rounded-full hover:bg-slate-100 transition-colors cursor-pointer outline-none">
+                      <Avatar className="w-10 h-10 border-2 border-slate-100">
+                        <AvatarImage
+                          src={
+                            currentUser?.avatar_url ||
+                            currentUser?.profile_picture
+                          }
+                        />
+                        <AvatarFallback className="bg-blue-700 text-white font-bold">
+                          {getInitials()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="w-56"
+                    align="center"
+                    forceMount
                   >
-                    <LogOut className="w-5 h-5" />
-                  </button>
-                </div>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col items-center justify-center space-y-1 py-1">
+                        <p className="text-sm font-bold leading-none">
+                          {currentUser?.name ||
+                            currentUser?.user_name ||
+                            "User"}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground mt-1">
+                          {String(
+                            currentUser?.user_email ||
+                              currentUser?.email ||
+                              currentUser?.username ||
+                              "no-email@tfs.com",
+                          )}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-slate-500 cursor-default flex items-center justify-center py-2">
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      <span className="font-medium text-xs">
+                        {getRoleLabel() || "No Role"}
+                      </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        if (typeof handleLogout === "function") {
+                          handleLogout();
+                        } else if (window && window.sessionStorage) {
+                          window.sessionStorage.clear();
+                          window.location.assign("/");
+                        }
+                      }}
+                      className="text-red-600 focus:text-red-600 cursor-pointer flex items-center justify-center py-2 font-semibold"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </div>

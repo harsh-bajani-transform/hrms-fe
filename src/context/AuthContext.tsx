@@ -34,7 +34,10 @@ export interface User {
   user_creation_permission?: PermissionFlag;
   project_creation_permission?: PermissionFlag;
 
-  // Backend can send additional fields (permission flags, etc.)
+  user_email?: string;
+  email?: string;
+  avatar_url?: string;
+  profile_picture?: string;
   [key: string]: unknown;
 }
 
