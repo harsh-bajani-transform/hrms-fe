@@ -322,7 +322,7 @@ const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
                       </div>
                       <Button
                         onClick={() => handleQCForm(file)}
-                        className="bg-blue-600 hover:bg-blue-700 h-9 px-4"
+                        className="bg-blue-600 hover:bg-blue-700  px-4"
                       >
                         <FileText className="w-4 h-4" />
                         QC Form

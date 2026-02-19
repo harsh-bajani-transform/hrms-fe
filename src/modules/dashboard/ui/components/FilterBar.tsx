@@ -78,7 +78,7 @@ const FilterBar = ({
               Task Type
             </label>
             <Select value={selectedTask} onValueChange={setSelectedTask}>
-              <SelectTrigger className="h-11 w-full lg:w-50 bg-white border-gray-300">
+              <SelectTrigger className=" w-full lg:w-50 bg-white border-gray-300">
                 <Clock className="w-4 h-4 mr-2 text-gray-500" />
                 <SelectValue placeholder="All Tasks" />
               </SelectTrigger>
@@ -101,7 +101,7 @@ const FilterBar = ({
               Comparison
             </label>
             <Select value={comparisonMode} onValueChange={setComparisonMode}>
-              <SelectTrigger className="h-11 w-full lg:w-50 bg-white border-gray-300">
+              <SelectTrigger className=" w-full lg:w-50 bg-white border-gray-300">
                 <Activity className="w-4 h-4 mr-2 text-gray-500" />
                 <SelectValue placeholder="Select Period" />
               </SelectTrigger>

@@ -255,7 +255,7 @@ export const ProjectAccordionItem: React.FC<ProjectAccordionItemProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-9 w-9 p-0 rounded-full bg-slate-50 hover:bg-blue-50 text-blue-600"
+                    className=" w-9 p-0 rounded-full bg-slate-50 hover:bg-blue-50 text-blue-600"
                     asChild
                   >
                     <a
@@ -283,7 +283,7 @@ export const ProjectAccordionItem: React.FC<ProjectAccordionItemProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-9 w-9 p-0 rounded-full bg-slate-50 hover:bg-blue-50 text-blue-600"
+                      className=" w-9 p-0 rounded-full bg-slate-50 hover:bg-blue-50 text-blue-600"
                       onClick={(e) => {
                         e.stopPropagation();
                         const raw = docxHtml[project.id] || "";
@@ -303,7 +303,7 @@ export const ProjectAccordionItem: React.FC<ProjectAccordionItemProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-9 w-9 p-0 rounded-full bg-slate-50 hover:bg-blue-50 text-blue-600"
+                      className=" w-9 p-0 rounded-full bg-slate-50 hover:bg-blue-50 text-blue-600"
                       asChild
                     >
                       <a href={project.instructionFile} download>
@@ -354,7 +354,7 @@ export const ProjectAccordionItem: React.FC<ProjectAccordionItemProps> = ({
                   <div className="flex items-center gap-3">
                     <Input
                       type="date"
-                      className="h-9 w-40 font-semibold text-slate-700 border-slate-200"
+                      className=" w-40 font-semibold text-slate-700 border-slate-200"
                       value={dateFilter}
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => e.stopPropagation()}
@@ -363,7 +363,7 @@ export const ProjectAccordionItem: React.FC<ProjectAccordionItemProps> = ({
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-9 border-indigo-200 text-blue-600 hover:bg-blue-50 font-bold"
+                      className=" border-indigo-200 text-blue-600 hover:bg-blue-50 font-bold"
                       onClick={(e) => {
                         e.stopPropagation();
                         onAddDummyTask(project.id);

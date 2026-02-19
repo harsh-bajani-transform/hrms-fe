@@ -186,7 +186,7 @@ const AssistantManagerDashboard: FC = () => {
                 From:
               </label>
               <Input
-                className="h-9 w-auto border-gray-300"
+                className=" w-auto border-gray-300"
                 type="date"
                 value={dateRange.start}
                 onChange={(e) => handleDateRangeChange("start", e.target.value)}
@@ -199,7 +199,7 @@ const AssistantManagerDashboard: FC = () => {
                 To:
               </label>
               <Input
-                className="h-9 w-auto border-gray-300"
+                className=" w-auto border-gray-300"
                 type="date"
                 value={dateRange.end}
                 onChange={(e) => handleDateRangeChange("end", e.target.value)}
@@ -211,7 +211,7 @@ const AssistantManagerDashboard: FC = () => {
               type="button"
               variant="outline"
               onClick={() => setDateRange({ start: "", end: "" })}
-              className="h-9 px-6 border-gray-300"
+              className=" px-6 border-gray-300"
             >
               Clear Filters
             </Button>

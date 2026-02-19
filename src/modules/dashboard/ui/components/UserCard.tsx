@@ -347,7 +347,7 @@ export default function UserCard({
             <div className="hidden md:flex items-center gap-2">
               <Input
                 type="date"
-                className="w-36 h-9 text-xs"
+                className="w-36  text-xs"
                 value={start}
                 onChange={(e) => setStart(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
@@ -355,7 +355,7 @@ export default function UserCard({
               <span className="text-gray-400">to</span>
               <Input
                 type="date"
-                className="w-36 h-9 text-xs"
+                className="w-36  text-xs"
                 value={end}
                 onChange={(e) => setEnd(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
@@ -375,7 +375,7 @@ export default function UserCard({
             </div>
 
             <Button
-              className="bg-green-600 hover:bg-green-700 h-9 px-4 text-white font-semibold shadow-sm"
+              className="bg-green-600 hover:bg-green-700  px-4 text-white font-semibold shadow-sm"
               onClick={handleExportClick}
             >
               Export

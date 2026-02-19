@@ -1,11 +1,5 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import {
-  Edit2,
-  Trash2,
-  CheckCircle,
-  XCircle,
-  Shield,
-} from "lucide-react";
+import { Edit2, Trash2, CheckCircle, XCircle, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -26,7 +20,7 @@ export const createColumns = (
   isDeleting: string | number | null,
   handleToggleStatus: (user: UserType) => Promise<void>,
   handleDelete: (user: UserType) => Promise<void>,
-  setEditingUser: (user: UserType) => void
+  setEditingUser: (user: UserType) => void,
 ): ColumnDef<UserType, unknown>[] => [
   columnHelper.display({
     id: "user",
@@ -36,7 +30,7 @@ export const createColumns = (
       return (
         <div className="px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-semibold text-xs border border-blue-200 uppercase">
+            <div className="w-9  rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-semibold text-xs border border-blue-200 uppercase">
               {u.user_name?.substring(0, 2)}
             </div>
             <div>

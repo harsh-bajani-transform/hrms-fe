@@ -251,7 +251,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="e.g. John Doe"
-                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
               {errors.name && (
                 <p className="text-xs text-red-500 font-medium mt-1 px-1">
@@ -275,7 +275,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                 }
                 disabled={isEditMode}
                 placeholder="john@example.com"
-                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.email ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.email ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
               {errors.email && (
                 <p className="text-xs text-red-500 font-medium mt-1 px-1">
@@ -297,7 +297,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   setFormData({ ...formData, phone: e.target.value })
                 }
                 placeholder="+91 98765 43210"
-                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.phone ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.phone ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
             </div>
 
@@ -314,7 +314,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                 }
               >
                 <SelectTrigger
-                  className={`h-11 w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.roleId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={` w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.roleId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 >
                   <SelectValue placeholder="Select Role" />
                 </SelectTrigger>
@@ -343,7 +343,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                     setFormData({ ...formData, projectManagerId: val })
                   }
                 >
-                  <SelectTrigger className="h-11 w-full bg-gray-50 border-gray-200">
+                  <SelectTrigger className=" w-full bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Select PM" />
                   </SelectTrigger>
                   <SelectContent>
@@ -372,7 +372,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                     setFormData({ ...formData, assistantManagerId: val })
                   }
                 >
-                  <SelectTrigger className="h-11 w-full bg-gray-50 border-gray-200">
+                  <SelectTrigger className=" w-full bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Select AM" />
                   </SelectTrigger>
                   <SelectContent>
@@ -401,7 +401,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                     setFormData({ ...formData, qaId: val })
                   }
                 >
-                  <SelectTrigger className="h-11 w-full bg-gray-50 border-gray-200">
+                  <SelectTrigger className=" w-full bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Select QA" />
                   </SelectTrigger>
                   <SelectContent>
@@ -431,7 +431,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                 }
               >
                 <SelectTrigger
-                  className={`h-11 w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.designationId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={` w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.designationId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 >
                   <SelectValue placeholder="Select Designation" />
                 </SelectTrigger>
@@ -460,7 +460,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   setFormData({ ...formData, teamId: val })
                 }
               >
-                <SelectTrigger className="h-11 w-full bg-gray-50 border-gray-200">
+                <SelectTrigger className=" w-full bg-gray-50 border-gray-200">
                   <SelectValue placeholder="Select Department" />
                 </SelectTrigger>
                 <SelectContent>
@@ -495,7 +495,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                       ? "Leave blank to keep current"
                       : "Minimum 6 characters"
                   }
-                  className={`h-11 pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.password ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={` pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.password ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 />
                 <button
                   type="button"
@@ -526,7 +526,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   setFormData({ ...formData, tenure: e.target.value })
                 }
                 placeholder="e.g. 1.5"
-                className="h-11 bg-gray-50 border-gray-200"
+                className=" bg-gray-50 border-gray-200"
               />
             </div>
 

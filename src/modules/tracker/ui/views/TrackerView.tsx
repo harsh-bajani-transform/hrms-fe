@@ -297,7 +297,7 @@ const TrackerView: React.FC = () => {
                     Project Name <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className="w-full h-11 bg-white border border-gray-300 rounded-lg px-4 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full  bg-white border border-gray-300 rounded-lg px-4 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={selectedProject}
                     onChange={(e) => setSelectedProject(e.target.value)}
                     onBlur={() => handleBlur("selectedProject")}
@@ -324,7 +324,7 @@ const TrackerView: React.FC = () => {
                     Task Name <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className="w-full h-11 bg-white border border-gray-300 rounded-lg px-4 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full  bg-white border border-gray-300 rounded-lg px-4 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                     value={selectedTask}
                     onChange={(e) => setSelectedTask(e.target.value)}
                     onBlur={() => handleBlur("selectedTask")}
@@ -350,7 +350,7 @@ const TrackerView: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Base Target <span className="text-red-500">*</span>
                   </label>
-                  <div className="flex items-center h-11 bg-blue-50 border border-blue-200 rounded-lg px-4 text-blue-700 font-semibold gap-2">
+                  <div className="flex items-center  bg-blue-50 border border-blue-200 rounded-lg px-4 text-blue-700 font-semibold gap-2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -387,7 +387,7 @@ const TrackerView: React.FC = () => {
                   <input
                     type="number"
                     min="0"
-                    className="w-full h-11 bg-white border border-gray-300 rounded-lg px-4 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full  bg-white border border-gray-300 rounded-lg px-4 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={productionTarget}
                     onChange={(e) => setProductionTarget(e.target.value)}
                     onBlur={() => handleBlur("productionTarget")}
@@ -450,14 +450,14 @@ const TrackerView: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleViewAll}
-                  className="h-11 px-8 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold text-sm transition-colors"
+                  className=" px-8 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold text-sm transition-colors"
                 >
                   View All Entries
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="h-11 px-8 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className=" px-8 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? "Submitting..." : "Submit Entry"}
                 </button>

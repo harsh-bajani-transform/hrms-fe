@@ -1,9 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
-import {
-  Search,
-  UserPlus,
-  User,
-} from "lucide-react";
+import { Search, UserPlus, User } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,48 +37,61 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
     );
   }, [users, searchTerm]);
 
-  const handleDelete = useCallback(async (userToDelete: UserType) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete ${userToDelete.user_name}?`,
+  const handleDelete = useCallback(
+    async (userToDelete: UserType) => {
+      if (
+        !window.confirm(
+          `Are you sure you want to delete ${userToDelete.user_name}?`,
+        )
       )
-    )
-      return;
-    try {
-      setIsDeleting(userToDelete.user_id);
-      await deleteUser(userToDelete.user_id, {
-        device_id: "web",
-        device_type: "Laptop",
-      });
-      toast.success("User deleted successfully");
-      onRefresh();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unknown error");
-    } finally {
-      setIsDeleting(null);
-    }
-  }, [onRefresh]);
+        return;
+      try {
+        setIsDeleting(userToDelete.user_id);
+        await deleteUser(userToDelete.user_id, {
+          device_id: "web",
+          device_type: "Laptop",
+        });
+        toast.success("User deleted successfully");
+        onRefresh();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Unknown error");
+      } finally {
+        setIsDeleting(null);
+      }
+    },
+    [onRefresh],
+  );
 
-  const handleToggleStatus = useCallback(async (userToToggle: UserType) => {
-    const newStatus = userToToggle.is_active === 1 ? 0 : 1;
-    try {
-      await updateUser({
-        user_id: userToToggle.user_id,
-        is_active: newStatus,
-      });
-      toast.success(
-        `User ${newStatus === 1 ? "activated" : "deactivated"} successfully`,
-      );
-      onRefresh();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unknown error");
-    }
-  }, [onRefresh]);
+  const handleToggleStatus = useCallback(
+    async (userToToggle: UserType) => {
+      const newStatus = userToToggle.is_active === 1 ? 0 : 1;
+      try {
+        await updateUser({
+          user_id: userToToggle.user_id,
+          is_active: newStatus,
+        });
+        toast.success(
+          `User ${newStatus === 1 ? "activated" : "deactivated"} successfully`,
+        );
+        onRefresh();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Unknown error");
+      }
+    },
+    [onRefresh],
+  );
 
   // Create columns with dependencies
   const columns = useMemo(
-    () => createColumns(canManageUsers, isDeleting, handleToggleStatus, handleDelete, setEditingUser),
-    [canManageUsers, isDeleting, handleToggleStatus, handleDelete]
+    () =>
+      createColumns(
+        canManageUsers,
+        isDeleting,
+        handleToggleStatus,
+        handleDelete,
+        setEditingUser,
+      ),
+    [canManageUsers, isDeleting, handleToggleStatus, handleDelete],
   );
 
   return (
@@ -94,7 +103,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
           <Input
             type="text"
             placeholder="Search users by name or email..."
-            className="w-full pl-10 h-11"
+            className="w-full pl-10 "
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -102,7 +111,7 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
         {canManageUsers && (
           <Button
             onClick={() => setShowAddModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 h-11 px-4"
+            className="bg-blue-600 hover:bg-blue-700  px-4"
           >
             <UserPlus className="w-4 h-4" />
             Add New User

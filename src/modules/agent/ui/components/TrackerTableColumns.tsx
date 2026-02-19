@@ -94,7 +94,7 @@ export const createTrackerColumns = ({
           <Button
             variant="ghost"
             size="sm"
-            className="h-9 w-9 p-0 rounded-lg hover:bg-blue-100 text-blue-600"
+            className=" w-9 p-0 rounded-lg hover:bg-blue-100 text-blue-600"
             asChild
           >
             <a

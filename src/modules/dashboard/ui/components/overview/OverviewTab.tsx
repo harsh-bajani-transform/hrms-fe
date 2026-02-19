@@ -256,7 +256,7 @@ const OverviewTab = ({
                   type="date"
                   value={qaStartDate}
                   onChange={(e) => setQaStartDate(e.target.value)}
-                  className="h-11 border-gray-300"
+                  className=" border-gray-300"
                 />
               </div>
               <div className="space-y-2">
@@ -267,7 +267,7 @@ const OverviewTab = ({
                   type="date"
                   value={qaEndDate}
                   onChange={(e) => setQaEndDate(e.target.value)}
-                  className="h-11 border-gray-300"
+                  className=" border-gray-300"
                 />
               </div>
               <Button
@@ -276,7 +276,7 @@ const OverviewTab = ({
                   setQaEndDate(getTodayDate());
                 }}
                 variant="outline"
-                className="h-11 px-6"
+                className=" px-6"
                 type="button"
               >
                 Reset to Today

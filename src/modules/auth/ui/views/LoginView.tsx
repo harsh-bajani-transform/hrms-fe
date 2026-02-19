@@ -248,7 +248,7 @@ const LoginView = () => {
                     value={username}
                     onChange={(e) => handleUsernameChange(e.target.value)}
                     placeholder="you@company.com"
-                    className={`h-11 pl-10 pr-4 text-base ${
+                    className={` pl-10 pr-4 text-base ${
                       usernameError || backendUsernameError
                         ? "border-red-500 focus-visible:ring-red-500"
                         : ""
@@ -280,7 +280,7 @@ const LoginView = () => {
                     value={password}
                     onChange={(e) => handlePasswordChange(e.target.value)}
                     placeholder="Enter your password"
-                    className={`h-11 pl-10 pr-4 text-base ${
+                    className={` pl-10 pr-4 text-base ${
                       passwordError || backendPasswordError
                         ? "border-red-500 focus-visible:ring-red-500"
                         : ""
@@ -300,7 +300,7 @@ const LoginView = () => {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium text-base shadow-sm mt-6"
+                className="w-full  bg-blue-600 hover:bg-blue-700 text-white font-medium text-base shadow-sm mt-6"
               >
                 {isLoading ? (
                   <>

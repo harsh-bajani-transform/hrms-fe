@@ -468,7 +468,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                       !selectedProject ||
                       !selectedTask
                     }
-                    className={`w-full h-11 rounded font-bold transition-all ${
+                    className={`w-full  rounded font-bold transition-all ${
                       aiEvalSuccess === true
                         ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                         : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-100"
@@ -539,7 +539,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                       isDuplicateChecking ||
                       duplicateCheckSuccess === true
                     }
-                    className={`w-full h-11 rounded font-bold transition-all ${
+                    className={`w-full  rounded font-bold transition-all ${
                       duplicateCheckSuccess === true
                         ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                         : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-100"

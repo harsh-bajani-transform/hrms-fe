@@ -193,7 +193,7 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="e.g. HRMS Migration"
-                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
               {errors.name && (
                 <p className="text-xs text-red-500 font-medium mt-1 px-1">
@@ -215,7 +215,7 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                   setFormData({ ...formData, projectCode: e.target.value })
                 }
                 placeholder="e.g. PRJ001"
-                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.projectCode ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.projectCode ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
               {errors.projectCode && (
                 <p className="text-xs text-red-500 font-medium mt-1 px-1">
@@ -238,7 +238,7 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                   setFormData({ ...formData, monthlyTarget: e.target.value })
                 }
                 placeholder="e.g. 100"
-                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.monthlyTarget ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.monthlyTarget ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
             </div>
 
@@ -272,7 +272,7 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                 }
               >
                 <SelectTrigger
-                  className={`h-11 w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.ownerId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={` w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.ownerId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 >
                   <SelectValue placeholder="Select PM" />
                 </SelectTrigger>
@@ -299,7 +299,7 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    className={`h-11 w-full bg-gray-50 border-gray-200 flex justify-between px-3 font-normal font-sans ${errors.apmIds ? "border-red-500" : ""}`}
+                    className={` w-full bg-gray-50 border-gray-200 flex justify-between px-3 font-normal font-sans ${errors.apmIds ? "border-red-500" : ""}`}
                   >
                     <span className="truncate">
                       {formData.apmIds.length > 0
@@ -373,7 +373,7 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    className={`h-11 w-full bg-gray-50 border-gray-200 flex justify-between px-3 font-normal font-sans ${errors.qaIds ? "border-red-500" : ""}`}
+                    className={` w-full bg-gray-50 border-gray-200 flex justify-between px-3 font-normal font-sans ${errors.qaIds ? "border-red-500" : ""}`}
                   >
                     <span className="truncate">
                       {formData.qaIds.length > 0

@@ -167,7 +167,7 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
           <Input
             type="text"
             placeholder="Search projects..."
-            className="w-full pl-10 h-11"
+            className="w-full pl-10 "
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -175,7 +175,7 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
         {canManageProjects && (
           <Button
             onClick={() => setShowAddModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 h-11 px-4"
+            className="bg-blue-600 hover:bg-blue-700  px-4"
           >
             <Plus className="w-4 h-4" />
             Add New Project

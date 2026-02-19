@@ -155,7 +155,7 @@ export function createMonthlyColumns(
           <Button
             variant="outline"
             size="sm"
-            className="h-11 border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-semibold gap-2 rounded-lg"
+            className=" border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-semibold gap-2 rounded-lg"
             onClick={() =>
               info.row.original.month_year &&
               handleExportMonthDailyExcel(info.row.original.month_year)

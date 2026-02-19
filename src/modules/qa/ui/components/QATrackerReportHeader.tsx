@@ -25,7 +25,7 @@ const QATrackerReportHeader: React.FC<QATrackerReportHeaderProps> = ({
         <Button
           onClick={onExport}
           disabled={isLoading || !hasData}
-          className="h-11 px-6 bg-green-600 hover:bg-green-700 text-white font-medium shadow-sm transition-colors"
+          className=" px-6 bg-green-600 hover:bg-green-700 text-white font-medium shadow-sm transition-colors"
         >
           <FileDown className="w-4 h-4 mr-2" />
           Export to Excel

@@ -1,22 +1,22 @@
-import { type Table } from "@tanstack/react-table"
+import { type Table } from "@tanstack/react-table";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "./button"
+import { Button } from "./button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./select"
+} from "./select";
 
 interface DataTablePaginationProps<TData> {
-  table: Table<TData>
+  table: Table<TData>;
 }
 
 export function DataTablePagination<TData>({
@@ -34,10 +34,10 @@ export function DataTablePagination<TData>({
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
-              table.setPageSize(Number(value))
+              table.setPageSize(Number(value));
             }}
           >
-            <SelectTrigger className="h-11 w-20 bg-white border-gray-200">
+            <SelectTrigger className="w-20 bg-white border-gray-200">
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
@@ -57,7 +57,7 @@ export function DataTablePagination<TData>({
           <Button
             variant="outline"
             size="icon"
-            className="hidden h-11 w-11 lg:flex border-gray-200 hover:bg-gray-50"
+            className="hidden w-11 lg:flex border-gray-200 hover:bg-gray-50"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
@@ -67,7 +67,7 @@ export function DataTablePagination<TData>({
           <Button
             variant="outline"
             size="icon"
-            className="h-11 w-11 border-gray-200 hover:bg-gray-50"
+            className=" w-11 border-gray-200 hover:bg-gray-50"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
@@ -77,7 +77,7 @@ export function DataTablePagination<TData>({
           <Button
             variant="outline"
             size="icon"
-            className="h-11 w-11 border-gray-200 hover:bg-gray-50"
+            className=" w-11 border-gray-200 hover:bg-gray-50"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
@@ -87,7 +87,7 @@ export function DataTablePagination<TData>({
           <Button
             variant="outline"
             size="icon"
-            className="hidden h-11 w-11 lg:flex border-gray-200 hover:bg-gray-50"
+            className="hidden  w-11 lg:flex border-gray-200 hover:bg-gray-50"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >
@@ -97,5 +97,5 @@ export function DataTablePagination<TData>({
         </div>
       </div>
     </div>
-  )
+  );
 }

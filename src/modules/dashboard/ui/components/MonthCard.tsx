@@ -144,7 +144,7 @@ export default function MonthCard({
             {teamOptions.length > 0 && (
               <div className="hidden md:block w-48">
                 <Select value={teamFilter} onValueChange={setTeamFilter}>
-                  <SelectTrigger className="h-9 w-full bg-white border-gray-200 text-xs shadow-sm">
+                  <SelectTrigger className=" w-full bg-white border-gray-200 text-xs shadow-sm">
                     <SelectValue placeholder="Filter by Team" />
                   </SelectTrigger>
                   <SelectContent>
@@ -162,7 +162,7 @@ export default function MonthCard({
             <Button
               variant="default"
               size="sm"
-              className="bg-green-600 hover:bg-green-700 h-9 px-4 text-white font-semibold shadow-sm"
+              className="bg-green-600 hover:bg-green-700  px-4 text-white font-semibold shadow-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onExportMonth?.(month, filteredUsers);

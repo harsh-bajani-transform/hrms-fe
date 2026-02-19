@@ -383,7 +383,7 @@ const AgentBillableReport = () => {
         <div className="flex bg-white p-2 rounded w-fit border border-gray-200">
           <Button
             variant={activeToggle === "daily" ? "default" : "ghost"}
-            className={`px-4 h-11 rounded-lg font-semibold transition-all duration-300 ${activeToggle === "daily" ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"}`}
+            className={`px-4  rounded-lg font-semibold transition-all duration-300 ${activeToggle === "daily" ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"}`}
             onClick={() => setActiveToggle("daily")}
           >
             <Clock className="w-4 h-4 mr-2" />
@@ -391,7 +391,7 @@ const AgentBillableReport = () => {
           </Button>
           <Button
             variant={activeToggle === "monthly" ? "default" : "ghost"}
-            className={`px-4 h-11 rounded-lg font-semibold transition-all duration-300 ${activeToggle === "monthly" ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"}`}
+            className={`px-4  rounded-lg font-semibold transition-all duration-300 ${activeToggle === "monthly" ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"}`}
             onClick={() => setActiveToggle("monthly")}
           >
             <BarChart3 className="w-4 h-4 mr-2" />

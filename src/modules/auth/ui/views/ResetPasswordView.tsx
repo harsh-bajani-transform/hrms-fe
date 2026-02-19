@@ -248,7 +248,7 @@ const ResetPasswordView = () => {
 
               <Button
                 onClick={handleBackToLogin}
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                className="w-full  bg-blue-600 hover:bg-blue-700 text-white font-medium"
               >
                 Back to Login
               </Button>
@@ -350,7 +350,7 @@ const ResetPasswordView = () => {
                     value={newPassword}
                     onChange={(e) => handleNewPasswordChange(e.target.value)}
                     placeholder="Enter new password"
-                    className={`h-11 pl-10 pr-10 text-base ${
+                    className={` pl-10 pr-10 text-base ${
                       newPasswordError
                         ? "border-red-500 focus-visible:ring-red-500"
                         : ""
@@ -397,7 +397,7 @@ const ResetPasswordView = () => {
                       handleConfirmPasswordChange(e.target.value)
                     }
                     placeholder="Confirm new password"
-                    className={`h-11 pl-10 pr-10 text-base ${
+                    className={` pl-10 pr-10 text-base ${
                       confirmPasswordError
                         ? "border-red-500 focus-visible:ring-red-500"
                         : ""
@@ -430,7 +430,7 @@ const ResetPasswordView = () => {
               <Button
                 type="submit"
                 disabled={isResetting}
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium text-base shadow-sm mt-6"
+                className="w-full  bg-blue-600 hover:bg-blue-700 text-white font-medium text-base shadow-sm mt-6"
               >
                 {isResetting ? (
                   <>

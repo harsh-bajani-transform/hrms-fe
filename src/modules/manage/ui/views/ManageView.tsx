@@ -175,7 +175,7 @@ const ManageView: React.FC = () => {
         <div className="flex flex-wrap gap-2">
           <Button
             variant={activeTab === "users" ? "default" : "ghost"}
-            className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
+            className={`flex items-center gap-2 px-6  rounded-lg font-medium text-sm transition-all ${
               activeTab === "users"
                 ? "bg-blue-600 text-white shadow-sm"
                 : "text-gray-700 hover:bg-gray-100"
@@ -186,7 +186,7 @@ const ManageView: React.FC = () => {
           </Button>
           <Button
             variant={activeTab === "projects" ? "default" : "ghost"}
-            className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
+            className={`flex items-center gap-2 px-6  rounded-lg font-medium text-sm transition-all ${
               activeTab === "projects"
                 ? "bg-blue-600 text-white shadow-sm"
                 : "text-gray-700 hover:bg-gray-100"
@@ -197,7 +197,7 @@ const ManageView: React.FC = () => {
           </Button>
           <Button
             variant={activeTab === "tracking" ? "default" : "ghost"}
-            className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
+            className={`flex items-center gap-2 px-6  rounded-lg font-medium text-sm transition-all ${
               activeTab === "tracking"
                 ? "bg-blue-600 text-white shadow-sm"
                 : "text-gray-700 hover:bg-gray-100"
@@ -208,7 +208,7 @@ const ManageView: React.FC = () => {
           </Button>
           <Button
             variant={activeTab === "monthly_target" ? "default" : "ghost"}
-            className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
+            className={`flex items-center gap-2 px-6  rounded-lg font-medium text-sm transition-all ${
               activeTab === "monthly_target"
                 ? "bg-blue-600 text-white shadow-sm"
                 : "text-gray-700 hover:bg-gray-100"

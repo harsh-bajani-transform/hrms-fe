@@ -202,7 +202,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="e.g. Data Analysis"
-                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
             </div>
 
@@ -219,7 +219,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 }
               >
                 <SelectTrigger
-                  className={`h-11 w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.projectId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={` w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.projectId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 >
                   <SelectValue placeholder="Select Project" />
                 </SelectTrigger>
@@ -249,7 +249,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 }
               >
                 <SelectTrigger
-                  className={`h-11 w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.assignedTo ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={` w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.assignedTo ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 >
                   <SelectValue placeholder="Select User" />
                 </SelectTrigger>
@@ -279,7 +279,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, startDate: e.target.value })
                 }
-                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.startDate ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.startDate ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
             </div>
 
@@ -296,7 +296,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, endDate: e.target.value })
                 }
-                className={`h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.endDate ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.endDate ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
             </div>
 

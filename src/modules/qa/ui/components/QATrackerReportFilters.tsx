@@ -44,7 +44,7 @@ const QATrackerReportFilters: React.FC<QATrackerReportFiltersProps> = ({
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full  px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
 
@@ -57,7 +57,7 @@ const QATrackerReportFilters: React.FC<QATrackerReportFiltersProps> = ({
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full  px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
 
@@ -70,7 +70,7 @@ const QATrackerReportFilters: React.FC<QATrackerReportFiltersProps> = ({
             value={selectedAgent}
             onChange={(e) => setSelectedAgent(e.target.value)}
             disabled={isLoadingAgents}
-            className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
+            className="w-full  px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
           >
             <option value="">All Agents</option>
             {assignedAgents.map((agent) => (

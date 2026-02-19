@@ -489,7 +489,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
                   }}
                 >
                   <SelectTrigger
-                    className={`rounded h-11 bg-slate-50 w-full ${touched.selectedProject && errors.selectedProject ? "border-destructive ring-destructive/20" : "border-slate-200"}`}
+                    className={`rounded  bg-slate-50 w-full ${touched.selectedProject && errors.selectedProject ? "border-destructive ring-destructive/20" : "border-slate-200"}`}
                   >
                     <SelectValue placeholder="Select Project" />
                   </SelectTrigger>
@@ -526,7 +526,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
                   disabled={!selectedProject}
                 >
                   <SelectTrigger
-                    className={`rounded w-full h-11 bg-slate-50 ${touched.selectedTask && errors.selectedTask ? "border-destructive ring-destructive/20" : "border-slate-200"}`}
+                    className={`rounded w-full  bg-slate-50 ${touched.selectedTask && errors.selectedTask ? "border-destructive ring-destructive/20" : "border-slate-200"}`}
                   >
                     <SelectValue placeholder="Select Task" />
                   </SelectTrigger>
@@ -560,7 +560,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
                     value={
                       baseTargetLoading ? "Calculating..." : baseTarget || "-"
                     }
-                    className="rounded h-11 bg-slate-100 border-slate-200 text-slate-600 font-medium cursor-not-allowed"
+                    className="rounded  bg-slate-100 border-slate-200 text-slate-600 font-medium cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -575,7 +575,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
                   type="number"
                   min="0"
                   placeholder="Enter value"
-                  className={`rounded h-11 bg-slate-50 ${touched.productionTarget && errors.productionTarget ? "border-destructive ring-destructive/20" : "border-slate-200"}`}
+                  className={`rounded  bg-slate-50 ${touched.productionTarget && errors.productionTarget ? "border-destructive ring-destructive/20" : "border-slate-200"}`}
                   value={productionTarget}
                   onChange={(e) => setProductionTarget(e.target.value)}
                   onBlur={() => handleBlur("productionTarget")}
@@ -672,7 +672,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
                         !selectedTask
                       }
                       variant={aiEvalSuccess ? "outline" : "default"}
-                      className="w-full h-9 text-xs font-bold shadow-sm"
+                      className="w-full  text-xs font-bold shadow-sm"
                     >
                       {isAIEvaluating ? (
                         <Loader2 className="w-3 h-3 animate-spin mr-2" />
@@ -778,7 +778,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
                       variant={
                         duplicateCheckSuccess === true ? "outline" : "default"
                       }
-                      className="w-full h-9 text-xs font-bold shadow-sm"
+                      className="w-full  text-xs font-bold shadow-sm"
                     >
                       {isDuplicateChecking ? (
                         <Loader2 className="w-3 h-3 animate-spin mr-2" />
@@ -871,14 +871,14 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
               variant="outline"
               onClick={onClose}
               disabled={submitting}
-              className="flex-1 h-11 rounded border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold"
+              className="flex-1  rounded border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={submitting || !canSubmit}
-              className={`flex-1 h-11 rounded font-semibold shadow-lg transition-all ${
+              className={`flex-1  rounded font-semibold shadow-lg transition-all ${
                 canSubmit
                   ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200"
                   : "bg-slate-200 text-slate-400 shadow-none cursor-not-allowed"

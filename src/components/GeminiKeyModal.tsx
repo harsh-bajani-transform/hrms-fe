@@ -190,7 +190,7 @@ const GeminiKeyModal: React.FC<GeminiKeyModalProps> = ({ isOpen, onClose }) => {
                     placeholder="AIza..."
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
-                    className="h-11 pr-10 font-mono text-sm bg-slate-50 border-slate-200 rounded-lg"
+                    className="pr-10 font-mono text-sm bg-slate-50 border-slate-200 rounded-lg"
                     onKeyDown={(e) => e.key === "Enter" && handleSave()}
                   />
                   <button

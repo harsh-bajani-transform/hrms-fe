@@ -462,7 +462,7 @@ const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
                 <Button
                   onClick={onAddEntry}
                   disabled={!isSubmissionWindowOpen}
-                  className={`h-11 px-6 shadow-md transition-all ${
+                  className={` px-6 shadow-md transition-all ${
                     isSubmissionWindowOpen
                       ? "bg-blue-600 hover:bg-blue-700 shadow-blue-100"
                       : "bg-slate-200 text-slate-400 shadow-none cursor-not-allowed border-slate-300"
@@ -476,7 +476,7 @@ const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
                 onClick={handleExportToExcel}
                 disabled={loading || trackers.length === 0}
                 variant="outline"
-                className="h-11 px-6 border-gray-300 bg-green-50 text-green-700 hover:bg-green-100"
+                className=" px-6 border-gray-300 bg-green-50 text-green-700 hover:bg-green-100"
               >
                 <FileDown className="w-4 h-4 mr-2" />
                 Export Excel
@@ -617,7 +617,7 @@ const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
           <Button
             onClick={handleClearFilters}
             variant="outline"
-            className="h-11 px-6 border-gray-300"
+            className=" px-6 border-gray-300"
           >
             Clear All Filters
           </Button>
