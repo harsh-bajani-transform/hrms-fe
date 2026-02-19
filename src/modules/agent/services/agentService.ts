@@ -8,8 +8,6 @@ export const fetchDropdowns = async (payload: Record<string, unknown>) => {
 
 /**
  * Fetch projects with tasks assigned to the logged-in agent
- * @param userId - The logged-in user's ID
- * @returns Projects with nested tasks
  */
 export const fetchAgentProjects = async (
   userId: number | string,
@@ -30,12 +28,12 @@ export const addTracker = async (
         ? { "Content-Type": "multipart/form-data" }
         : {},
   });
-  return res; // Changed to return the full response object to match existing logic checking res.data.status
+  return res;
 };
 
 export const fetchTrackers = async (payload: Record<string, unknown>) => {
   const res = await api.post("/tracker/view", payload);
-  return res; // Returning full response to match existing logic
+  return res;
 };
 
 export const deleteTracker = async (payload: Record<string, unknown>) => {
@@ -44,7 +42,8 @@ export const deleteTracker = async (payload: Record<string, unknown>) => {
 };
 
 /**
- * AI Evaluation for tracker file
+ * AI Evaluation for tracker file.
+ * @param formData - Must include `gemini_api_key` field alongside file/user_id/project_id/task_id
  */
 export const aiEvaluate = async (formData: FormData) => {
   const res = await qcApi.post("/ai/evaluate", formData, {
@@ -55,7 +54,8 @@ export const aiEvaluate = async (formData: FormData) => {
 };
 
 /**
- * AI Duplicate check for tracker file
+ * AI Duplicate check for tracker file.
+ * @param formData - Must include `gemini_api_key` field
  */
 export const aiDuplicateCheck = async (formData: FormData) => {
   const res = await qcApi.post("/ai/duplicate-check", formData, {
@@ -73,5 +73,37 @@ export const processExcel = async (formData: FormData) => {
     headers: { "Content-Type": "multipart/form-data" },
     timeout: 300000, // 5 minutes
   });
+  return res.data;
+};
+
+// ─── Gemini Key Management ───────────────────────────────────
+
+/**
+ * Save the user's Gemini API key to the DB (encrypted)
+ */
+export const saveGeminiApiKey = async (
+  userId: string | number,
+  apiKey: string,
+) => {
+  const res = await qcApi.post("/gemini-key/save", {
+    user_id: userId,
+    gemini_api_key: apiKey,
+  });
+  return res.data;
+};
+
+/**
+ * Retrieve the user's Gemini API key from the DB (decrypted)
+ */
+export const fetchGeminiApiKey = async (userId: string | number) => {
+  const res = await qcApi.post("/gemini-key/get", { user_id: userId });
+  return res.data;
+};
+
+/**
+ * Remove the user's Gemini API key from the DB
+ */
+export const deleteGeminiApiKey = async (userId: string | number) => {
+  const res = await qcApi.post("/gemini-key/delete", { user_id: userId });
   return res.data;
 };

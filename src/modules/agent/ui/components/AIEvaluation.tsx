@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Sparkles,
   Upload,
@@ -79,6 +79,21 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
     "eval",
   );
 
+  // Gemini API key — read from sessionStorage and react to storage events
+  const [geminiApiKey, setGeminiApiKey] = useState<string>(
+    () => sessionStorage.getItem("gemini_api_key") || "",
+  );
+  useEffect(() => {
+    const sync = () =>
+      setGeminiApiKey(sessionStorage.getItem("gemini_api_key") || "");
+    window.addEventListener("storage", sync);
+    window.addEventListener("gemini-key-updated", sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("gemini-key-updated", sync);
+    };
+  }, []);
+
   const tasks = React.useMemo(() => {
     if (!selectedProject) return [];
     const project = projects.find(
@@ -117,6 +132,13 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
       toast.error("Please select project, task and upload a file");
       return;
     }
+    if (!geminiApiKey) {
+      toast.error(
+        "Gemini API key required — open your profile dropdown and go to 'Gemini AI Key' to add it.",
+        { duration: 5000 },
+      );
+      return;
+    }
 
     setIsAIEvaluating(true);
     setAiEvalProgress(0);
@@ -131,6 +153,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
       formData.append("user_id", String(user?.user_id || ""));
       formData.append("project_id", selectedProject);
       formData.append("task_id", selectedTask);
+      if (geminiApiKey) formData.append("gemini_api_key", geminiApiKey);
 
       progressInterval = setInterval(() => {
         setAiEvalProgress((prev) => (prev >= 90 ? 90 : prev + 5));
@@ -189,6 +212,13 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
 
   const handleDuplicateCheck = async () => {
     if (!file || !aiEvalSuccess) return;
+    if (!geminiApiKey) {
+      toast.error(
+        "Gemini API key required — open your profile dropdown and go to 'Gemini AI Key' to add it.",
+        { duration: 5000 },
+      );
+      return;
+    }
 
     setIsDuplicateChecking(true);
     setDuplicateCheckProgress(0);
@@ -378,145 +408,166 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
 
           {/* Action Steps */}
           {file && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-100 animate-in slide-in-from-top-4 duration-500">
-              {/* AI Evaluation Card */}
-              <div
-                className={`p-6 rounded-2xl border transition-all duration-300 ${
-                  aiEvalSuccess === true
-                    ? "bg-emerald-50 border-emerald-100"
-                    : "bg-white border-slate-200"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        aiEvalSuccess === true
-                          ? "bg-emerald-100 text-emerald-600"
-                          : "bg-blue-50 text-blue-600"
-                      }`}
-                    >
-                      <Brain className="w-5 h-5" />
-                    </div>
-                    <span className="font-bold text-slate-800">
-                      1. AI Evaluation
-                    </span>
+            <div className="space-y-6 pt-6 border-t border-slate-100">
+              {/* API Key Warning */}
+              {!geminiApiKey && (
+                <div className="flex items-start gap-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                    <AlertTriangle className="w-5 h-5 text-amber-600" />
                   </div>
-                  {aiEvalSuccess === true && (
-                    <CheckCircle className="w-5 h-5 text-emerald-500" />
-                  )}
-                  {aiEvalSuccess === false && (
-                    <AlertCircle className="w-5 h-5 text-rose-500" />
-                  )}
+                  <div className="text-sm text-amber-800">
+                    <p className="font-bold text-base mb-1">
+                      Gemini API Key Required
+                    </p>
+                    <p className="font-medium opacity-90">
+                      To use AI Evaluation, you must provide your own Gemini API
+                      key. Click on your avatar in the top right, select{" "}
+                      <strong>Gemini AI Key</strong>, and enter your key.
+                    </p>
+                  </div>
                 </div>
+              )}
 
-                <Button
-                  onClick={handleAIEvaluation}
-                  disabled={
-                    isAIEvaluating ||
-                    isDuplicateChecking ||
-                    !selectedProject ||
-                    !selectedTask
-                  }
-                  className={`w-full h-11 rounded-xl font-bold transition-all ${
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-4 duration-500">
+                {/* AI Evaluation Card */}
+                <div
+                  className={`p-6 rounded-2xl border transition-all duration-300 ${
                     aiEvalSuccess === true
-                      ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                      : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-100"
+                      ? "bg-emerald-50 border-emerald-100"
+                      : "bg-white border-slate-200"
                   }`}
                 >
-                  {isAIEvaluating ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  ) : (
-                    <Sparkles className="w-4 h-4 mr-2" />
-                  )}
-                  {aiEvalSuccess === true
-                    ? "Re-evaluate Results"
-                    : "Run AI Evaluation"}
-                </Button>
-
-                {isAIEvaluating && (
-                  <Progress
-                    value={aiEvalProgress}
-                    className="h-2 rounded-full mt-4 bg-slate-100"
-                  />
-                )}
-                {aiEvalError && (
-                  <p className="text-xs text-rose-500 font-bold mt-3 pl-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {aiEvalError}
-                  </p>
-                )}
-              </div>
-
-              {/* Duplicate Check Card */}
-              <div
-                className={`p-6 rounded-2xl border transition-all duration-300 ${
-                  duplicateCheckSuccess === true
-                    ? "bg-emerald-50 border-emerald-100"
-                    : aiEvalSuccess === true
-                      ? "bg-white border-slate-200"
-                      : "bg-slate-50 border-slate-100 opacity-60"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        duplicateCheckSuccess === true
-                          ? "bg-emerald-100 text-emerald-600"
-                          : "bg-blue-50 text-blue-600"
-                      }`}
-                    >
-                      <FileSearch className="w-5 h-5" />
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                          aiEvalSuccess === true
+                            ? "bg-emerald-100 text-emerald-600"
+                            : "bg-blue-50 text-blue-600"
+                        }`}
+                      >
+                        <Brain className="w-5 h-5" />
+                      </div>
+                      <span className="font-bold text-slate-800">
+                        1. AI Evaluation
+                      </span>
                     </div>
-                    <span className="font-bold text-slate-800">
-                      2. Duplicate Check
-                    </span>
+                    {aiEvalSuccess === true && (
+                      <CheckCircle className="w-5 h-5 text-emerald-500" />
+                    )}
+                    {aiEvalSuccess === false && (
+                      <AlertCircle className="w-5 h-5 text-rose-500" />
+                    )}
                   </div>
-                  {duplicateCheckSuccess === true && (
-                    <CheckCircle className="w-5 h-5 text-emerald-500" />
+
+                  <Button
+                    onClick={handleAIEvaluation}
+                    disabled={
+                      isAIEvaluating ||
+                      isDuplicateChecking ||
+                      !selectedProject ||
+                      !selectedTask
+                    }
+                    className={`w-full h-11 rounded-xl font-bold transition-all ${
+                      aiEvalSuccess === true
+                        ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                        : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-100"
+                    }`}
+                  >
+                    {isAIEvaluating ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <Sparkles className="w-4 h-4 mr-2" />
+                    )}
+                    {aiEvalSuccess === true
+                      ? "Re-evaluate Results"
+                      : "Run AI Evaluation"}
+                  </Button>
+
+                  {isAIEvaluating && (
+                    <Progress
+                      value={aiEvalProgress}
+                      className="h-2 rounded-full mt-4 bg-slate-100"
+                    />
                   )}
-                  {duplicateCheckSuccess === false && (
-                    <AlertCircle className="w-5 h-5 text-rose-500" />
+                  {aiEvalError && (
+                    <p className="text-xs text-rose-500 font-bold mt-3 pl-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {aiEvalError}
+                    </p>
                   )}
                 </div>
 
-                <Button
-                  onClick={handleDuplicateCheck}
-                  disabled={
-                    !aiEvalSuccess ||
-                    isAIEvaluating ||
-                    isDuplicateChecking ||
+                {/* Duplicate Check Card */}
+                <div
+                  className={`p-6 rounded-2xl border transition-all duration-300 ${
                     duplicateCheckSuccess === true
-                  }
-                  className={`w-full h-11 rounded-xl font-bold transition-all ${
-                    duplicateCheckSuccess === true
-                      ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                      : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-100"
+                      ? "bg-emerald-50 border-emerald-100"
+                      : aiEvalSuccess === true
+                        ? "bg-white border-slate-200"
+                        : "bg-slate-50 border-slate-100 opacity-60"
                   }`}
                 >
-                  {isDuplicateChecking ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  ) : (
-                    <FileSearch className="w-4 h-4 mr-2" />
-                  )}
-                  {duplicateCheckSuccess === true
-                    ? "Verification Passed"
-                    : "Check for Duplicates"}
-                </Button>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                          duplicateCheckSuccess === true
+                            ? "bg-emerald-100 text-emerald-600"
+                            : "bg-blue-50 text-blue-600"
+                        }`}
+                      >
+                        <FileSearch className="w-5 h-5" />
+                      </div>
+                      <span className="font-bold text-slate-800">
+                        2. Duplicate Check
+                      </span>
+                    </div>
+                    {duplicateCheckSuccess === true && (
+                      <CheckCircle className="w-5 h-5 text-emerald-500" />
+                    )}
+                    {duplicateCheckSuccess === false && (
+                      <AlertCircle className="w-5 h-5 text-rose-500" />
+                    )}
+                  </div>
 
-                {isDuplicateChecking && (
-                  <Progress
-                    value={duplicateCheckProgress}
-                    className="h-2 rounded-full mt-4 bg-slate-100"
-                  />
-                )}
-                {duplicateCheckError && (
-                  <p className="text-xs text-rose-500 font-bold mt-3 pl-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {duplicateCheckError}
-                  </p>
-                )}
+                  <Button
+                    onClick={handleDuplicateCheck}
+                    disabled={
+                      !aiEvalSuccess ||
+                      isAIEvaluating ||
+                      isDuplicateChecking ||
+                      duplicateCheckSuccess === true
+                    }
+                    className={`w-full h-11 rounded-xl font-bold transition-all ${
+                      duplicateCheckSuccess === true
+                        ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                        : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-100"
+                    }`}
+                  >
+                    {isDuplicateChecking ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <FileSearch className="w-4 h-4 mr-2" />
+                    )}
+                    {duplicateCheckSuccess === true
+                      ? "Verification Passed"
+                      : "Check for Duplicates"}
+                  </Button>
+
+                  {isDuplicateChecking && (
+                    <Progress
+                      value={duplicateCheckProgress}
+                      className="h-2 rounded-full mt-4 bg-slate-100"
+                    />
+                  )}
+                  {duplicateCheckError && (
+                    <p className="text-xs text-rose-500 font-bold mt-3 pl-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {duplicateCheckError}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           )}

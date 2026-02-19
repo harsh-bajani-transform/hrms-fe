@@ -104,6 +104,23 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
     "eval" | "dup" | "none"
   >("none");
 
+  // Gemini API key (loaded from sessionStorage; set via Header > Gemini AI Key)
+  const [geminiApiKey, setGeminiApiKey] = useState<string>(
+    () => sessionStorage.getItem("gemini_api_key") || "",
+  );
+
+  // Re-check key whenever sessionStorage changes (e.g. user just saved it)
+  useEffect(() => {
+    const handleStorage = () =>
+      setGeminiApiKey(sessionStorage.getItem("gemini_api_key") || "");
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("gemini-key-updated", handleStorage);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("gemini-key-updated", handleStorage);
+    };
+  }, []);
+
   const [entryDate] = useState(() => {
     const d = new Date();
     return d.toISOString().slice(0, 10);
@@ -214,6 +231,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
       formData.append("user_id", String(user?.user_id || ""));
       formData.append("project_id", selectedProject);
       formData.append("task_id", selectedTask);
+      if (geminiApiKey) formData.append("gemini_api_key", geminiApiKey);
 
       // Simulate progress
       progressInterval = setInterval(() => {
@@ -286,6 +304,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
       formData.append("user_id", String(user?.user_id || ""));
       formData.append("project_id", selectedProject);
       formData.append("task_id", selectedTask);
+      if (geminiApiKey) formData.append("gemini_api_key", geminiApiKey);
 
       progressInterval = setInterval(() => {
         setDuplicateCheckProgress((prev) => (prev >= 90 ? 90 : prev + 5));
@@ -612,6 +631,23 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
                   Validation Steps Required
                 </h4>
 
+                {/* API Key Warning */}
+                {!geminiApiKey && (
+                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="text-xs text-amber-700">
+                      <p className="font-semibold mb-0.5">
+                        Gemini API Key Required
+                      </p>
+                      <p>
+                        Go to your{" "}
+                        <strong>profile dropdown → Gemini AI Key</strong> to
+                        configure your key before running AI evaluation.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Step 1: AI Evaluation */}
                   <div className="p-4 rounded border border-slate-200 bg-slate-50 space-y-3">
@@ -629,6 +665,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
                       type="button"
                       onClick={handleAIEvaluation}
                       disabled={
+                        !geminiApiKey ||
                         isAIEvaluating ||
                         isDuplicateChecking ||
                         !selectedProject ||

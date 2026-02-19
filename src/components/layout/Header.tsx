@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   FileText,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -12,6 +13,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import GeminiKeyModal from "../GeminiKeyModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -90,6 +92,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
   };
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [geminiKeyOpen, setGeminiKeyOpen] = useState(false);
   const navigate = useNavigate();
 
   // Get role label from role_id or role string
@@ -524,6 +527,14 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
+                      onClick={() => setGeminiKeyOpen(true)}
+                      className="cursor-pointer flex items-center justify-center py-2 text-purple-700 focus:text-purple-700 focus:bg-purple-50"
+                    >
+                      <KeyRound className="mr-2 h-4 w-4" />
+                      <span className="font-medium text-xs">Gemini AI Key</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
                       onClick={() => {
                         if (typeof handleLogout === "function") {
                           handleLogout();
@@ -595,6 +606,10 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
           </button>
         </div>
       </div>
+      <GeminiKeyModal
+        isOpen={geminiKeyOpen}
+        onClose={() => setGeminiKeyOpen(false)}
+      />
     </>
   );
 };

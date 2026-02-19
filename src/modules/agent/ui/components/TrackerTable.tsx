@@ -47,14 +47,9 @@ import { DataTable } from "@/components/ui/data-table";
 import { createTrackerColumns } from "./TrackerTableColumns";
 
 import { deleteTracker, fetchTrackers } from "../../services/agentService";
-import { useAuth } from "../../../../context/AuthContext";
 
-import type { Id, TaskRef, TrackerRow } from "../../../dashboard/types";
-import type {
-  AgentProjectWithTasks,
-  AgentTrackerRow,
-  TrackerTableProps,
-} from "../../types";
+import type { Id, TaskRef } from "../../../dashboard/types";
+import type { AgentTrackerRow, TrackerTableProps } from "../../types";
 
 const asRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null;
@@ -66,8 +61,6 @@ const getTodayDate = (): string => {
 };
 
 const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
-  const { user } = useAuth();
-
   const [trackers, setTrackers] = useState<AgentTrackerRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<Id | null>(null);
@@ -259,48 +252,6 @@ const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
     getProjectName,
     getTaskName,
   ]);
-
-  // Debug: Log tracker data for different roles
-  useEffect(() => {
-    if (!trackers || !user) return;
-    const roleRaw = user?.role_name || user?.user_role || user?.role || "";
-    const role = String(roleRaw).toLowerCase();
-    const userId = user?.user_id || user?.id || "-";
-    // Debug: log user object and role values
-    console.log("[TrackerTable Debug] user:", user);
-    console.log(
-      "[TrackerTable Debug] roleRaw:",
-      roleRaw,
-      "| role:",
-      role,
-      "| userId:",
-      userId,
-    );
-    if (role.includes("qa")) {
-      console.log(
-        `[QA Agent][user_id: ${userId}][role: ${roleRaw}] TrackerTable data:`,
-        trackers,
-      );
-    } else if (role.includes("assistant manager") || role.includes("asst")) {
-      console.log(
-        `[Assistant Manager][user_id: ${userId}][role: ${roleRaw}] TrackerTable data:`,
-        trackers,
-      );
-    } else if (
-      (role.includes("agent") && !role.includes("qa")) ||
-      Number(user?.role_id) === 6
-    ) {
-      console.log(
-        `[Agent][user_id: ${userId}][role: ${roleRaw}] TrackerTable data:`,
-        trackers,
-      );
-    } else {
-      console.log(
-        `[Other Role][user_id: ${userId}][role: ${roleRaw}] TrackerTable data:`,
-        trackers,
-      );
-    }
-  }, [trackers, user]);
 
   const handleDelete = useCallback((tracker_id: Id | undefined) => {
     if (tracker_id != null) {
