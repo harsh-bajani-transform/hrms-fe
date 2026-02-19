@@ -175,7 +175,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-400/20 rounded-full -ml-12 -mb-12 blur-xl" />
 
           <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30 shadow-inner">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded flex items-center justify-center border border-white/30 shadow-inner">
               {isEditMode ? (
                 <User className="w-6 h-6 text-white" />
               ) : (
@@ -544,7 +544,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                 }
                 rows={2}
                 placeholder="Full address details..."
-                className="w-full p-4 text-sm rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-400 focus:ring-blue-100 transition-all outline-hidden resize-none"
+                className="w-full p-4 text-sm rounded bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-400 focus:ring-blue-100 transition-all outline-hidden resize-none"
               />
             </div>
           </div>
@@ -561,7 +561,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 rounded-xl transition-all border-none"
+              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 rounded transition-all border-none"
             >
               {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

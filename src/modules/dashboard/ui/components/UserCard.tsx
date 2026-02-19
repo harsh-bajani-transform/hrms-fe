@@ -13,10 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
+import { Edit } from "lucide-react";
+import DailyEntryFormModal from "@/components/common/DailyEntryFormModal";
 
 interface UserCardUser {
   user_id?: Id;
   user_name?: string;
+  name?: string;
   team_name?: string;
 }
 
@@ -25,6 +28,7 @@ export interface UserCardProps {
   dailyData: TrackerRow[];
   defaultCollapsed: boolean;
   onExport?: () => void;
+  onRefresh?: () => void;
   formatDateTime?: (dt?: string) => string;
 }
 
@@ -64,18 +68,36 @@ export default function UserCard({
   dailyData,
   formatDateTime,
   onExport,
+  onRefresh,
 }: UserCardProps) {
   const { user: currentUser } = useAuth();
   const isAgent =
     Number(currentUser?.role_id) === 6 || currentUser?.role_name === "agent";
+  const isQA =
+    Number(currentUser?.role_id) === 5 ||
+    currentUser?.user_role === "QA_AGENT" ||
+    currentUser?.role_name === "QA Agent";
+  const isAM =
+    Number(currentUser?.role_id) === 4 ||
+    currentUser?.user_role === "ASSISTANT_MANAGER" ||
+    currentUser?.role_name === "Assistant Manager";
+
+  const canSeeActions = isQA || isAM;
 
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<TrackerRow | null>(null);
+
+  const handleEditClick = (row: TrackerRow) => {
+    setSelectedRow(row);
+    setIsModalOpen(true);
+  };
 
   const formatFn = formatDateTime ?? defaultFormatDateTime;
 
   const filteredRows = useMemo(() => {
-    return dailyData.filter((row) => {
+    return dailyData.filter((row: TrackerRow) => {
       const dt = row.work_date ?? row.date_time ?? row.date;
       if (!dt) return false;
 
@@ -89,33 +111,33 @@ export default function UserCard({
     });
   }, [dailyData, start, end]);
 
-  const dailyColumns: ColumnDef<TrackerRow>[] = useMemo(
-    () => [
+  const dailyColumns: ColumnDef<TrackerRow>[] = useMemo(() => {
+    const cols: ColumnDef<TrackerRow>[] = [
       {
         header: "Date-Time",
-        accessorFn: (row) =>
+        accessorFn: (row: TrackerRow) =>
           row.work_date
             ? formatDateOnly(row.work_date)
             : formatFn(row.date_time ?? row.date),
         cell: ({ getValue }) => (
           <span className="font-medium font-mono whitespace-nowrap">
-            {getValue<string>()}
+            {String(getValue())}
           </span>
         ),
       },
       {
         header: "Assign Hours",
-        accessorFn: (row) =>
-          row.tenure_target != null
-            ? Number(row.tenure_target).toFixed(2)
-            : "-",
+        accessorFn: (row: TrackerRow) => {
+          const val = row.tenure_target ?? row.assigned_hours;
+          return val != null ? Number(val).toFixed(2) : "-";
+        },
         cell: ({ getValue }) => (
-          <div className="text-center">{getValue<string>()}</div>
+          <div className="text-center">{String(getValue())}</div>
         ),
       },
       {
         header: "Worked Hours",
-        accessorFn: (row) => {
+        accessorFn: (row: TrackerRow) => {
           const r = row as Record<string, unknown>;
           return row.cumulative_billable_hours_till_day != null
             ? Number(row.cumulative_billable_hours_till_day).toFixed(2)
@@ -131,13 +153,13 @@ export default function UserCard({
         },
         cell: ({ getValue }) => (
           <div className="text-center font-medium text-gray-900 border-x border-gray-100">
-            {getValue<string>()}
+            {String(getValue())}
           </div>
         ),
       },
       {
         header: "QC Score",
-        accessorFn: (row) => {
+        accessorFn: (row: TrackerRow) => {
           const r = row as Record<string, unknown>;
           return row.qc_score != null
             ? Number(row.qc_score).toFixed(2)
@@ -146,24 +168,44 @@ export default function UserCard({
               : "-";
         },
         cell: ({ getValue }) => (
-          <div className="text-center">{getValue<string>()}</div>
+          <div className="text-center">{String(getValue())}</div>
         ),
       },
       {
         header: "Daily Required Hours",
-        accessorFn: (row) =>
+        accessorFn: (row: TrackerRow) =>
           row.daily_required_hours != null
             ? Number(row.daily_required_hours).toFixed(2)
             : row.tenure_target != null
               ? Number(row.tenure_target).toFixed(2)
               : "-",
         cell: ({ getValue }) => (
-          <div className="text-center">{getValue<string>()}</div>
+          <div className="text-center">{String(getValue())}</div>
         ),
       },
-    ],
-    [formatFn],
-  );
+    ];
+
+    if (canSeeActions) {
+      cols.push({
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }: { row: { original: TrackerRow } }) => (
+          <div className="text-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 hover:bg-blue-50 text-blue-600 rounded"
+              onClick={() => handleEditClick(row.original)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          </div>
+        ),
+      });
+    }
+
+    return cols;
+  }, [formatFn, canSeeActions]);
 
   const handleExportClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -353,6 +395,42 @@ export default function UserCard({
           />
         </AccordionContent>
       </AccordionItem>
+
+      <DailyEntryFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={() => {
+          setIsModalOpen(false);
+          if (onRefresh) onRefresh();
+        }}
+        isEditMode={true}
+        user={
+          {
+            user_id: user.user_id ?? undefined,
+            user_name: user.user_name || (user as any).name || "",
+            team_name: user.team_name || "",
+          } as any
+        }
+        userId={(user.user_id as any) ?? null}
+        initialData={
+          selectedRow
+            ? {
+                assignHours: (selectedRow.tenure_target ??
+                  selectedRow.assigned_hours ??
+                  "") as string | number,
+                qcScore: (selectedRow.qc_score ?? "") as string | number,
+              }
+            : null
+        }
+        date={
+          selectedRow
+            ? selectedRow.work_date ||
+              selectedRow.date_time ||
+              (selectedRow as any).date ||
+              null
+            : null
+        }
+      />
     </Accordion>
   );
 }

@@ -159,7 +159,7 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-400/20 rounded-full -ml-12 -mb-12 blur-xl" />
 
           <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30 shadow-inner">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded flex items-center justify-center border border-white/30 shadow-inner">
               <Briefcase className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -444,7 +444,7 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                 Project File (Guidelines/SOP)
               </label>
               <div
-                className="relative group cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-6 bg-gray-50/50 hover:bg-white hover:border-blue-400 transition-all text-center flex flex-col items-center gap-3"
+                className="relative group cursor-pointer border-2 border-dashed border-gray-200 rounded p-6 bg-gray-50/50 hover:bg-white hover:border-blue-400 transition-all text-center flex flex-col items-center gap-3"
                 onClick={() => fileInputRef.current?.click()}
               >
                 {formData.projectFile ? (
@@ -465,7 +465,7 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                   </div>
                 ) : (
                   <>
-                    <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors">
+                    <div className="w-12 h-12 bg-white rounded shadow-sm border border-gray-100 flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors">
                       <Upload className="w-6 h-6" />
                     </div>
                     <div>
@@ -501,7 +501,7 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 rounded-xl transition-all border-none"
+              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 rounded transition-all border-none"
             >
               {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

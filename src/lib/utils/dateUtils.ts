@@ -20,24 +20,48 @@ export const reformatDateForBackend = (
 ): string => {
   if (!date) return "";
 
-  const formattedDate = String(date);
+  const trimmedDate = String(date).trim();
 
-  // If it's already in YYYY-MM-DD or doesn't have hyphens, return as is
-  if (!formattedDate.includes("-")) return formattedDate;
-
-  const parts = formattedDate.split("-");
-
-  // If format is DD-MM-YYYY (parts[0] is DD <= 31, parts[2] is YYYY > 31)
-  if (
-    parts.length === 3 &&
-    parts[0] &&
-    parts[1] &&
-    parts[2] &&
-    parseInt(parts[0]) <= 31 &&
-    parseInt(parts[2]) > 31
-  ) {
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  // Pattern 1: YYYY-MM-DD (already correct)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmedDate)) {
+    return trimmedDate;
   }
 
-  return formattedDate;
+  // Pattern 2: DD-MM-YYYY
+  if (/^\d{2}-\d{2}-\d{4}$/.test(trimmedDate)) {
+    const parts = trimmedDate.split("-");
+    if (parts[0] && parts[1] && parts[2]) {
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+  }
+
+  // Pattern 3: DD/MM/YYYY
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmedDate)) {
+    const parts = trimmedDate.split("/");
+    if (parts[0] && parts[1] && parts[2]) {
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+  }
+
+  // Pattern 4: YYYY/MM/DD
+  if (/^\d{4}\/\d{2}\/\d{2}$/.test(trimmedDate)) {
+    return trimmedDate.replace(/\//g, "-");
+  }
+
+  // Fallback: Try Extracting YYYY-MM-DD from any timestamp (e.g. 2026-02-05 15:00:00)
+  const isoMatch = trimmedDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch && isoMatch[1] && isoMatch[2] && isoMatch[3]) {
+    return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+  }
+
+  // Use Date object for ISO or other parsable formats
+  const d = new Date(trimmedDate);
+  if (!isNaN(d.getTime())) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  return trimmedDate;
 };

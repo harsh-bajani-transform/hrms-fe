@@ -169,7 +169,7 @@ const AssistantManagerDashboard: FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
       {/* Filter Bar */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded shadow-sm border border-gray-200 p-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-50 rounded-lg">
@@ -221,7 +221,7 @@ const AssistantManagerDashboard: FC = () => {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2.5 bg-blue-50 rounded-lg">
               <Users className="w-5 h-5 text-blue-600" />
@@ -233,7 +233,7 @@ const AssistantManagerDashboard: FC = () => {
           </div>
           <div className="text-sm text-gray-500 mt-1">Assigned agents</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2.5 bg-orange-50 rounded-lg">
               <FileText className="w-5 h-5 text-orange-600" />
@@ -247,7 +247,7 @@ const AssistantManagerDashboard: FC = () => {
           </div>
           <div className="text-sm text-gray-500 mt-1">Files to review</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2.5 bg-green-50 rounded-lg">
               <Clock className="w-5 h-5 text-green-600" />
@@ -261,7 +261,7 @@ const AssistantManagerDashboard: FC = () => {
           </div>
           <div className="text-sm text-gray-500 mt-1">Billable hours</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2.5 bg-purple-50 rounded-lg">
               <TrendingUp className="w-5 h-5 text-purple-600" />
@@ -276,7 +276,7 @@ const AssistantManagerDashboard: FC = () => {
       </div>
 
       {/* Latest QC Done Files */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
         <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-5">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-white/10 rounded-lg">

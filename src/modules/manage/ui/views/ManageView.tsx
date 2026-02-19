@@ -136,7 +136,7 @@ const ManageView: React.FC = () => {
 
   if (!canManageUsers && !canManageProjects && !isAssistantManager) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-white rounded-xl shadow-sm border border-gray-200 p-12">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-white rounded shadow-sm border border-gray-200 p-12">
         <div className="p-6 bg-red-50 rounded-full mb-6">
           <Lock className="w-12 h-12 text-red-600" />
         </div>
@@ -171,7 +171,7 @@ const ManageView: React.FC = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
+      <div className="bg-white rounded shadow-sm border border-gray-200 p-2">
         <div className="flex flex-wrap gap-2">
           <Button
             variant={activeTab === "users" ? "default" : "ghost"}

@@ -177,7 +177,7 @@ const QAAgentList: React.FC = () => {
           <span className="text-gray-600 font-medium">Loading agents...</span>
         </div>
       ) : agents.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded shadow-sm border border-gray-200 p-12 text-center">
           <UsersIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500 font-medium text-lg">
             No assigned agents found
@@ -193,7 +193,7 @@ const QAAgentList: React.FC = () => {
             return (
               <div
                 key={agent.user_id}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
               >
                 {/* Agent Card Header */}
                 <div
@@ -237,7 +237,7 @@ const QAAgentList: React.FC = () => {
                         emptyMessage="No tracker data for this agent."
                         showPagination={true}
                         pageSize={5}
-                        containerClassName="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white"
+                        containerClassName="rounded border border-slate-200 overflow-hidden shadow-sm bg-white"
                         headerClassName="bg-slate-50/80"
                         rowClassName="border-slate-100"
                         rowHoverClassName="hover:bg-blue-50/50 transition-colors"

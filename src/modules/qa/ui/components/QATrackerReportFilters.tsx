@@ -26,7 +26,7 @@ const QATrackerReportFilters: React.FC<QATrackerReportFiltersProps> = ({
   onClearFilters,
 }) => {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded shadow-sm border border-gray-200 p-6">
       <div className="flex items-center gap-2 mb-5">
         <div className="p-2 bg-blue-50 rounded-lg">
           <Filter className="w-5 h-5 text-blue-600" />

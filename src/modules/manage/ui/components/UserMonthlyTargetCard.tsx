@@ -209,7 +209,7 @@ const UserMonthlyTargetCard: React.FC = () => {
           <AccordionItem
             key={month.key}
             value={month.key}
-            className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 border-none"
+            className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 border-none"
           >
             <div className="flex flex-col md:flex-row md:items-center justify-between px-6 py-4 bg-slate-50 border-b border-slate-100 gap-4">
               <div className="flex items-center gap-3">

@@ -177,7 +177,7 @@ const UserTrackingView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
+      <div className="bg-white rounded border border-slate-100 p-4 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -207,7 +207,7 @@ const UserTrackingView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-100 rounded overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 border-b border-slate-100">

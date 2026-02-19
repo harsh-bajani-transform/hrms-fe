@@ -40,7 +40,7 @@ const FilterBar = ({
   return (
     <div
       className="
-        bg-white p-4 sm:p-6 rounded-xl shadow-md border border-slate-200
+        bg-white p-4 sm:p-6 rounded shadow-md border border-slate-200
         flex flex-col gap-6
         lg:flex-row lg:items-center lg:justify-between
         transition-shadow hover:shadow-lg
@@ -55,7 +55,9 @@ const FilterBar = ({
           <h3 className="text-base sm:text-lg font-semibold">
             {isAgent ? "My Analytics" : "Organization Analytics"}
           </h3>
-          <p className="text-xs text-gray-500 mt-0.5">Filter and analyze data</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Filter and analyze data
+          </p>
         </div>
       </div>
 
@@ -72,7 +74,9 @@ const FilterBar = ({
         {/* TASK - Hidden for agents and QA */}
         {!isAgent && !isQA && (
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-gray-600 ml-1">Task Type</label>
+            <label className="text-xs font-medium text-gray-600 ml-1">
+              Task Type
+            </label>
             <Select value={selectedTask} onValueChange={setSelectedTask}>
               <SelectTrigger className="h-11 w-full lg:w-50 bg-white border-gray-300">
                 <Clock className="w-4 h-4 mr-2 text-gray-500" />
@@ -93,7 +97,9 @@ const FilterBar = ({
         {/* PREV PERIOD - Hidden for agents and QA */}
         {!isAgent && !isQA && (
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-gray-600 ml-1">Comparison</label>
+            <label className="text-xs font-medium text-gray-600 ml-1">
+              Comparison
+            </label>
             <Select value={comparisonMode} onValueChange={setComparisonMode}>
               <SelectTrigger className="h-11 w-full lg:w-50 bg-white border-gray-300">
                 <Activity className="w-4 h-4 mr-2 text-gray-500" />

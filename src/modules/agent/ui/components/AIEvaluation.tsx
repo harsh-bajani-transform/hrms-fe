@@ -279,7 +279,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
       <Card className="border-none shadow-xl bg-white overflow-hidden rounded-2xl">
         <CardHeader className="bg-blue-600 text-white p-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20">
+            <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded flex items-center justify-center border border-white/20">
               <Brain className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -412,7 +412,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
               {/* API Key Warning */}
               {!geminiApiKey && (
                 <div className="flex items-start gap-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 bg-amber-100 rounded flex items-center justify-center shrink-0">
                     <AlertTriangle className="w-5 h-5 text-amber-600" />
                   </div>
                   <div className="text-sm text-amber-800">
@@ -440,7 +440,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        className={`w-10 h-10 rounded flex items-center justify-center ${
                           aiEvalSuccess === true
                             ? "bg-emerald-100 text-emerald-600"
                             : "bg-blue-50 text-blue-600"
@@ -468,7 +468,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                       !selectedProject ||
                       !selectedTask
                     }
-                    className={`w-full h-11 rounded-xl font-bold transition-all ${
+                    className={`w-full h-11 rounded font-bold transition-all ${
                       aiEvalSuccess === true
                         ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                         : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-100"
@@ -511,7 +511,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        className={`w-10 h-10 rounded flex items-center justify-center ${
                           duplicateCheckSuccess === true
                             ? "bg-emerald-100 text-emerald-600"
                             : "bg-blue-50 text-blue-600"
@@ -539,7 +539,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                       isDuplicateChecking ||
                       duplicateCheckSuccess === true
                     }
-                    className={`w-full h-11 rounded-xl font-bold transition-all ${
+                    className={`w-full h-11 rounded font-bold transition-all ${
                       duplicateCheckSuccess === true
                         ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                         : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-100"
@@ -574,7 +574,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
 
           {/* Result View Toggles */}
           {(aiEvalResult || duplicateCheckResult) && (
-            <div className="flex bg-slate-100 p-1.5 rounded-xl w-fit gap-1 animate-in slide-in-from-top-4 duration-500">
+            <div className="flex bg-slate-100 p-1.5 rounded w-fit gap-1 animate-in slide-in-from-top-4 duration-500">
               {aiEvalResult && (
                 <Button
                   variant={activeResultView === "eval" ? "default" : "ghost"}
@@ -604,7 +604,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
               {/* AI Summary Card */}
               <div className="bg-blue-50/50 rounded-2xl border border-blue-100 p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 bg-blue-600 rounded flex items-center justify-center shrink-0">
                     <Lightbulb className="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -626,7 +626,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                 <Card className="border-none shadow-md bg-white overflow-hidden">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                      <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded flex items-center justify-center">
                         <BarChart className="w-6 h-6" />
                       </div>
                       <div>
@@ -648,7 +648,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                 <Card className="border-none shadow-md bg-white">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                      <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded flex items-center justify-center">
                         <CheckCircle className="w-6 h-6" />
                       </div>
                       <div>
@@ -666,7 +666,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                 <Card className="border-none shadow-md bg-white">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
+                      <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded flex items-center justify-center">
                         <AlertTriangle className="w-6 h-6" />
                       </div>
                       <div>
@@ -694,7 +694,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                       {aiEvalResult.criticalIssues.map((issue, idx) => (
                         <div
                           key={idx}
-                          className="bg-rose-50/30 border border-rose-100 rounded-xl p-5"
+                          className="bg-rose-50/30 border border-rose-100 rounded p-5"
                         >
                           <div className="flex items-start gap-4">
                             <span className="shrink-0 w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-sm">
@@ -748,7 +748,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                 <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-lg">
                   <div className="bg-slate-900 p-6 text-white">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+                      <div className="w-10 h-10 bg-blue-500 rounded flex items-center justify-center">
                         <ListChecks className="w-5 h-5 text-white" />
                       </div>
                       <div>
@@ -808,7 +808,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                             .map((suggestion) => (
                               <div
                                 key={suggestion.id}
-                                className={`border rounded-xl transition-all ${suggestion.severity === "high" ? "border-rose-100 bg-rose-50/20" : suggestion.severity === "medium" ? "border-orange-100 bg-orange-50/20" : "border-blue-100 bg-blue-50/20"}`}
+                                className={`border rounded transition-all ${suggestion.severity === "high" ? "border-rose-100 bg-rose-50/20" : suggestion.severity === "medium" ? "border-orange-100 bg-orange-50/20" : "border-blue-100 bg-blue-50/20"}`}
                               >
                                 <button
                                   onClick={() =>
@@ -881,7 +881,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                           ).map((suggestion, idx) => (
                             <div
                               key={idx}
-                              className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4 flex gap-4"
+                              className="bg-emerald-50/50 border border-emerald-100 rounded p-4 flex gap-4"
                             >
                               <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
                                 <CheckCircle className="w-4 h-4" />
@@ -907,7 +907,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
               >
                 <div className="flex items-start gap-4">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${duplicateCheckResult.hasDuplicates ? "bg-rose-600" : "bg-emerald-600"}`}
+                    className={`w-10 h-10 rounded flex items-center justify-center shrink-0 ${duplicateCheckResult.hasDuplicates ? "bg-rose-600" : "bg-emerald-600"}`}
                   >
                     <Copy className="w-5 h-5 text-white" />
                   </div>
@@ -940,7 +940,7 @@ const AIEvaluation: React.FC<AIEvaluationProps> = ({ projects }) => {
                     {duplicateCheckResult.duplicates.map((dup, idx) => (
                       <div
                         key={idx}
-                        className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                        className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                       >
                         <div className="bg-slate-50 border-b border-slate-100 px-4 py-3 flex items-center justify-between">
                           <span className="font-bold text-slate-700">

@@ -142,7 +142,7 @@ const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
     iconBgColor,
     iconColor,
   }) => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
         <div className={`${iconBgColor} p-2.5 rounded-lg`}>
@@ -201,7 +201,7 @@ const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
           </div>
 
           {/* Latest Pending QC Files */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded shadow-sm border border-slate-200 overflow-hidden">
             {/* Blue Header Section */}
             <div className="bg-blue-600 px-6 py-4">
               <div className="flex items-center gap-3 text-white">

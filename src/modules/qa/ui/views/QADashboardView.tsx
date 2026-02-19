@@ -61,7 +61,7 @@ const QADashboardView: React.FC = () => {
 
   if (!dashboardData) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+      <div className="bg-white rounded shadow-sm border border-gray-200 p-12 text-center">
         <p className="text-gray-500 font-medium text-lg">
           No dashboard data available
         </p>
@@ -72,7 +72,7 @@ const QADashboardView: React.FC = () => {
   // Example: Display summary and user count if available
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded shadow-sm border border-gray-200 p-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">QA Dashboard</h2>
         {dashboardData.summary && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

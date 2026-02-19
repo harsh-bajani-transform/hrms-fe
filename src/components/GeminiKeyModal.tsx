@@ -136,7 +136,7 @@ const GeminiKeyModal: React.FC<GeminiKeyModalProps> = ({ isOpen, onClose }) => {
       <DialogContent className="sm:max-w-[480px] rounded-2xl border-none shadow-2xl bg-white p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-4 bg-linear-to-r from-purple-600 to-indigo-600 text-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-white/20 rounded flex items-center justify-center">
               <KeyRound className="w-5 h-5 text-white" />
             </div>
             <div>

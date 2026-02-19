@@ -313,7 +313,7 @@ const MonthlyBillableReport: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Filters Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-5">
           Filters & Actions (Monthly)
         </h3>
@@ -356,7 +356,7 @@ const MonthlyBillableReport: React.FC = () => {
           fullHeight={false}
         />
       ) : errorMonthly ? (
-        <div className="bg-white rounded-xl shadow-sm border border-red-200 py-16 text-center">
+        <div className="bg-white rounded shadow-sm border border-red-200 py-16 text-center">
           <p className="text-red-600 font-semibold">{errorMonthly}</p>
         </div>
       ) : Object.keys(groupedMonthly).length > 0 ? (
@@ -381,7 +381,7 @@ const MonthlyBillableReport: React.FC = () => {
           })}
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 py-16 text-center">
+        <div className="bg-white rounded shadow-sm border border-gray-200 py-16 text-center">
           <p className="text-gray-500 text-lg">No monthly data available</p>
           <p className="text-gray-400 text-sm mt-2">
             Try selecting a different month

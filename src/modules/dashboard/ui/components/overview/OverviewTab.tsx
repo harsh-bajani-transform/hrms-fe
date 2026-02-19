@@ -243,7 +243,7 @@ const OverviewTab = ({
       {isQA && (
         <div className="space-y-6">
           {/* Filter Section */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Date Range Filter
             </h3>
@@ -323,7 +323,7 @@ const OverviewTab = ({
             />
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
             {qaLoading ? (
               <Loading
                 title="Loading QA dashboard..."
@@ -475,7 +475,7 @@ const OverviewTab = ({
       </div>
 
       {isAgent ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-5">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/20 rounded-lg">

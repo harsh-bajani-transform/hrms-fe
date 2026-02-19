@@ -1,17 +1,17 @@
-import type { LucideIcon } from 'lucide-react'
-import { Info } from 'lucide-react'
+import type { LucideIcon } from "lucide-react";
+import { Info } from "lucide-react";
 
-export type Trend = 'up' | 'down' | 'neutral'
+export type Trend = "up" | "down" | "neutral";
 
 export interface StatCardProps {
-  title: string
-  value: string | number
-  subtext?: string
-  icon: LucideIcon
-  trend?: Trend
-  className?: string
-  tooltip?: string
-  alert?: boolean
+  title: string;
+  value: string | number;
+  subtext?: string;
+  icon: LucideIcon;
+  trend?: Trend;
+  className?: string;
+  tooltip?: string;
+  alert?: boolean;
 }
 
 const StatCard = ({
@@ -19,23 +19,23 @@ const StatCard = ({
   value,
   subtext,
   icon: CardIcon,
-  trend = 'neutral',
-  className = '',
-  tooltip = '',
+  trend = "neutral",
+  className = "",
+  tooltip = "",
   alert = false,
 }: StatCardProps) => {
   return (
     <div
       className={`
-        bg-white p-5 md:p-6 rounded-xl shadow-sm border min-w-0
-        ${alert ? 'border-red-300 bg-linear-to-br from-red-50 to-red-100' : 'border-gray-200'}
+        bg-white p-5 md:p-6 rounded shadow-sm border min-w-0
+        ${alert ? "border-red-300 bg-linear-to-br from-red-50 to-red-100" : "border-gray-200"}
         flex flex-row items-center justify-between gap-4 relative group hover:shadow-md transition-all duration-200 ${className}
       `}
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-1 md:mb-1.5">
           <p
-            className={`text-xs sm:text-sm font-medium truncate ${alert ? 'text-red-600' : 'text-slate-500'}`}
+            className={`text-xs sm:text-sm font-medium truncate ${alert ? "text-red-600" : "text-slate-500"}`}
           >
             {title}
           </p>
@@ -52,14 +52,14 @@ const StatCard = ({
         </div>
 
         <h3
-          className={`text-2xl sm:text-3xl font-bold truncate ${alert ? 'text-red-700' : 'text-gray-900'}`}
+          className={`text-2xl sm:text-3xl font-bold truncate ${alert ? "text-red-700" : "text-gray-900"}`}
         >
           {value}
         </h3>
 
         {subtext && (
           <p
-            className={`text-xs sm:text-sm mt-1.5 md:mt-2 truncate font-medium ${trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-gray-500'}`}
+            className={`text-xs sm:text-sm mt-1.5 md:mt-2 truncate font-medium ${trend === "up" ? "text-green-600" : trend === "down" ? "text-red-600" : "text-gray-500"}`}
           >
             {subtext}
           </p>
@@ -67,13 +67,13 @@ const StatCard = ({
       </div>
 
       <div
-        className={`p-3 rounded-xl shrink-0 self-center shadow-sm
-                ${alert ? 'bg-linear-to-br from-red-100 to-red-200 text-red-700' : trend === 'up' ? 'bg-linear-to-br from-green-100 to-green-200 text-green-700' : 'bg-linear-to-br from-blue-100 to-blue-200 text-blue-700'}`}
+        className={`p-3 rounded shrink-0 self-center shadow-sm
+                ${alert ? "bg-linear-to-br from-red-100 to-red-200 text-red-700" : trend === "up" ? "bg-linear-to-br from-green-100 to-green-200 text-green-700" : "bg-linear-to-br from-blue-100 to-blue-200 text-blue-700"}`}
       >
         <CardIcon className="w-4 h-4" />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default StatCard
+export default StatCard;

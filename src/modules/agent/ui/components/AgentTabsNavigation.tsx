@@ -33,7 +33,7 @@ const AgentTabsNavigation = ({
   setActiveTab,
 }: AgentTabsNavigationProps) => {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
+    <div className="bg-white rounded shadow-sm border border-gray-200 p-2">
       <div
         className="flex overflow-x-auto scroll-smooth scrollbar-hide gap-2"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}

@@ -246,7 +246,7 @@ const TrackerView: React.FC = () => {
       ) : (
         <div className="space-y-6 max-w-5xl mx-auto">
           {/* Data Entry Form */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
             {/* Header */}
             <div className="bg-blue-600 px-8 py-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

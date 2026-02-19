@@ -192,7 +192,7 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
             fullHeight={false}
           />
         ) : filteredProjects.length === 0 ? (
-          <div className="py-20 text-center bg-gray-50 border border-dashed border-gray-200 rounded-xl">
+          <div className="py-20 text-center bg-gray-50 border border-dashed border-gray-200 rounded">
             <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">No projects found</p>
           </div>
@@ -208,7 +208,7 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
               <AccordionItem
                 key={p.project_id}
                 value={p.project_id.toString()}
-                className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden border-none"
+                className="bg-white border border-gray-200 rounded shadow-sm hover:shadow-md transition-all overflow-hidden border-none"
               >
                 <div className="p-1 px-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-4 py-4">
@@ -297,7 +297,7 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
 
                 <AccordionContent className="border-t border-slate-50 bg-slate-50/50 p-6 pt-0">
                   {p.project_description && (
-                    <div className="mt-6 p-4 bg-white rounded-xl border border-slate-100 text-sm text-slate-500 leading-relaxed shadow-xs italic">
+                    <div className="mt-6 p-4 bg-white rounded border border-slate-100 text-sm text-slate-500 leading-relaxed shadow-xs italic">
                       {p.project_description}
                     </div>
                   )}

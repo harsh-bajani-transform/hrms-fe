@@ -201,7 +201,7 @@ const QAAgentListView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded shadow-sm border border-gray-200 p-6">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-50 rounded-lg">
             <UsersIcon className="w-6 h-6 text-blue-600" />
@@ -211,15 +211,17 @@ const QAAgentListView: React.FC = () => {
       </div>
 
       {loading ? (
-        <Loading 
-          title="Loading agents..." 
+        <Loading
+          title="Loading agents..."
           description="Fetching QA agent data and performance metrics"
           fullHeight={false}
         />
       ) : agents.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded shadow-sm border border-gray-200 p-12 text-center">
           <UsersIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 font-medium text-lg">No assigned agents found</p>
+          <p className="text-gray-500 font-medium text-lg">
+            No assigned agents found
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -231,7 +233,7 @@ const QAAgentListView: React.FC = () => {
             return (
               <div
                 key={agentId}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
               >
                 <div
                   onClick={() => toggleAgent(agentId)}
@@ -249,7 +251,9 @@ const QAAgentListView: React.FC = () => {
                       <h3 className="text-lg font-semibold text-gray-900">
                         {agent.user_name || "-"}
                       </h3>
-                      <p className="text-sm text-gray-500">{trackers.length} tracker entries</p>
+                      <p className="text-sm text-gray-500">
+                        {trackers.length} tracker entries
+                      </p>
                     </div>
                   </div>
                   <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -304,7 +308,7 @@ const AgentTrackerTable: React.FC<AgentTrackerTableProps> = ({
 }) => {
   const columns = useMemo(
     () => createColumns(dropdownTaskNameMap, agentName, handleQCForm),
-    [dropdownTaskNameMap, agentName, handleQCForm]
+    [dropdownTaskNameMap, agentName, handleQCForm],
   );
 
   return (

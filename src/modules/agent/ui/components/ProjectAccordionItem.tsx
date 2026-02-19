@@ -201,11 +201,20 @@ export const ProjectAccordionItem: React.FC<ProjectAccordionItemProps> = ({
 
   const todaysTasks = useMemo(
     () => filterTasksByDate(project.tasks, dateFilter),
-    [project.tasks, dateFilter]
+    [project.tasks, dateFilter],
   );
   const isProjectExpanded = expanded === project.id;
 
-  console.log('[ProjectAccordionItem]', project.name, '- project.id:', project.id, 'expanded:', expanded, 'isProjectExpanded:', isProjectExpanded);
+  console.log(
+    "[ProjectAccordionItem]",
+    project.name,
+    "- project.id:",
+    project.id,
+    "expanded:",
+    expanded,
+    "isProjectExpanded:",
+    isProjectExpanded,
+  );
 
   return (
     <AccordionItem
@@ -219,7 +228,7 @@ export const ProjectAccordionItem: React.FC<ProjectAccordionItemProps> = ({
         <CardHeader className="p-0">
           <div className="flex flex-col md:flex-row md:items-center justify-between p-6 gap-6">
             <div className="flex items-center gap-5">
-              <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-100">
+              <div className="w-12 h-12 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-100">
                 {project.name[0]}
               </div>
               <div>
@@ -367,7 +376,7 @@ export const ProjectAccordionItem: React.FC<ProjectAccordionItemProps> = ({
                 </div>
 
                 {todaysTasks.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 rounded-xl bg-slate-50 border border-slate-100 border-dashed text-slate-400">
+                  <div className="flex flex-col items-center justify-center py-12 rounded bg-slate-50 border border-slate-100 border-dashed text-slate-400">
                     <CalendarIcon className="w-8 h-8 opacity-20 mb-2" />
                     <p className="text-sm font-medium">
                       No tasks assigned for this date.
@@ -382,7 +391,7 @@ export const ProjectAccordionItem: React.FC<ProjectAccordionItemProps> = ({
                     emptyIcon={CalendarIcon}
                     showPagination={true}
                     pageSize={10}
-                    containerClassName="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white"
+                    containerClassName="rounded border border-slate-200 overflow-hidden shadow-sm bg-white"
                     headerClassName="bg-slate-50/80"
                     rowClassName="border-slate-100"
                     rowHoverClassName="hover:bg-slate-50/50 transition-colors"

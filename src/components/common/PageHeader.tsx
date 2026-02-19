@@ -15,7 +15,7 @@ export const PageHeader = ({
   actions,
 }: PageHeaderProps) => {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+    <div className="bg-white rounded shadow-sm border border-gray-200 p-6 mb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-blue-50 rounded-lg">
@@ -23,9 +23,7 @@ export const PageHeader = ({
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-            {description && (
-              <p className="text-gray-600 mt-1">{description}</p>
-            )}
+            {description && <p className="text-gray-600 mt-1">{description}</p>}
           </div>
         </div>
         {actions && <div className="flex items-center gap-3">{actions}</div>}

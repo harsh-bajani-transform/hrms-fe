@@ -64,6 +64,11 @@ const DailyBillableReport: React.FC = () => {
   const [dailyData, setDailyData] = useState<TrackerRow[]>([]);
   const [loadingDaily, setLoadingDaily] = useState<boolean>(false);
   const [errorDaily, setErrorDaily] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleRefresh = () => {
+    setRefreshTrigger((prev) => prev + 1);
+  };
 
   // Fetch team options for dropdown (only for non-agents)
   useEffect(() => {
@@ -122,7 +127,7 @@ const DailyBillableReport: React.FC = () => {
       }
     };
     fetchData();
-  }, [startDate, endDate, monthFilter, user]);
+  }, [startDate, endDate, monthFilter, user, refreshTrigger]);
 
   // Export all users' daily data (filtered by team if set)
   const handleExportAllUsers = () => {
@@ -345,7 +350,7 @@ const DailyBillableReport: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Filters Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-5">
           Filters & Actions (Daily)
         </h3>
@@ -391,7 +396,7 @@ const DailyBillableReport: React.FC = () => {
                 Filter by Team
               </label>
               <Select value={teamFilter} onValueChange={setTeamFilter}>
-                <SelectTrigger className="border-gray-300">
+                <SelectTrigger className="border-gray-300 w-full">
                   <SelectValue placeholder="All Teams" />
                 </SelectTrigger>
                 <SelectContent>
@@ -437,7 +442,7 @@ const DailyBillableReport: React.FC = () => {
           fullHeight={false}
         />
       ) : errorDaily ? (
-        <div className="bg-white rounded-xl shadow-sm border border-red-200 py-16 text-center">
+        <div className="bg-white rounded shadow-sm border border-red-200 py-16 text-center">
           <p className="text-red-600 font-semibold">{errorDaily}</p>
         </div>
       ) : filteredDailyData.length > 0 ? (
@@ -465,6 +470,7 @@ const DailyBillableReport: React.FC = () => {
                   dailyData={userObj.dailyData}
                   defaultCollapsed={true}
                   onExport={() => handleExportUserDaily(userObj)}
+                  onRefresh={handleRefresh}
                 />
               ));
             })()
@@ -478,11 +484,12 @@ const DailyBillableReport: React.FC = () => {
               }}
               dailyData={filteredDailyData}
               defaultCollapsed={false}
+              onRefresh={handleRefresh}
             />
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 py-16 text-center">
+        <div className="bg-white rounded shadow-sm border border-gray-200 py-16 text-center">
           <p className="text-gray-500 text-lg">
             No data available for selected filters
           </p>

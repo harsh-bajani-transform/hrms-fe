@@ -380,7 +380,7 @@ const AgentBillableReport = () => {
           </p>
         </div>
 
-        <div className="flex bg-white p-2 rounded-xl w-fit border border-gray-200">
+        <div className="flex bg-white p-2 rounded w-fit border border-gray-200">
           <Button
             variant={activeToggle === "daily" ? "default" : "ghost"}
             className={`px-4 h-11 rounded-lg font-semibold transition-all duration-300 ${activeToggle === "daily" ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"}`}
@@ -402,7 +402,7 @@ const AgentBillableReport = () => {
 
       {/* Daily Report View */}
       {activeToggle === "daily" && (
-        <Card className="shadow-sm border-gray-200 overflow-hidden rounded-xl min-h-125 bg-white">
+        <Card className="shadow-sm border-gray-200 overflow-hidden rounded min-h-125 bg-white">
           <CardHeader className="border-b border-gray-200 p-6">
             <div className="flex flex-col gap-8">
               <div className="flex items-center gap-4">
@@ -420,7 +420,7 @@ const AgentBillableReport = () => {
               </div>
 
               <div className="flex flex-wrap items-center gap-6 w-full">
-                <div className="flex flex-row items-center gap-4 bg-white p-2 rounded-xl border border-gray-200 shadow-sm w-auto">
+                <div className="flex flex-row items-center gap-4 bg-white p-2 rounded border border-gray-200 shadow-sm w-auto">
                   <div className="flex items-center gap-2 px-2">
                     <span className="text-sm font-medium text-gray-700">
                       From
@@ -519,7 +519,7 @@ const AgentBillableReport = () => {
 
       {/* Monthly Report View */}
       {activeToggle === "monthly" && (
-        <Card className="shadow-sm border-gray-200 overflow-hidden rounded-xl min-h-125 bg-white">
+        <Card className="shadow-sm border-gray-200 overflow-hidden rounded min-h-125 bg-white">
           <CardHeader className="border-b border-gray-200 p-6">
             <div className="flex flex-col gap-8">
               <div className="flex items-center gap-4">
@@ -537,7 +537,7 @@ const AgentBillableReport = () => {
               </div>
 
               <div className="flex flex-wrap items-center gap-6 w-full">
-                <div className="flex flex-row items-center gap-4 bg-white p-2 rounded-xl border border-gray-200 shadow-sm w-auto">
+                <div className="flex flex-row items-center gap-4 bg-white p-2 rounded border border-gray-200 shadow-sm w-auto">
                   <div className="flex items-center gap-2 px-2">
                     <span className="text-sm font-medium text-gray-700">
                       Filter Month

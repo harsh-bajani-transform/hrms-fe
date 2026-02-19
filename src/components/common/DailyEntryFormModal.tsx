@@ -155,9 +155,17 @@ const DailyEntryFormModal: React.FC<DailyEntryFormModalProps> = ({
       try {
         const formattedDate = reformatDateForBackend(date);
 
+        if (!formattedDate || !/^\d{4}-\d{2}-\d{2}$/.test(formattedDate)) {
+          toast.error(
+            `Invalid date record: "${date || "missing"}". Please check the report data.`,
+          );
+          setIsSubmitting(false);
+          return;
+        }
+
         const payload: TempQCPayload = {
           user_id: userId || "",
-          date: formattedDate || "",
+          date: formattedDate,
         };
 
         if (formData.assignHours !== "")
@@ -202,7 +210,7 @@ const DailyEntryFormModal: React.FC<DailyEntryFormModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
-        <DialogHeader className="p-6 bg-linear-to-r from-blue-600 to-indigo-700 text-white">
+        <DialogHeader className="p-6  bg-blue-600  text-white">
           <div className="flex justify-between items-center">
             <div>
               <DialogTitle className="text-2xl font-bold flex items-center gap-3">
@@ -290,7 +298,7 @@ const DailyEntryFormModal: React.FC<DailyEntryFormModalProps> = ({
             variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            className="rounded-xl border-2"
+            className="rounded border-2"
           >
             Cancel
           </Button>
@@ -298,7 +306,7 @@ const DailyEntryFormModal: React.FC<DailyEntryFormModalProps> = ({
             type="submit"
             form="daily-entry-form"
             disabled={isSubmitting}
-            className="rounded-xl bg-linear-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-lg"
+            className="rounded bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
           >
             {isSubmitting ? (
               <>
@@ -307,7 +315,7 @@ const DailyEntryFormModal: React.FC<DailyEntryFormModalProps> = ({
               </>
             ) : (
               <>
-                <Save className="w-4 h-4 mr-2" />
+                <Save className="w-4 h-4" />
                 {isEditMode ? "Update Entry" : "Save Entry"}
               </>
             )}

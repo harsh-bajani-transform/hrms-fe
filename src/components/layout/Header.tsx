@@ -496,11 +496,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
                       </Avatar>
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    className="w-56"
-                    align="center"
-                    forceMount
-                  >
+                  <DropdownMenuContent align="center" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col items-center justify-center space-y-1 py-1">
                         <p className="text-sm font-bold leading-none">
@@ -516,22 +512,20 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
                               "no-email@tfs.com",
                           )}
                         </p>
+                        <p className="text-slate-500 cursor-default">
+                          <span className="font-medium text-xs">
+                            {getRoleLabel() || "No Role"}
+                          </span>
+                        </p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-slate-500 cursor-default flex items-center justify-center py-2">
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      <span className="font-medium text-xs">
-                        {getRoleLabel() || "No Role"}
-                      </span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => setGeminiKeyOpen(true)}
-                      className="cursor-pointer flex items-center justify-center py-2 text-purple-700 focus:text-purple-700 focus:bg-purple-50"
+                      className="cursor-pointer py-2 text-purple-700 focus:text-purple-700 focus:bg-purple-50"
                     >
                       <KeyRound className="mr-2 h-4 w-4" />
-                      <span className="font-medium text-xs">Gemini AI Key</span>
+                      <span>Gemini AI Key</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -543,7 +537,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
                           window.location.assign("/");
                         }
                       }}
-                      className="text-red-600 focus:text-red-600 cursor-pointer flex items-center justify-center py-2 font-semibold"
+                      className="text-red-600 focus:text-red-600 cursor-pointer py-2"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Log out</span>

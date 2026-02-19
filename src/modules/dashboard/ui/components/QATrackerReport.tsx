@@ -318,7 +318,7 @@ const QATrackerReport: React.FC = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Total Per Hour Target */}
-            <div className="bg-white rounded-xl p-6 shadow border border-blue-100 flex flex-col items-center">
+            <div className="bg-white rounded p-6 shadow border border-blue-100 flex flex-col items-center">
               <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
                 Total Per Hour Target
               </p>
@@ -328,7 +328,7 @@ const QATrackerReport: React.FC = () => {
             </div>
 
             {/* Total Production */}
-            <div className="bg-white rounded-xl p-6 shadow border border-green-100 flex flex-col items-center">
+            <div className="bg-white rounded p-6 shadow border border-green-100 flex flex-col items-center">
               <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
                 Total Production
               </p>
@@ -338,7 +338,7 @@ const QATrackerReport: React.FC = () => {
             </div>
 
             {/* Total Billable Hours */}
-            <div className="bg-white rounded-xl p-6 shadow border border-purple-100 flex flex-col items-center">
+            <div className="bg-white rounded p-6 shadow border border-purple-100 flex flex-col items-center">
               <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
                 Total Billable Hours
               </p>

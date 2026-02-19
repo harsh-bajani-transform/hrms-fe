@@ -22,7 +22,7 @@ const BillableReport: React.FC = () => {
   return (
     <div className="w-full space-y-6">
       {/* Tab Navigation */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
+      <div className="bg-white rounded shadow-sm border border-gray-200 p-2">
         <div className="flex gap-2">
           <Button
             variant={activeToggle === "daily" ? "default" : "ghost"}

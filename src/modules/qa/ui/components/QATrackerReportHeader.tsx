@@ -14,7 +14,7 @@ const QATrackerReportHeader: React.FC<QATrackerReportHeaderProps> = ({
   hasData,
 }) => {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded shadow-sm border border-gray-200 p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-50 rounded-lg">

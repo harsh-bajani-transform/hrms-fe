@@ -190,7 +190,7 @@ export const TrackerEditModal: React.FC<TrackerEditModalProps> = ({
                 onValueChange={handleProjectChange}
                 disabled={loading || submitting}
               >
-                <SelectTrigger className="rounded-xl">
+                <SelectTrigger className="rounded">
                   <SelectValue placeholder="Select Project" />
                 </SelectTrigger>
                 <SelectContent>
@@ -216,7 +216,7 @@ export const TrackerEditModal: React.FC<TrackerEditModalProps> = ({
                 onValueChange={handleTaskChange}
                 disabled={loading || submitting || !formData.project_id}
               >
-                <SelectTrigger className="rounded-xl">
+                <SelectTrigger className="rounded">
                   <SelectValue placeholder="Select Task" />
                 </SelectTrigger>
                 <SelectContent>
@@ -248,7 +248,7 @@ export const TrackerEditModal: React.FC<TrackerEditModalProps> = ({
                 }
                 disabled={submitting}
                 placeholder="Enter production qty"
-                className="rounded-xl"
+                className="rounded"
               />
             </div>
 
@@ -261,7 +261,7 @@ export const TrackerEditModal: React.FC<TrackerEditModalProps> = ({
                 type="number"
                 value={formData.base_target}
                 disabled
-                className="bg-slate-50 rounded-xl"
+                className="bg-slate-50 rounded"
               />
             </div>
           </div>
@@ -275,7 +275,7 @@ export const TrackerEditModal: React.FC<TrackerEditModalProps> = ({
               type="file"
               onChange={handleFileChange}
               disabled={submitting}
-              className="rounded-xl cursor-pointer"
+              className="rounded cursor-pointer"
             />
             {tracker?.tracker_file && (
               <p className="text-xs text-blue-600 font-medium">
@@ -290,14 +290,14 @@ export const TrackerEditModal: React.FC<TrackerEditModalProps> = ({
               variant="outline"
               onClick={onClose}
               disabled={submitting}
-              className="rounded-xl px-6"
+              className="rounded px-6"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={submitting}
-              className="rounded-xl px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+              className="rounded px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
             >
               {submitting ? "Saving..." : "Save Changes"}
             </Button>

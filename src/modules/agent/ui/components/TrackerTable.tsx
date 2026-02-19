@@ -532,7 +532,7 @@ const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
       )}
 
       {/* Filter Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded shadow-sm border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-5">
           <div className="p-2 bg-blue-50 rounded-lg">
             <Filter className="w-5 h-5 text-blue-600" />
@@ -639,7 +639,7 @@ const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
         emptyIcon={FileText}
         showPagination={true}
         pageSize={10}
-        containerClassName="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+        containerClassName="bg-white rounded shadow-sm border border-gray-200 overflow-hidden"
         headerClassName="bg-gray-50 border-b border-gray-200"
         rowClassName="border-gray-100 group"
         rowHoverClassName="hover:bg-blue-50/50 transition-colors"

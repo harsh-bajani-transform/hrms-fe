@@ -21,7 +21,7 @@ const AgentFilterBar: React.FC<AgentFilterBarProps> = ({
   };
 
   return (
-    <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-4">
+    <div className="bg-white p-3 sm:p-4 rounded shadow-sm border border-slate-100 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-4">
       <div className="flex items-center gap-2 text-slate-700 font-semibold">
         <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
         <span className="text-sm sm:text-base">Organization Analytics</span>

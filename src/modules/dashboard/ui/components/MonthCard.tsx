@@ -128,7 +128,7 @@ export default function MonthCard({
     <Accordion type="single" collapsible className="w-full mb-6">
       <AccordionItem
         value="item-1"
-        className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
+        className="bg-white border border-gray-200 rounded shadow-sm overflow-hidden"
       >
         <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200">
           <div className="flex items-center gap-3">
@@ -144,7 +144,7 @@ export default function MonthCard({
             {teamOptions.length > 0 && (
               <div className="hidden md:block w-48">
                 <Select value={teamFilter} onValueChange={setTeamFilter}>
-                  <SelectTrigger className="h-9 bg-white border-gray-200 text-xs shadow-sm">
+                  <SelectTrigger className="h-9 w-full bg-white border-gray-200 text-xs shadow-sm">
                     <SelectValue placeholder="Filter by Team" />
                   </SelectTrigger>
                   <SelectContent>

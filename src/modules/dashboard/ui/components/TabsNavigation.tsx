@@ -81,7 +81,7 @@ const TabsNavigation = ({
   const visibleTabs = tabs.filter((tab) => tab.alwaysVisible || tab.visible);
 
   return (
-    <div className="relative w-full bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+    <div className="relative w-full bg-white rounded p-4 shadow-sm border border-gray-200">
       {/* Horizontal draggable/scrollable + equal spacing on large screens */}
       <div
         ref={tabsRef}
