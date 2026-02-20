@@ -94,7 +94,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
               AFD Selection
             </label>
             <Select value={afdId} onValueChange={setAfdId}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select AFD" />
               </SelectTrigger>
               <SelectContent>
@@ -123,7 +123,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
             onClick={handleSubmit}
             disabled={submitting || !name.trim() || !afdId}
           >
-            <Save className="w-4 h-4 mr-2" />
+            <Save className="w-4 h-4" />
             {submitting ? "Saving..." : category ? "Update" : "Create"}
           </Button>
         </DialogFooter>

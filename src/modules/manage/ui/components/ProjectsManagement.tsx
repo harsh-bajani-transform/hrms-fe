@@ -32,6 +32,7 @@ import { fetchProjectsList } from "../../../dashboard/services/projectService";
 
 import ProjectFormModal from "./ProjectFormModal";
 import TaskFormModal from "./TaskFormModal";
+import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { UserDropdowns } from "../../../../hooks/useUserDropdowns";
 import type { ProjectType, TaskType } from "../../types";
 
@@ -63,44 +64,64 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
     task: TaskType | null;
   }>({ isOpen: false, project: null, task: null });
 
+  const [deleteProjState, setDeleteProjState] = useState<{
+    isOpen: boolean;
+    project: ProjectType | null;
+  }>({ isOpen: false, project: null });
+
+  const [deleteTaskState, setDeleteTaskState] = useState<{
+    isOpen: boolean;
+    project: ProjectType | null;
+    task: TaskType | null;
+  }>({ isOpen: false, project: null, task: null });
+
+  const [deleting, setDeleting] = useState(false);
+
   const filteredProjects = projects.filter(
     (p) =>
       p.project_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.project_code?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const handleDeleteProject = async (proj: ProjectType) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete project: ${proj.project_name}?`,
-      )
-    )
-      return;
+  const handleDeleteProject = (proj: ProjectType) => {
+    setDeleteProjState({ isOpen: true, project: proj });
+  };
+
+  const handleConfirmDeleteProject = async () => {
+    if (!deleteProjState.project) return;
     try {
-      await deleteProject(proj.project_id);
+      setDeleting(true);
+      await deleteProject(deleteProjState.project.project_id);
       toast.success("Project deleted successfully");
+      setDeleteProjState({ isOpen: false, project: null });
       onRefresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unknown error");
+    } finally {
+      setDeleting(false);
     }
   };
 
-  const handleDeleteTask = async (
-    projectId: string | number,
-    task: TaskType,
-  ) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete task: ${task.task_name}?`,
-      )
-    )
-      return;
+  const handleDeleteTask = (projectId: string | number, task: TaskType) => {
+    const proj = projects.find((p) => p.project_id === projectId) || null;
+    setDeleteTaskState({ isOpen: true, project: proj, task });
+  };
+
+  const handleConfirmDeleteTask = async () => {
+    if (!deleteTaskState.project || !deleteTaskState.task) return;
     try {
-      await deleteTask({ project_id: projectId, task_id: task.task_id });
+      setDeleting(true);
+      await deleteTask({
+        project_id: deleteTaskState.project.project_id,
+        task_id: deleteTaskState.task.task_id,
+      });
       toast.success("Task deleted successfully");
+      setDeleteTaskState({ isOpen: false, project: null, task: null });
       onRefresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unknown error");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -459,6 +480,28 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
           }}
         />
       )}
+
+      <DeleteConfirmDialog
+        open={deleteProjState.isOpen}
+        onOpenChange={(open) =>
+          setDeleteProjState((prev) => ({ ...prev, isOpen: open }))
+        }
+        title="Delete Project"
+        description={`Are you sure you want to delete the project "${deleteProjState.project?.project_name}"? This will also remove all associated tasks. This action cannot be undone.`}
+        onConfirm={handleConfirmDeleteProject}
+        loading={deleting}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteTaskState.isOpen}
+        onOpenChange={(open) =>
+          setDeleteTaskState((prev) => ({ ...prev, isOpen: open }))
+        }
+        title="Delete Task"
+        description={`Are you sure you want to delete the task "${deleteTaskState.task?.task_name}" from project "${deleteTaskState.project?.project_name}"? This action cannot be undone.`}
+        onConfirm={handleConfirmDeleteTask}
+        loading={deleting}
+      />
     </div>
   );
 };

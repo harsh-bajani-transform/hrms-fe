@@ -75,8 +75,13 @@ export interface AFDCategory {
 export interface AFDRecord {
   id: string | number;
   name: string;
-  afd_id?: string | number; // Match API
-  afd_name?: string; // Match API
+  qc_afd_id?: string | number; // Primary key of each flat checkpoint row
+  afd_id?: string | number; // Group/type ID
+  afd_name?: string;
+  afd_points?: number;
+  afd_category_id?: number;
+  created_at?: string;
+  updated_at?: string;
   categories?: AFDCategory[];
 }
 

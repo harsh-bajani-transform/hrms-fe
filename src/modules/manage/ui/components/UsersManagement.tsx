@@ -7,6 +7,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { useAuth } from "../../../../context/AuthContext";
 import { deleteUser, updateUser } from "../../services/manageService";
 import UserFormModal from "./UserFormModal";
+import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { UserDropdowns } from "../../../../hooks/useUserDropdowns";
 import { createColumns, type UserType } from "./UsersManagementColumns";
 
@@ -28,6 +29,10 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | number | null>(null);
+  const [deleteDialogState, setDeleteDialogState] = useState<{
+    isOpen: boolean;
+    user: UserType | null;
+  }>({ isOpen: false, user: null });
 
   const filteredUsers = useMemo(() => {
     return users.filter(
@@ -37,30 +42,29 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
     );
   }, [users, searchTerm]);
 
-  const handleDelete = useCallback(
-    async (userToDelete: UserType) => {
-      if (
-        !window.confirm(
-          `Are you sure you want to delete ${userToDelete.user_name}?`,
-        )
-      )
-        return;
-      try {
-        setIsDeleting(userToDelete.user_id);
-        await deleteUser(userToDelete.user_id, {
-          device_id: "web",
-          device_type: "Laptop",
-        });
-        toast.success("User deleted successfully");
-        onRefresh();
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Unknown error");
-      } finally {
-        setIsDeleting(null);
-      }
-    },
-    [onRefresh],
-  );
+  const handleDelete = useCallback(async (userToDelete: UserType) => {
+    setDeleteDialogState({ isOpen: true, user: userToDelete });
+  }, []);
+
+  const handleConfirmDelete = async () => {
+    const userToDelete = deleteDialogState.user;
+    if (!userToDelete) return;
+
+    try {
+      setIsDeleting(userToDelete.user_id);
+      await deleteUser(userToDelete.user_id, {
+        device_id: "web",
+        device_type: "Laptop",
+      });
+      toast.success("User deleted successfully");
+      setDeleteDialogState({ isOpen: false, user: null });
+      onRefresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unknown error");
+    } finally {
+      setIsDeleting(null);
+    }
+  };
 
   const handleToggleStatus = useCallback(
     async (userToToggle: UserType) => {
@@ -147,6 +151,17 @@ const UsersManagement: React.FC<UsersManagementProps> = ({
           dropdowns={dropdowns}
         />
       )}
+
+      <DeleteConfirmDialog
+        open={deleteDialogState.isOpen}
+        onOpenChange={(open) =>
+          setDeleteDialogState((prev) => ({ ...prev, isOpen: open }))
+        }
+        title="Delete User"
+        description={`Are you sure you want to delete user "${deleteDialogState.user?.user_name}"? This action cannot be undone.`}
+        onConfirm={handleConfirmDelete}
+        loading={isDeleting !== null}
+      />
     </div>
   );
 };

@@ -39,14 +39,7 @@ const AFDFormModal: React.FC<AFDFormModalProps> = ({
       setCategories(JSON.parse(JSON.stringify(record.categories || [])));
     } else {
       setAfdName("");
-      setCategories([
-        {
-          id: Date.now(),
-          name: "",
-          score: 0,
-          subCategories: [{ id: Date.now() + 1, name: "", score: 0 }],
-        },
-      ]);
+      setCategories([]);
     }
   }, [record, open]);
 
@@ -69,14 +62,15 @@ const AFDFormModal: React.FC<AFDFormModalProps> = ({
   const updateCategory = (
     categoryId: string | number,
     field: keyof AFDCategory,
-    value: any,
+    value: string | number,
   ) => {
     setCategories(
       categories.map((cat) =>
         cat.id === categoryId
           ? {
               ...cat,
-              [field]: field === "score" ? Number(value) || 0 : value,
+              [field]:
+                field === "score" ? Math.max(0, Number(value) || 0) : value,
             }
           : cat,
       ),
@@ -121,7 +115,7 @@ const AFDFormModal: React.FC<AFDFormModalProps> = ({
     categoryId: string | number,
     subCategoryId: string | number,
     field: keyof AFDSubCategory,
-    value: any,
+    value: string | number,
   ) => {
     setCategories(
       categories.map((cat) =>
@@ -132,7 +126,10 @@ const AFDFormModal: React.FC<AFDFormModalProps> = ({
                 sub.id === subCategoryId
                   ? {
                       ...sub,
-                      [field]: field === "score" ? Number(value) || 0 : value,
+                      [field]:
+                        field === "score"
+                          ? Math.max(0, Number(value) || 0)
+                          : value,
                     }
                   : sub,
               ),
@@ -156,10 +153,27 @@ const AFDFormModal: React.FC<AFDFormModalProps> = ({
       : 0;
   };
 
+  const isFormValid = () => {
+    if (!afdName.trim()) return false;
+    // Categories are optional — only validate scores if user added some
+    if (categories.length > 0) {
+      const catTotal = getTotalCategoryScore();
+      if (catTotal !== 100) return false;
+
+      for (const cat of categories) {
+        if (!cat.name.trim()) return false;
+        if (cat.subCategories.length > 0) {
+          const subTotal = getSubCategoryTotal(cat.id);
+          if (subTotal !== 100) return false;
+          if (cat.subCategories.some((sub) => !sub.name.trim())) return false;
+        }
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
     if (!afdName.trim()) return;
-    if (categories.length === 0) return;
-
     try {
       setSubmitting(true);
       await onSave({ afd_name: afdName.trim(), categories });
@@ -248,6 +262,7 @@ const AFDFormModal: React.FC<AFDFormModalProps> = ({
                           </label>
                           <Input
                             type="number"
+                            min="0"
                             placeholder="Score"
                             value={cat.score}
                             onChange={(e) =>
@@ -314,6 +329,7 @@ const AFDFormModal: React.FC<AFDFormModalProps> = ({
                             <div className="w-20">
                               <Input
                                 type="number"
+                                min="0"
                                 value={sub.score}
                                 onChange={(e) =>
                                   updateSubCategory(
@@ -355,11 +371,9 @@ const AFDFormModal: React.FC<AFDFormModalProps> = ({
           <Button
             className="bg-indigo-600 hover:bg-indigo-700"
             onClick={handleSubmit}
-            disabled={
-              submitting || !afdName.trim() || getTotalCategoryScore() !== 100
-            }
+            disabled={submitting || !isFormValid()}
           >
-            <Save className="w-4 h-4 mr-2" />
+            <Save className="w-4 h-4" />
             {submitting ? "Saving..." : record ? "Update AFD" : "Save AFD"}
           </Button>
         </DialogFooter>

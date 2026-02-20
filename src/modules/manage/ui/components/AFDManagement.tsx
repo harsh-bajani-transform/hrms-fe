@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/accordion";
 import Loading from "@/components/common/Loading";
 import AFDFormModal from "./AFDFormModal";
+import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 
 const AFDManagement: React.FC = () => {
   const [afdRecords, setAfdRecords] = useState<AFDRecord[]>([]);
@@ -32,6 +33,9 @@ const AFDManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<AFDRecord | null>(null);
+  const [isDeleteDiagOpen, setIsDeleteDiagOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState<AFDRecord | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadAFDRecords = async () => {
     try {
@@ -87,21 +91,32 @@ const AFDManagement: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteAFD = async (record: AFDRecord) => {
-    const name = record.afd_name || record.name;
-    const id = record.afd_id || record.id;
-    if (!window.confirm(`Are you sure you want to delete AFD: ${name}?`))
-      return;
+  const handleDeleteAFD = (record: AFDRecord) => {
+    setRecordToDelete(record);
+    setIsDeleteDiagOpen(true);
+  };
 
+  const handleConfirmDeleteAFD = async () => {
+    if (!recordToDelete) return;
+    // qc_afd_id is the primary key of each flat checkpoint row from the list API
+    const id =
+      recordToDelete.qc_afd_id ?? recordToDelete.afd_id ?? recordToDelete.id;
     try {
+      setDeleting(true);
       const res = await deleteAFDRecord(id);
       if (res.status === 200) {
         toast.success("AFD deleted successfully");
+        setIsDeleteDiagOpen(false);
+        setRecordToDelete(null);
         loadAFDRecords();
+      } else {
+        toast.error(res.message || "Delete failed");
       }
     } catch (error: unknown) {
       const err = error as { message?: string };
       toast.error(err.message || "Failed to delete AFD");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -159,7 +174,7 @@ const AFDManagement: React.FC = () => {
 
       <div className="grid grid-cols-1 gap-4">
         {filteredRecords.length > 0 ? (
-          filteredRecords.map((rec: any) => (
+          filteredRecords.map((rec) => (
             <Card
               key={rec.qc_afd_id || rec.afd_id || rec.id}
               className="group hover:border-indigo-200 transition-all"
@@ -246,6 +261,15 @@ const AFDManagement: React.FC = () => {
         onSuccess={loadAFDRecords}
         record={editingRecord}
         onSave={handleSaveAFD}
+      />
+
+      <DeleteConfirmDialog
+        open={isDeleteDiagOpen}
+        onOpenChange={setIsDeleteDiagOpen}
+        title="Delete AFD Record"
+        description={`Are you sure you want to delete the AFD record "${recordToDelete?.afd_name || recordToDelete?.name}"? This action cannot be undone.`}
+        onConfirm={handleConfirmDeleteAFD}
+        loading={deleting}
       />
     </div>
   );

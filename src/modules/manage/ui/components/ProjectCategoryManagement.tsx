@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Loading from "@/components/common/Loading";
 import CategoryFormModal from "./CategoryFormModal";
+import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 
 const ProjectCategoryManagement: React.FC = () => {
   const [categories, setCategories] = useState<ProjectCategory[]>([]);
@@ -30,6 +31,10 @@ const ProjectCategoryManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] =
     useState<ProjectCategory | null>(null);
+  const [isDeleteDiagOpen, setIsDeleteDiagOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] =
+    useState<ProjectCategory | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadData = async () => {
     try {
@@ -92,23 +97,29 @@ const ProjectCategoryManagement: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteClick = async (category: ProjectCategory) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete category: ${category.project_category_name}?`,
-      )
-    )
-      return;
+  const handleDeleteClick = (category: ProjectCategory) => {
+    setCategoryToDelete(category);
+    setIsDeleteDiagOpen(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!categoryToDelete) return;
     try {
-      const res = await deleteProjectCategory(category.project_category_id);
+      setDeleting(true);
+      const res = await deleteProjectCategory(
+        categoryToDelete.project_category_id,
+      );
       if (res.status === 200) {
         toast.success("Category deleted successfully");
+        setIsDeleteDiagOpen(false);
+        setCategoryToDelete(null);
         loadData();
       }
     } catch (error: unknown) {
       const err = error as { message?: string };
       toast.error(err.message || "Failed to delete category");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -262,6 +273,15 @@ const ProjectCategoryManagement: React.FC = () => {
         afdRecords={afdRecords}
         category={editingCategory}
         onSave={handleSaveCategory}
+      />
+
+      <DeleteConfirmDialog
+        open={isDeleteDiagOpen}
+        onOpenChange={setIsDeleteDiagOpen}
+        title="Delete Category"
+        description={`Are you sure you want to delete the category "${categoryToDelete?.project_category_name}"? This action cannot be undone.`}
+        onConfirm={handleConfirmDelete}
+        loading={deleting}
       />
     </div>
   );
