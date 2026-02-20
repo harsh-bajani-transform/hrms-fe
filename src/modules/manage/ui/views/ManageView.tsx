@@ -5,13 +5,22 @@ import React, {
   useRef,
   useMemo,
 } from "react";
-import { Settings, Users, Briefcase, Lock } from "lucide-react";
+import {
+  Settings,
+  Users,
+  Briefcase,
+  Lock,
+  FolderKanban,
+  FileText,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../../../../context/AuthContext";
 import UsersManagement from "../components/UsersManagement";
 import ProjectsManagement from "../components/ProjectsManagement";
 import UserTrackingView from "../components/UserTrackingView";
 import UserMonthlyTargetCard from "../components/UserMonthlyTargetCard";
+import ProjectCategoryManagement from "../components/ProjectCategoryManagement";
+import AFDManagement from "../components/AFDManagement";
 import { Button } from "@/components/ui/button";
 import {
   fetchUsersList,
@@ -217,6 +226,28 @@ const ManageView: React.FC = () => {
           >
             <Briefcase className="w-4 h-4" /> Monthly Target
           </Button>
+          <Button
+            variant={activeTab === "category" ? "default" : "ghost"}
+            className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
+              activeTab === "category"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            onClick={() => setActiveTab("category")}
+          >
+            <FolderKanban className="w-4 h-4" /> Project Category
+          </Button>
+          <Button
+            variant={activeTab === "afd" ? "default" : "ghost"}
+            className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
+              activeTab === "afd"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            onClick={() => setActiveTab("afd")}
+          >
+            <FileText className="w-4 h-4" /> AFD Management
+          </Button>
         </div>
       </div>
 
@@ -238,6 +269,8 @@ const ManageView: React.FC = () => {
       )}
       {activeTab === "tracking" && <UserTrackingView />}
       {activeTab === "monthly_target" && <UserMonthlyTargetCard />}
+      {activeTab === "category" && <ProjectCategoryManagement />}
+      {activeTab === "afd" && <AFDManagement />}
     </div>
   );
 };

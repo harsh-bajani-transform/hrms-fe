@@ -194,3 +194,110 @@ export const deleteTask = async (taskData: Record<string, unknown>) => {
     throw new Error(error.response?.data?.message || "Failed to delete task");
   }
 };
+
+// Project Category Management
+export const fetchProjectCategories = async () => {
+  try {
+    const response = await api.post("/project_category/list", {});
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch project categories",
+    );
+  }
+};
+
+export const createProjectCategory = async (categoryData: {
+  name: string;
+  afdName: string;
+}) => {
+  try {
+    const response = await api.post("/project_category/create", {
+      project_category_name: categoryData.name,
+      afd_id: categoryData.afdName,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to create project category",
+    );
+  }
+};
+
+export const updateProjectCategory = async (
+  categoryId: string | number,
+  categoryData: { name: string; afdName: string },
+) => {
+  try {
+    const response = await api.post("/project_category/update", {
+      project_category_id: categoryId,
+      project_category_name: categoryData.name,
+      afd_id: categoryData.afdName,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to update project category",
+    );
+  }
+};
+
+export const deleteProjectCategory = async (categoryId: string | number) => {
+  try {
+    const response = await api.put("/project_category/delete", {
+      category_id: categoryId,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to delete project category",
+    );
+  }
+};
+
+// AFD Management
+export const fetchAFDRecords = async () => {
+  try {
+    const response = await api.post("/qc_afd/list", {});
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch AFD records",
+    );
+  }
+};
+
+export const createAFDRecord = async (afdData: Record<string, unknown>) => {
+  try {
+    const response = await api.post("/qc_afd/add", afdData);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Failed to create AFD");
+  }
+};
+
+export const updateAFDRecord = async (
+  afdId: string | number,
+  afdData: Record<string, unknown>,
+) => {
+  try {
+    const response = await api.post("/qc_afd/update", {
+      qc_afd_id: afdId,
+      ...afdData,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Failed to update AFD");
+  }
+};
+
+export const deleteAFDRecord = async (afdId: string | number) => {
+  try {
+    const response = await api.post("/qc_afd/delete", {
+      qc_afd_id: afdId,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Failed to delete AFD");
+  }
+};

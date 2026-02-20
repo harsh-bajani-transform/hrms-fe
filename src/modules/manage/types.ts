@@ -44,7 +44,40 @@ export interface ManageUser {
   qa_id?: string | number;
   team_id?: string | number;
   is_active?: number;
+  assigned_hours?: number;
+  unassigned_hours?: number;
   [key: string]: unknown;
+}
+
+export interface ProjectCategory {
+  project_category_id: string | number;
+  project_category_name: string;
+  afd_id: string | number;
+  afd_name?: string; // Optional if provided or mapped
+  id?: string | number; // Keep for legacy compatibility if needed
+  name?: string;
+  afdName?: string;
+}
+
+export interface AFDSubCategory {
+  id: string | number;
+  name: string;
+  score: number;
+}
+
+export interface AFDCategory {
+  id: string | number;
+  name: string;
+  score: number;
+  subCategories: AFDSubCategory[];
+}
+
+export interface AFDRecord {
+  id: string | number;
+  name: string;
+  afd_id?: string | number; // Match API
+  afd_name?: string; // Match API
+  categories?: AFDCategory[];
 }
 
 export interface ProjectFormModalProps {
