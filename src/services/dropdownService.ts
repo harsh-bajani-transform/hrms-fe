@@ -73,9 +73,9 @@ export const fetchUserDropdowns = async (): Promise<UserDropdowns> => {
     ]);
 
     const result: UserDropdowns = {
-      roles,
-      designations,
-      teams,
+      roles: roles.map(r => ({ ...r, role_name: r.label })),
+      designations: designations.map(d => ({ ...d, designation_name: d.label })),
+      teams: teams.map(t => ({ ...t, team_name: t.label })),
       projectManagers,
       assistantManagers,
       qas,

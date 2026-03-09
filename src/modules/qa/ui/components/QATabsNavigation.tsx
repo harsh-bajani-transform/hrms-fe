@@ -2,6 +2,7 @@ import type { Dispatch, SetStateAction } from 'react'
 import {
   Briefcase,
   DollarSign,
+  FileCheck,
   FileWarning,
   LayoutGrid,
   Users,
@@ -11,6 +12,7 @@ import {
 export type QATabId =
   | 'overview'
   | 'billable_report'
+  | 'audit_report'
   | 'agents'
   | 'adherence'
   | 'incentives'
@@ -30,6 +32,7 @@ export interface QATabsNavigationProps {
 const tabs: TabDef[] = [
   { id: 'overview', label: 'Overview', icon: LayoutGrid },
   { id: 'billable_report', label: 'Billable Report', icon: Briefcase },
+  { id: 'audit_report', label: 'Audit Report', icon: FileCheck },
   { id: 'agents', label: 'Agent Performance', icon: Users, disabled: true },
   { id: 'adherence', label: 'Reporting Adherence', icon: FileWarning, disabled: true },
   { id: 'incentives', label: 'Agent Incentives', icon: DollarSign, disabled: true },

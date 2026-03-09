@@ -36,7 +36,9 @@ import type { ManageUser as User, ProjectType as Project } from "../../types";
 
 const ManageView: React.FC = () => {
   const { user } = useAuth() as { user: User };
-  const [activeTab, setActiveTab] = useState<string>("users");
+  const [activeTab, setActiveTab] = useState<"users" | "projects">("users");
+  const [activeSubTab, setActiveSubTab] = useState<string>("");
+
   const [users, setUsers] = useState<User[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
@@ -44,6 +46,12 @@ const ManageView: React.FC = () => {
   const { dropdowns, loadDropdowns } = useUserDropdowns();
   const hasFetchedUsers = useRef(false);
   const hasFetchedProjects = useRef(false);
+
+  // Set default sub-tabs when main tab changes
+  useEffect(() => {
+    if (activeTab === "users") setActiveSubTab("list");
+    if (activeTab === "projects") setActiveSubTab("projects_list");
+  }, [activeTab]);
 
   const canManageUsers =
     user?.permissions?.includes("manage_users") ||
@@ -76,12 +84,12 @@ const ManageView: React.FC = () => {
           ? role.label
           : typeof u.role_name === "string"
             ? u.role_name
-            : undefined,
+            : "",
         designation_name: hasLabel(designation)
           ? designation.label
           : typeof u.designation_name === "string"
             ? u.designation_name
-            : undefined,
+            : "",
         role_id: u.role_id?.toString(),
         designation_id: u.designation_id?.toString(),
         project_manager_id: (
@@ -132,16 +140,24 @@ const ManageView: React.FC = () => {
   }, [user?.user_id]);
 
   useEffect(() => {
-    if (activeTab === "users" && !hasFetchedUsers.current) {
+    if (
+      activeTab === "users" &&
+      activeSubTab === "list" &&
+      !hasFetchedUsers.current
+    ) {
       hasFetchedUsers.current = true;
       loadUsersData();
       loadDropdowns();
-    } else if (activeTab === "projects" && !hasFetchedProjects.current) {
+    } else if (
+      activeTab === "projects" &&
+      activeSubTab === "projects_list" &&
+      !hasFetchedProjects.current
+    ) {
       hasFetchedProjects.current = true;
       loadProjectsData();
       loadDropdowns();
     }
-  }, [activeTab, loadUsersData, loadProjectsData, loadDropdowns]);
+  }, [activeTab, activeSubTab, loadUsersData, loadProjectsData, loadDropdowns]);
 
   if (!canManageUsers && !canManageProjects && !isAssistantManager) {
     return (
@@ -170,107 +186,156 @@ const ManageView: React.FC = () => {
               <Settings className="w-7 h-7 text-blue-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Management Center</h1>
-              <p className="text-gray-600 mt-1">
-                Manage users, projects, and system settings
+              <h1 className="text-2xl font-bold tracking-tight">
+                Management Center
+              </h1>
+              <p className="text-gray-500 text-sm mt-0.5 font-medium">
+                Configure users, project workflows, targets and quality metrics.
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="bg-white rounded shadow-sm border border-gray-200 p-2">
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={activeTab === "users" ? "default" : "ghost"}
-            className={`flex items-center gap-2 px-6  rounded-lg font-medium text-sm transition-all ${
-              activeTab === "users"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-            onClick={() => setActiveTab("users")}
-          >
-            <Users className="w-4 h-4" /> Users Management
-          </Button>
-          <Button
-            variant={activeTab === "projects" ? "default" : "ghost"}
-            className={`flex items-center gap-2 px-6  rounded-lg font-medium text-sm transition-all ${
-              activeTab === "projects"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-            onClick={() => setActiveTab("projects")}
-          >
-            <Briefcase className="w-4 h-4" /> Projects Management
-          </Button>
-          <Button
-            variant={activeTab === "tracking" ? "default" : "ghost"}
-            className={`flex items-center gap-2 px-6  rounded-lg font-medium text-sm transition-all ${
-              activeTab === "tracking"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-            onClick={() => setActiveTab("tracking")}
-          >
-            <Settings className="w-4 h-4" /> User Tracking
-          </Button>
-          <Button
-            variant={activeTab === "monthly_target" ? "default" : "ghost"}
-            className={`flex items-center gap-2 px-6  rounded-lg font-medium text-sm transition-all ${
-              activeTab === "monthly_target"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-            onClick={() => setActiveTab("monthly_target")}
-          >
-            <Briefcase className="w-4 h-4" /> Monthly Target
-          </Button>
-          <Button
-            variant={activeTab === "category" ? "default" : "ghost"}
-            className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
-              activeTab === "category"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-            onClick={() => setActiveTab("category")}
-          >
-            <FolderKanban className="w-4 h-4" /> Project Category
-          </Button>
-          <Button
-            variant={activeTab === "afd" ? "default" : "ghost"}
-            className={`flex items-center gap-2 px-6 h-11 rounded-lg font-medium text-sm transition-all ${
-              activeTab === "afd"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-            onClick={() => setActiveTab("afd")}
-          >
-            <FileText className="w-4 h-4" /> AFD Management
-          </Button>
-        </div>
+      {/* Main Tab Navigation */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1.5 flex gap-1.5 w-fit mx-auto sm:mx-0">
+        <Button
+          variant={activeTab === "users" ? "default" : "ghost"}
+          className={`flex items-center gap-2 px-8 py-6 rounded-lg font-bold text-sm transition-all duration-300 ${
+            activeTab === "users"
+              ? "bg-blue-600 text-white shadow-md hover:bg-blue-700"
+              : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"
+          }`}
+          onClick={() => setActiveTab("users")}
+        >
+          <Users
+            className={`w-4 h-4 ${activeTab === "users" ? "text-white" : "text-blue-500"}`}
+          />
+          User Management
+        </Button>
+        <Button
+          variant={activeTab === "projects" ? "default" : "ghost"}
+          className={`flex items-center gap-2 px-8 py-6 rounded-lg font-bold text-sm transition-all duration-300 ${
+            activeTab === "projects"
+              ? "bg-blue-600 text-white shadow-md hover:bg-blue-700"
+              : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"
+          }`}
+          onClick={() => setActiveTab("projects")}
+        >
+          <Briefcase
+            className={`w-4 h-4 ${activeTab === "projects" ? "text-white" : "text-blue-500"}`}
+          />
+          Projects & Targets
+        </Button>
       </div>
 
-      {activeTab === "users" && (
-        <UsersManagement
-          users={enrichedUsers}
-          loading={loadingUsers}
-          onRefresh={loadUsersData}
-          dropdowns={dropdowns}
-        />
-      )}
-      {activeTab === "projects" && (
-        <ProjectsManagement
-          projects={projects}
-          loading={loadingProjects}
-          onRefresh={loadProjectsData}
-          dropdowns={dropdowns}
-        />
-      )}
-      {activeTab === "tracking" && <UserTrackingView />}
-      {activeTab === "monthly_target" && <UserMonthlyTargetCard />}
-      {activeTab === "category" && <ProjectCategoryManagement />}
-      {activeTab === "afd" && <AFDManagement />}
+      {/* Sub-navigation Section */}
+      <div className="space-y-4">
+        {activeTab === "users" && (
+          <div className="flex gap-2 border-b border-gray-200 pb-px px-2 overflow-x-auto scrollbar-hide">
+            {[
+              { id: "list", label: "Users List", icon: Users },
+              { id: "tracking", label: "User Tracking", icon: Settings },
+            ].map((sub) => (
+              <button
+                key={sub.id}
+                onClick={() => setActiveSubTab(sub.id)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-bold transition-all relative whitespace-nowrap ${
+                  activeSubTab === sub.id
+                    ? "text-blue-600 bg-blue-50/50 rounded-t-lg"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-50/50 rounded-t-lg"
+                }`}
+              >
+                <sub.icon
+                  className={`w-3.5 h-3.5 ${activeSubTab === sub.id ? "text-blue-600" : "text-gray-400"}`}
+                />
+                {sub.label}
+                {activeSubTab === sub.id && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {activeTab === "projects" && (
+          <div className="flex gap-2 border-b border-gray-200 pb-px px-2 overflow-x-auto scrollbar-hide">
+            {[
+              { id: "projects_list", label: "Projects List", icon: Briefcase },
+              {
+                id: "monthly_target",
+                label: "Monthly Targets",
+                icon: Briefcase,
+              },
+              { id: "category", label: "Project Category", icon: FolderKanban },
+              { id: "afd", label: "AFD Management", icon: FileText },
+            ].map((sub) => (
+              <button
+                key={sub.id}
+                onClick={() => setActiveSubTab(sub.id)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-bold transition-all relative whitespace-nowrap ${
+                  activeSubTab === sub.id
+                    ? "text-blue-600 bg-blue-50/50 rounded-t-lg"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-50/50 rounded-t-lg"
+                }`}
+              >
+                <sub.icon
+                  className={`w-3.5 h-3.5 ${activeSubTab === sub.id ? "text-blue-600" : "text-gray-400"}`}
+                />
+                {sub.label}
+                {activeSubTab === sub.id && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 animate-in fade-in slide-in-from-bottom-1" />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* View Content */}
+        <div className="min-h-[400px]">
+          {activeTab === "users" && activeSubTab === "list" && (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <UsersManagement
+                users={enrichedUsers}
+                loading={loadingUsers}
+                onRefresh={loadUsersData}
+                dropdowns={dropdowns}
+              />
+            </div>
+          )}
+          {activeTab === "users" && activeSubTab === "tracking" && (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <UserTrackingView />
+            </div>
+          )}
+
+          {activeTab === "projects" && activeSubTab === "projects_list" && (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <ProjectsManagement
+                projects={projects}
+                loading={loadingProjects}
+                onRefresh={loadProjectsData}
+                dropdowns={dropdowns}
+              />
+            </div>
+          )}
+          {activeTab === "projects" && activeSubTab === "monthly_target" && (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <UserMonthlyTargetCard />
+            </div>
+          )}
+          {activeTab === "projects" && activeSubTab === "category" && (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <ProjectCategoryManagement />
+            </div>
+          )}
+          {activeTab === "projects" && activeSubTab === "afd" && (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <AFDManagement />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

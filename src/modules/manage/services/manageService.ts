@@ -167,7 +167,7 @@ export const updateProject = async (
       };
     }
 
-    const response = await api.put("/project/update", payload);
+    const response = await api.post("/project/update", payload);
     return response.data;
   } catch (error: any) {
     logError("[manageService] Failed to update project:", error);
@@ -179,7 +179,7 @@ export const updateProject = async (
 
 export const deleteProject = async (projectId: string | number) => {
   try {
-    const response = await api.put("/project/delete", {
+    const response = await api.post("/project/delete", {
       project_id: projectId,
     });
     return response.data;
@@ -191,8 +191,11 @@ export const deleteProject = async (projectId: string | number) => {
 };
 
 // Task Management
-export const addTask = async (taskData: Record<string, unknown>) => {
+export const addTask = async (taskData: Record<string, unknown> | FormData) => {
   try {
+    const isFormData = taskData instanceof FormData;
+    log("[manageService] Adding task:", isFormData ? (taskData as FormData).get("task_name") : (taskData as any).task_name);
+    
     const response = await api.post("/task/add", taskData);
     return response.data;
   } catch (error: any) {
@@ -200,9 +203,13 @@ export const addTask = async (taskData: Record<string, unknown>) => {
   }
 };
 
-export const updateTask = async (taskData: Record<string, unknown>) => {
+export const updateTask = async (taskData: Record<string, unknown> | FormData) => {
   try {
-    const response = await api.put("/task/update", taskData);
+    const isFormData = taskData instanceof FormData;
+    log("[manageService] Updating task:", isFormData ? (taskData as FormData).get("task_id") : (taskData as any).task_id);
+    
+    // Note: Legacy projectService use POST for task update as well
+    const response = await api.post("/task/update", taskData);
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Failed to update task");

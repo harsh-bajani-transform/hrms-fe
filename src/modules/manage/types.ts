@@ -9,6 +9,9 @@ export interface TaskType {
   assigned_to?: string | number;
   project_id?: string | number;
   attachment?: string | null;
+  task_target?: string | number;
+  task_team_id?: string | number | (string | number)[];
+  important_columns?: string[];
   [key: string]: unknown;
 }
 
@@ -27,6 +30,9 @@ export interface ProjectType {
   project_code?: string;
   project_description?: string;
   project_file?: string | null;
+  project_team_id?: string | number | (string | number)[];
+  project_qa_id?: string | number | (string | number)[];
+  asst_project_manager_id?: string | number | (string | number)[];
   [key: string]: unknown;
 }
 
@@ -60,13 +66,15 @@ export interface ProjectCategory {
 }
 
 export interface AFDSubCategory {
-  id: string | number;
+  id?: string | number;
+  qc_afd_id?: string | number;
   name: string;
   score: number;
 }
 
 export interface AFDCategory {
-  id: string | number;
+  id?: string | number;
+  qc_afd_id?: string | number;
   name: string;
   score: number;
   subCategories: AFDSubCategory[];
@@ -75,14 +83,14 @@ export interface AFDCategory {
 export interface AFDRecord {
   id: string | number;
   name: string;
-  qc_afd_id?: string | number; // Primary key of each flat checkpoint row
-  afd_id?: string | number; // Group/type ID
-  afd_name?: string;
-  afd_points?: number;
-  afd_category_id?: number;
-  created_at?: string;
-  updated_at?: string;
-  categories?: AFDCategory[];
+  qc_afd_id?: string | number | undefined;
+  afd_id?: string | number | undefined;
+  afd_name?: string | undefined;
+  afd_points?: number | undefined;
+  afd_category_id?: number | undefined;
+  created_at?: string | undefined;
+  updated_at?: string | undefined;
+  categories?: AFDCategory[] | undefined;
 }
 
 export interface ProjectFormModalProps {
@@ -132,4 +140,65 @@ export interface UserFormModalProps {
   onClose: () => void;
   onSuccess: () => void;
   dropdowns: UserDropdowns;
+}
+
+export interface APIAFDCategory {
+  qc_afd_id: string | number;
+  qc_afd_name: string;
+  afd_points: number;
+  afd_sub_categories?: {
+    qc_afd_id: string | number;
+    qc_afd_name: string;
+    afd_points: number;
+  }[];
+}
+
+export interface APIAFDItem {
+  afd_id: string | number;
+  afd_name: string;
+  afd_points?: number;
+  qc_afd_id?: string | number;
+  afd_categories?: APIAFDCategory[];
+}
+
+export interface APIProjectCategory {
+  project_category_id: string | number;
+  project_category_name: string;
+  afd: APIAFDItem[];
+}
+
+export interface APIResponseCategory {
+  qc_afd_id: string | number;
+  afd_name?: string;
+  qc_afd_name?: string;
+  afd_points: number;
+  afd_sub_categories?: Array<{
+    qc_afd_id: string | number;
+    afd_name?: string;
+    qc_afd_name?: string;
+    afd_points: number;
+  }>;
+  subcategories?: Array<{
+    qc_afd_id: string | number;
+    afd_name?: string;
+    qc_afd_name?: string;
+    afd_points: number;
+  }>;
+}
+
+export interface APIResponseAFD {
+  afd_id: string | number;
+  afd_name: string;
+  afd_points?: number;
+  qc_afd_id?: string | number;
+  afd_categories?: APIResponseCategory[];
+  categories?: APIResponseCategory[];
+}
+
+export interface APIResponseContainer {
+  project_category_id?: string | number;
+  afd?: APIResponseAFD[];
+  categories?: APIResponseCategory[];
+  afd_id?: string | number;
+  afd_name?: string;
 }

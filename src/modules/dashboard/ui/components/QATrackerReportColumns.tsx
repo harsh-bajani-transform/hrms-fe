@@ -14,6 +14,7 @@ export interface Tracker {
   tenure_target?: number | string;
   production?: number | string;
   billable_hours?: number | string | null;
+  shift_type?: string;
 }
 
 export const createColumns = (

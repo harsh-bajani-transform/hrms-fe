@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as QcFormRouteImport } from './routes/qc-form'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as EntryRouteImport } from './routes/entry'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -27,6 +28,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 } as any).lazy(() =>
   import('./routes/reset-password.lazy').then((d) => d.Route),
 )
+const QcFormRoute = QcFormRouteImport.update({
+  id: '/qc-form',
+  path: '/qc-form',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/qc-form.lazy').then((d) => d.Route))
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/entry': typeof EntryRoute
   '/login': typeof LoginRoute
+  '/qc-form': typeof QcFormRoute
   '/reset-password': typeof ResetPasswordRoute
 }
 export interface FileRoutesByTo {
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/entry': typeof EntryRoute
   '/login': typeof LoginRoute
+  '/qc-form': typeof QcFormRoute
   '/reset-password': typeof ResetPasswordRoute
 }
 export interface FileRoutesById {
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/entry': typeof EntryRoute
   '/login': typeof LoginRoute
+  '/qc-form': typeof QcFormRoute
   '/reset-password': typeof ResetPasswordRoute
 }
 export interface FileRouteTypes {
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/entry'
     | '/login'
+    | '/qc-form'
     | '/reset-password'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/entry'
     | '/login'
+    | '/qc-form'
     | '/reset-password'
   id:
     | '__root__'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/entry'
     | '/login'
+    | '/qc-form'
     | '/reset-password'
   fileRoutesById: FileRoutesById
 }
@@ -163,6 +175,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   EntryRoute: typeof EntryRoute
   LoginRoute: typeof LoginRoute
+  QcFormRoute: typeof QcFormRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
@@ -173,6 +186,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/qc-form': {
+      id: '/qc-form'
+      path: '/qc-form'
+      fullPath: '/qc-form'
+      preLoaderRoute: typeof QcFormRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -251,6 +271,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   EntryRoute: EntryRoute,
   LoginRoute: LoginRoute,
+  QcFormRoute: QcFormRoute,
   ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport

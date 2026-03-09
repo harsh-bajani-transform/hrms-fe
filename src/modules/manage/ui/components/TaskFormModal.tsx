@@ -7,7 +7,17 @@ import {
   FileText,
   X,
   PlusCircle,
+  Hash,
+  ChevronDown,
+  Trash2,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -39,6 +49,9 @@ interface FormData {
   assignedTo: string;
   projectId: string;
   attachment: string | null;
+  target: string;
+  teamIds: (string | number)[];
+  importantColumns: string[];
 }
 
 const TaskFormModal: React.FC<TaskFormModalProps> = ({
@@ -59,6 +72,13 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
     assignedTo: task?.assigned_to?.toString() || "",
     projectId: task?.project_id?.toString() || "",
     attachment: null,
+    target: task?.task_target?.toString() || "",
+    teamIds: task?.task_team_id
+      ? Array.isArray(task.task_team_id)
+        ? task.task_team_id.map((id) => id.toString())
+        : [task.task_team_id.toString()]
+      : [],
+    importantColumns: task?.important_columns || [],
   });
 
   const [attachmentPreview, setAttachmentPreview] = useState<string | null>(
@@ -72,10 +92,11 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
   const validate = () => {
     const newErrors: Partial<Record<keyof FormData, string>> = {};
     if (!formData.name.trim()) newErrors.name = "Task name is required";
-    if (!formData.startDate) newErrors.startDate = "Start date is required";
-    if (!formData.endDate) newErrors.endDate = "End date is required";
-    if (!formData.assignedTo) newErrors.assignedTo = "Assignee is required";
     if (!formData.projectId) newErrors.projectId = "Project is required";
+    if (!formData.target || isNaN(Number(formData.target)))
+      newErrors.target = "Target is required and must be a number";
+    if (formData.teamIds.length === 0)
+      newErrors.teamIds = "At least one agent must be assigned";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -85,22 +106,33 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
     if (!validate()) return;
     try {
       setIsSubmitting(true);
-      const payload = {
-        task_name: formData.name,
-        task_description: formData.description,
-        start_date: formData.startDate,
-        end_date: formData.endDate,
-        assigned_to: formData.assignedTo,
-        project_id: formData.projectId,
-        attachment: formData.attachment,
-        device_id,
-        device_type,
-      };
+      
+      const submitData = new FormData();
+      submitData.append("project_id", formData.projectId);
+      submitData.append("task_name", formData.name);
+      submitData.append("task_description", formData.description);
+      submitData.append("task_target", formData.target);
+      submitData.append("device_id", device_id);
+      submitData.append("device_type", device_type);
+      
+      // Legacy backend formats for arrays (JSON strings of numbers)
+      submitData.append("task_team_id", JSON.stringify(formData.teamIds.map(Number)));
+      
+      if (formData.importantColumns.length > 0) {
+        submitData.append("important_columns", JSON.stringify(formData.importantColumns));
+      }
+
+      // Legacy backend expects 'task_file'
+      if (fileInputRef.current?.files?.[0]) {
+        submitData.append("task_file", fileInputRef.current.files[0]);
+      }
+
       if (isEditMode) {
-        await updateTask({ ...payload, task_id: task?.task_id });
+        submitData.append("task_id", String(task?.task_id));
+        await updateTask(submitData);
         toast.success("Task updated successfully");
       } else {
-        await addTask(payload);
+        await addTask(submitData);
         toast.success("Task created successfully");
       }
       onSuccess();
@@ -316,6 +348,161 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 placeholder="Detail the expectations..."
                 className="w-full p-4 text-sm rounded bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-400 focus:ring-blue-100 transition-all outline-hidden resize-none"
               />
+            </div>
+
+            {/* TARGET (HOURS) */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Hash className="w-3.5 h-3.5" />
+                Target (Hrs)
+              </label>
+              <Input
+                name="target"
+                type="number"
+                value={formData.target}
+                onChange={(e) =>
+                  setFormData({ ...formData, target: e.target.value })
+                }
+                placeholder="e.g. 10"
+                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.target ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+              />
+              {errors.target && (
+                <p className="text-xs text-red-500 font-medium mt-1 px-1">
+                  {errors.target}
+                </p>
+              )}
+            </div>
+
+            {/* TEAM ASSIGNMENT (AGENTS) */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5" />
+                Select Agent(s)
+              </label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={` w-full bg-gray-50 border-gray-200 flex justify-between px-3 font-normal font-sans ${errors.teamIds ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  >
+                    <span className="truncate">
+                      {formData.teamIds.length > 0
+                        ? `${formData.teamIds.length} selected`
+                        : "Select Agents"}
+                    </span>
+                    <ChevronDown className="w-4 h-4 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 max-h-[300px] overflow-y-auto">
+                  {dropdowns.users.map((u) => {
+                    const id = (u.user_id || u.id)?.toString() || "";
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={id}
+                        checked={formData.teamIds.includes(id)}
+                        onCheckedChange={(checked) => {
+                          const nextIds = checked
+                            ? [...formData.teamIds, id]
+                            : formData.teamIds.filter((x) => x !== id);
+                          setFormData({ ...formData, teamIds: nextIds });
+                        }}
+                      >
+                        {u.label}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {formData.teamIds.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {formData.teamIds.map((id) => {
+                    const agent = dropdowns.users.find(
+                      (a) => (a.user_id || a.id)?.toString() === id.toString(),
+                    );
+                    return (
+                      <Badge
+                        key={id}
+                        variant="secondary"
+                        className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2 py-0.5 border-none"
+                      >
+                        {agent?.label || id}
+                        <X
+                          className="w-3 h-3 ml-1 cursor-pointer"
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              teamIds: formData.teamIds.filter((x) => x !== id),
+                            });
+                          }}
+                        />
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
+              {errors.teamIds && (
+                <p className="text-xs text-red-500 font-medium mt-1 px-1">
+                  {errors.teamIds}
+                </p>
+              )}
+            </div>
+
+            {/* IMPORTANT COLUMNS */}
+            <div className="md:col-span-2 space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <label className="text-sm font-bold text-gray-800 flex items-center gap-1.5 uppercase tracking-wider">
+                  <ClipboardList className="w-4 h-4 text-blue-600" />
+                  Important Columns
+                </label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setFormData({
+                      ...formData,
+                      importantColumns: [...formData.importantColumns, ""],
+                    })
+                  }
+                  className="h-7 text-[10px] font-bold text-blue-600 uppercase tracking-wider hover:bg-blue-50"
+                >
+                  <PlusCircle className="w-3.5 h-3.5 mr-1" /> Add Column
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {formData.importantColumns.map((col, idx) => (
+                  <div key={idx} className="group flex items-center gap-2">
+                    <Input
+                      value={col}
+                      onChange={(e) => {
+                        const newCols = [...formData.importantColumns];
+                        newCols[idx] = e.target.value;
+                        setFormData({ ...formData, importantColumns: newCols });
+                      }}
+                      placeholder={`Column ${idx + 1}`}
+                      className="bg-gray-50 border-gray-100 focus:bg-white h-9 text-xs"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const newCols = formData.importantColumns.filter((_, i) => i !== idx);
+                        setFormData({ ...formData, importantColumns: newCols });
+                      }}
+                      className="h-9 w-9 text-slate-300 hover:text-rose-500 group-hover:opacity-100"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                {formData.importantColumns.length === 0 && (
+                  <p className="col-span-full text-center py-4 text-[11px] text-slate-400 italic">
+                    Add column names that are critical for tracker accuracy
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 

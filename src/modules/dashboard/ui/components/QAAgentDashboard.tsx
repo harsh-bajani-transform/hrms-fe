@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import {
   Users,
@@ -19,6 +20,7 @@ import QATabsNavigation, {
   QATabId,
 } from "../../../qa/ui/components/QATabsNavigation";
 import BillableReport from "./BillableReport";
+import QAAgentAudit from "../../../qa/ui/components/QAAgentAudit";
 import {
   QAAgentDashboardProps,
   Stats,
@@ -28,6 +30,7 @@ import {
 
 const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { device_id, device_type } = useDeviceInfo();
 
   const [stats, setStats] = useState<Stats>({
@@ -120,9 +123,12 @@ const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
     }
   }, [user?.user_id, user?.id, device_id, device_type, dateRange]);
 
-  const handleQCForm = (tracker: TrackerFile) => {
+  const handleOpenQCForm = (tracker: any) => {
     log("[QAAgentDashboard] Opening QC Form for tracker:", tracker.tracker_id);
-    toast.success("QC Form functionality coming soon!");
+    navigate({
+      to: '/qc-form',
+      state: { tracker } as any
+    });
   };
 
   interface StatCardProps {
@@ -321,7 +327,7 @@ const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
                         </div>
                       </div>
                       <Button
-                        onClick={() => handleQCForm(file)}
+                        onClick={() => handleOpenQCForm(file)}
                         className="bg-blue-600 hover:bg-blue-700  px-4"
                       >
                         <FileText className="w-4 h-4" />
@@ -338,6 +344,9 @@ const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
 
       {/* Billable Report Tab */}
       {activeTab === "billable_report" && <BillableReport />}
+
+      {/* Audit Report Tab */}
+      {activeTab === "audit_report" && <QAAgentAudit />}
     </div>
   );
 };

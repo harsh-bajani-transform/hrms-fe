@@ -48,6 +48,7 @@ interface FormDataState {
   qaIds: (string | number)[];
   monthlyTarget: string;
   projectCategoryId: string;
+  teamIds: (string | number)[];
 }
 
 const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
@@ -81,6 +82,11 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
       : [],
     monthlyTarget: project?.monthly_hours_target?.toString() || "",
     projectCategoryId: project?.project_category_id?.toString() || "",
+    teamIds: project
+      ? Array.isArray((project as any).project_team_id || (project as any).project_team)
+        ? ((project as any).project_team_id || (project as any).project_team).map((u: any) => String(u.user_id || u))
+        : []
+      : [],
   });
 
   const [projectFiles, setProjectFiles] = useState<File[]>([]);
@@ -101,6 +107,8 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
       newErrors.apmIds = "At least one Assistant Manager is required";
     if (formData.qaIds.length === 0)
       newErrors.qaIds = "At least one QA Owner is required";
+    if (formData.teamIds.length === 0)
+      newErrors.teamIds = "At least one Agent is required";
     if (!formData.monthlyTarget || isNaN(Number(formData.monthlyTarget)))
       newErrors.monthlyTarget =
         "Monthly target is required and must be a number";
@@ -141,10 +149,22 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
       submitData.append("device_id", device_id);
       submitData.append("device_type", device_type);
 
-      formData.apmIds.forEach(id => submitData.append("apm_id", id.toString()));
-      formData.qaIds.forEach(id => submitData.append("qa_id", id.toString()));
+      // Legacy backend formats for arrays (JSON strings of numbers)
+      submitData.append("asst_project_manager_id", JSON.stringify(formData.apmIds.map(Number)));
+      submitData.append("project_qa_id", JSON.stringify(formData.qaIds.map(Number)));
+      submitData.append("project_team_id", JSON.stringify(formData.teamIds.map(Number)));
       
-      projectFiles.forEach(file => submitData.append("project_file", file));
+      // Legacy backend expects 'file' key
+      projectFiles.forEach(file => submitData.append("file", file));
+
+      // Handle existing files in edit mode
+      if (isEditMode && project) {
+        // Collect URLs from files that were marked as existing (if we had that state)
+        // For now, if existingFile is not replaced, we might need a way to track it.
+        // Looking at legacy, they use 'existing_files' JSON array.
+        const existingFilesToKeep = existingFile ? [existingFile] : [];
+        submitData.append("existing_files", JSON.stringify(existingFilesToKeep));
+      }
 
       if (isEditMode && project) {
         await updateProject(project.project_id, submitData);
@@ -481,6 +501,80 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
               {errors.qaIds && (
                 <p className="text-xs text-red-500 font-medium mt-1 px-1">
                   {errors.qaIds}
+                </p>
+              )}
+            </div>
+
+            {/* TEAM ASSIGNMENT (AGENTS) */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5" />
+                Agent(s)
+              </label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={` w-full bg-gray-50 border-gray-200 flex justify-between px-3 font-normal font-sans ${errors.teamIds ? "border-red-500" : ""}`}
+                  >
+                    <span className="truncate">
+                      {formData.teamIds.length > 0
+                        ? `${formData.teamIds.length} selected`
+                        : "Select Agents"}
+                    </span>
+                    <ChevronDown className="w-4 h-4 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 max-h-[300px] overflow-y-auto">
+                  {dropdowns.agents.map((a) => {
+                    const id = (a.user_id || a.id)?.toString() || "";
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={id}
+                        checked={formData.teamIds.includes(id)}
+                        onCheckedChange={(checked) => {
+                          const nextIds = checked
+                            ? [...formData.teamIds, id]
+                            : formData.teamIds.filter((x) => x !== id);
+                          setFormData({ ...formData, teamIds: nextIds });
+                        }}
+                      >
+                        {String(a.label)}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {formData.teamIds.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {formData.teamIds.map((id) => {
+                    const agent = dropdowns.agents.find(
+                      (a) => (a.user_id || a.id)?.toString() === id.toString(),
+                    );
+                    return (
+                      <Badge
+                        key={id}
+                        variant="secondary"
+                        className="bg-purple-50 text-purple-700 hover:bg-purple-100 px-2 py-0.5"
+                      >
+                        {String(agent?.label || id)}
+                        <X
+                          className="w-3 h-3 ml-1 cursor-pointer"
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              teamIds: formData.teamIds.filter((x) => x !== id),
+                            });
+                          }}
+                        />
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
+              {errors.teamIds && (
+                <p className="text-xs text-red-500 font-medium mt-1 px-1">
+                  {errors.teamIds}
                 </p>
               )}
             </div>

@@ -7,7 +7,13 @@ import {
   updateAFDRecord,
   deleteAFDRecord,
 } from "../../services/manageService";
-import { AFDRecord, AFDCategory } from "../../types";
+import {
+  AFDRecord,
+  AFDCategory,
+  APIResponseContainer,
+  APIResponseAFD,
+  APIResponseCategory,
+} from "../../types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,13 +46,101 @@ const AFDManagement: React.FC = () => {
   const loadAFDRecords = async () => {
     try {
       setLoading(true);
-      const data = await fetchAFDRecords();
-      if (data.status === 200) {
-        setAfdRecords(data.data?.rows || []);
+      const res = await fetchAFDRecords();
+      console.log("[AFDManagement] API Response:", res);
+
+      // Handle both numeric and boolean/string success indicators
+      if (res.status === 200 || res.status === "200" || res.success) {
+        let records: AFDRecord[] = [];
+        // Support different wrappers used across various backend endpoints
+        const rawData = (res.data ||
+          res.items ||
+          res.rows ||
+          (Array.isArray(res) ? res : [])) as APIResponseContainer[];
+
+        console.log("[AFDManagement] rawData items found:", rawData.length);
+
+        if (Array.isArray(rawData)) {
+          rawData.forEach((item: APIResponseContainer) => {
+            // Format A: Project Category hierarchy (Nested afd -> afd_categories -> afd_sub_categories)
+            if (item.afd && Array.isArray(item.afd)) {
+              const mapped = item.afd.map((afd: APIResponseAFD) => ({
+                id: afd.afd_id,
+                name: afd.afd_name,
+                afd_id: afd.afd_id,
+                afd_name: afd.afd_name,
+                qc_afd_id: afd.qc_afd_id || afd.afd_id,
+                afd_points: afd.afd_points || 0,
+                afd_category_id: (item.project_category_id as number) || 0,
+                categories: (afd.afd_categories || afd.categories || []).map(
+                  (cat: APIResponseCategory) => ({
+                    id: cat.qc_afd_id,
+                    qc_afd_id: cat.qc_afd_id,
+                    name: cat.qc_afd_name || cat.afd_name || "Unnamed Category",
+                    score: cat.afd_points || 0,
+                    subCategories: (
+                      cat.afd_sub_categories ||
+                      cat.subcategories ||
+                      []
+                    ).map((sub) => ({
+                      id: sub.qc_afd_id,
+                      qc_afd_id: sub.qc_afd_id,
+                      name:
+                        sub.qc_afd_name ||
+                        sub.afd_name ||
+                        "Unnamed Subcategory",
+                      score: sub.afd_points || 0,
+                    })),
+                  }),
+                ),
+              }));
+              records = [...records, ...mapped];
+            }
+            // Format B: Master AFD hierarchy (Direct categories -> subcategories)
+            else if (item.categories && Array.isArray(item.categories)) {
+              const masterRecord: AFDRecord = {
+                id: item.afd_id ?? 0,
+                name: item.afd_name || "Unnamed AFD",
+                afd_id: item.afd_id ?? 0,
+                afd_name: item.afd_name,
+                categories: item.categories.map((cat: APIResponseCategory) => ({
+                  id: cat.qc_afd_id,
+                  qc_afd_id: cat.qc_afd_id,
+                  name: cat.afd_name || cat.qc_afd_name || "Unnamed Category",
+                  score: cat.afd_points || 0,
+                  subCategories: (
+                    cat.subcategories ||
+                    cat.afd_sub_categories ||
+                    []
+                  ).map((sub) => ({
+                    id: sub.qc_afd_id,
+                    qc_afd_id: sub.qc_afd_id,
+                    name:
+                      sub.afd_name || sub.qc_afd_name || "Unnamed Subcategory",
+                    score: sub.afd_points || 0,
+                  })),
+                })),
+              };
+              records.push(masterRecord);
+            }
+            // Format C: Flat AFD Record
+            else if (item.afd_id || item.project_category_id) {
+              records.push({
+                id: item.afd_id ?? item.project_category_id ?? 0,
+                name: item.afd_name || "Unnamed Record",
+                afd_id: item.afd_id ?? item.project_category_id ?? 0,
+                afd_name: item.afd_name,
+              });
+            }
+          });
+        }
+
+        console.log("[AFDManagement] Final transformed records:", records);
+        setAfdRecords(records);
       }
     } catch (error: unknown) {
       console.error("Failed to load AFD records:", error);
-      toast.error("Failed to load AFD records");
+      toast.error("Could not load AFD records. Please try again later.");
     } finally {
       setLoading(false);
     }
