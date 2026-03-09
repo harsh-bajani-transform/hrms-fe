@@ -13,7 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit } from "lucide-react";
+import { Edit, Download } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import DailyEntryFormModal from "@/components/common/DailyEntryFormModal";
 
 interface UserCardUser {
@@ -162,13 +163,44 @@ export default function UserCard({
         accessorFn: (row: TrackerRow) => {
           const r = row as Record<string, unknown>;
           return row.qc_score != null
-            ? Number(row.qc_score).toFixed(2)
-            : typeof r.qcScore === "string" || typeof r.qcScore === "number"
-              ? String(r.qcScore)
-              : "-";
+            ? Number(row.qc_score)
+            : typeof r.qcScore === "number"
+              ? r.qcScore
+              : null;
         },
+        cell: ({ getValue }) => {
+          const val = getValue();
+          if (val === null || val === undefined) {
+            return (
+              <div className="text-center text-gray-400 font-medium italic">
+                —
+              </div>
+            );
+          }
+          const numScore = Number(val);
+          let colorClass = "text-slate-700";
+          if (numScore >= 98)
+            colorClass = "text-green-800 bg-green-100 font-bold";
+          else if (numScore >= 95)
+            colorClass = "text-yellow-700 bg-yellow-100 font-bold";
+          else colorClass = "text-red-700 bg-red-200 font-bold";
+
+          return (
+            <div className="text-center">
+              <Badge className={`${colorClass} border-transparent`}>
+                {numScore.toFixed(2)}%
+              </Badge>
+            </div>
+          );
+        },
+      },
+      {
+        header: "Tracker Count",
+        accessorFn: (row: TrackerRow) => row.trackers_count_day,
         cell: ({ getValue }) => (
-          <div className="text-center">{String(getValue())}</div>
+          <div className="text-center font-medium text-gray-900">
+            {String(getValue() ?? "—")}
+          </div>
         ),
       },
       {
@@ -252,7 +284,8 @@ export default function UserCard({
             row.cumulative_billable_hours_till_day != null
               ? Number(row.cumulative_billable_hours_till_day).toFixed(2)
               : workedHours,
-          "QC Score": qcScore,
+          "QC Score": qcScore !== "-" ? `${qcScore}%` : "-",
+          "Tracker Count": row.trackers_count_day ?? "-",
           "Daily Required Hours":
             row.daily_required_hours != null
               ? Number(row.daily_required_hours).toFixed(2)
@@ -264,30 +297,35 @@ export default function UserCard({
 
       if (exportData.length > 0) {
         const totalWorked = exportData.reduce(
-          (sum: number, r: any) =>
-            sum + (Number.parseFloat(r["Worked Hours"]) || 0),
+          (sum: number, r: Record<string, string | number>) =>
+            sum + (Number.parseFloat(String(r["Worked Hours"])) || 0),
           0,
         );
         const validQC = exportData.filter(
-          (r: any) => !Number.isNaN(Number.parseFloat(r["QC Score"])),
+          (r: Record<string, string | number>) =>
+            !Number.isNaN(Number.parseFloat(String(r["QC Score"]))),
         );
         const totalQC = validQC.reduce(
-          (sum: number, r: any) =>
-            sum + (Number.parseFloat(r["QC Score"]) || 0),
+          (sum: number, r: Record<string, string | number>) =>
+            sum + (Number.parseFloat(String(r["QC Score"])) || 0),
           0,
         );
         const avgQC = validQC.length > 0 ? totalQC / validQC.length : 0;
 
         const totalRequired = exportData.reduce(
-          (sum: number, r: any) =>
-            sum + (Number.parseFloat(r["Daily Required Hours"]) || 0),
+          (sum: number, r: Record<string, string | number>) =>
+            sum + (Number.parseFloat(String(r["Daily Required Hours"])) || 0),
           0,
         );
         exportData.push({
           "Date-Time": "Total",
           "Assign Hours": "",
           "Worked Hours": totalWorked.toFixed(2),
-          "QC Score": avgQC.toFixed(2),
+          "QC Score": avgQC > 0 ? `${avgQC.toFixed(2)}%` : "-",
+          "Tracker Count": filteredRows.reduce(
+            (sum, r) => sum + (Number(r.trackers_count_day) || 0),
+            0,
+          ),
           "Daily Required Hours": totalRequired.toFixed(2),
         });
       }
@@ -407,11 +445,11 @@ export default function UserCard({
         user={
           {
             user_id: user.user_id ?? undefined,
-            user_name: user.user_name || (user as any).name || "",
+            user_name: user.user_name || (user as Record<string, unknown>).name || "",
             team_name: user.team_name || "",
-          } as any
+          } as { user_id?: Id; user_name: string; team_name: string }
         }
-        userId={(user.user_id as any) ?? null}
+        userId={(user.user_id as Id) ?? null}
         initialData={
           selectedRow
             ? {
@@ -423,12 +461,10 @@ export default function UserCard({
             : null
         }
         date={
-          selectedRow
-            ? selectedRow.work_date ||
-              selectedRow.date_time ||
-              (selectedRow as any).date ||
-              null
-            : null
+          (selectedRow?.work_date ||
+            selectedRow?.date_time ||
+            (selectedRow as Record<string, unknown>)?.date ||
+            null) as string | null
         }
       />
     </Accordion>

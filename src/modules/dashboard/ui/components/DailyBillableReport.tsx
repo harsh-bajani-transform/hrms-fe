@@ -183,9 +183,10 @@ const DailyBillableReport: React.FC = () => {
           "QC Score":
             "qc_score" in row
               ? row.qc_score !== null
-                ? Number(row.qc_score).toFixed(2)
+                ? `${Number(row.qc_score).toFixed(2)}%`
                 : "-"
               : "-",
+          "Tracker Count": row.trackers_count_day ?? "-",
           "Daily Required Hours": dailyRequired,
         };
       });
@@ -210,7 +211,8 @@ const DailyBillableReport: React.FC = () => {
           "Date-Time": "",
           "Assigned Hour": "-",
           "Worked Hours": totalWorked.toFixed(2),
-          "QC Score": totalQC.toFixed(2),
+          "QC Score": totalQC > 0 ? `${(totalQC / (exportData.length - 1)).toFixed(2)}%` : "-",
+          "Tracker Count": exportRows.reduce((sum, r) => sum + (Number(r.trackers_count_day) || 0), 0),
           "Daily Required Hours": totalRequired.toFixed(2),
         });
       }
@@ -296,9 +298,10 @@ const DailyBillableReport: React.FC = () => {
           "QC score":
             "qc_score" in row
               ? row.qc_score !== null
-                ? Number(row.qc_score).toFixed(2)
+                ? `${Number(row.qc_score).toFixed(2)}%`
                 : "-"
               : "-",
+          "Tracker Count": row.trackers_count_day ?? "-",
           "Daily Required Hours": dailyRequired,
         };
       });
@@ -321,7 +324,8 @@ const DailyBillableReport: React.FC = () => {
         "Date-Time": "TOTAL",
         "Assign Hours": "-",
         "Worked Hours": totalWorked.toFixed(2),
-        "QC score": avgQC,
+        "QC score": avgQC !== "-" ? `${avgQC}%` : "-",
+        "Tracker Count": trackers.reduce((sum, r) => sum + (Number(r.trackers_count_day) || 0), 0),
         "Daily Required Hours": totalRequired.toFixed(2),
       });
       const worksheet = XLSX.utils.json_to_sheet(exportData);

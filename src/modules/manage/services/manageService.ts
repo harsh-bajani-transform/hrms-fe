@@ -77,9 +77,12 @@ export const fetchUsersList = async (
   }
 };
 
-export const addUser = async (userData: Record<string, unknown>) => {
+export const addUser = async (userData: Record<string, unknown> | FormData) => {
   try {
-    log("[manageService] Adding new user:", userData.user_name);
+    const isFormData = userData instanceof FormData;
+    log("[manageService] Adding new user:", isFormData ? (userData as FormData).get("user_name") : (userData as any).user_name);
+    
+    // For auth/user, old project uses POST
     const response = await api.post("/auth/user", userData);
     return response.data;
   } catch (error: any) {
@@ -88,9 +91,11 @@ export const addUser = async (userData: Record<string, unknown>) => {
   }
 };
 
-export const updateUser = async (userData: Record<string, unknown>) => {
+export const updateUser = async (userData: Record<string, unknown> | FormData) => {
   try {
-    log("[manageService] Updating user:", userData.user_id);
+    const isFormData = userData instanceof FormData;
+    log("[manageService] Updating user:", isFormData ? (userData as FormData).get("user_id") : (userData as any).user_id);
+    
     const response = await api.put("/user/update_user", userData);
     return response.data;
   } catch (error: any) {
@@ -115,9 +120,10 @@ export const deleteUser = async (
 };
 
 // Projects Management
-export const fetchProjectsList = async () => {
+export const fetchProjectsList = async (loggedInUserId?: string | number) => {
   try {
-    const response = await api.post("/project/list", {});
+    const payload = loggedInUserId ? { logged_in_user_id: loggedInUserId } : {};
+    const response = await api.post("/project/list", payload);
     return response.data;
   } catch (error: any) {
     throw new Error(
@@ -126,11 +132,15 @@ export const fetchProjectsList = async () => {
   }
 };
 
-export const createProject = async (projectData: Record<string, unknown>) => {
+export const createProject = async (projectData: Record<string, unknown> | FormData) => {
   try {
+    const isFormData = projectData instanceof FormData;
+    log("[manageService] Creating project:", isFormData ? (projectData as FormData).get("project_name") : (projectData as any).project_name);
+    
     const response = await api.post("/project/create", projectData);
     return response.data;
   } catch (error: any) {
+    logError("[manageService] Failed to create project:", error);
     throw new Error(
       error.response?.data?.message || "Failed to create project",
     );
@@ -139,15 +149,28 @@ export const createProject = async (projectData: Record<string, unknown>) => {
 
 export const updateProject = async (
   projectId: string | number,
-  projectData: Record<string, unknown>,
+  projectData: Record<string, unknown> | FormData,
 ) => {
   try {
-    const response = await api.put("/project/update", {
-      project_id: projectId,
-      ...projectData,
-    });
+    const isFormData = projectData instanceof FormData;
+    log("[manageService] Updating project:", projectId);
+    
+    let payload = projectData;
+    if (isFormData) {
+      if (!(projectData as FormData).has("project_id")) {
+        (projectData as FormData).append("project_id", projectId.toString());
+      }
+    } else {
+      payload = {
+        project_id: projectId,
+        ...(projectData as Record<string, unknown>),
+      };
+    }
+
+    const response = await api.put("/project/update", payload);
     return response.data;
   } catch (error: any) {
+    logError("[manageService] Failed to update project:", error);
     throw new Error(
       error.response?.data?.message || "Failed to update project",
     );

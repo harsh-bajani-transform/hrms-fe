@@ -27,7 +27,6 @@ import { Button } from "@/components/ui/button";
 import { createProject, updateProject } from "../../services/manageService";
 import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 import { UserDropdowns } from "../../../../hooks/useUserDropdowns";
-import { fileToBase64 } from "../../../../lib/fileToBase64";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -40,7 +39,7 @@ import { Upload, FileText, Hash, Download } from "lucide-react";
 
 import type { ProjectFormModalProps } from "../../types";
 
-interface FormData {
+interface FormDataState {
   name: string;
   projectCode: string;
   description: string;
@@ -48,7 +47,7 @@ interface FormData {
   apmIds: (string | number)[];
   qaIds: (string | number)[];
   monthlyTarget: string;
-  projectFile: string | null;
+  projectCategoryId: string;
 }
 
 const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
@@ -61,36 +60,39 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
   const { device_id, device_type } = useDeviceInfo();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<FormDataState>({
     name: project?.project_name || "",
     projectCode: project?.project_code || "",
     description: project?.project_description || "",
     ownerId: project?.owner_id?.toString() || "",
     apmIds: project
       ? Array.isArray(project.apm_id)
-        ? project.apm_id
+        ? project.apm_id.map(String)
         : project.apm_id
-          ? [project.apm_id]
+          ? [project.apm_id.toString()]
           : []
       : [],
     qaIds: project
       ? Array.isArray(project.qa_id)
-        ? project.qa_id
+        ? project.qa_id.map(String)
         : project.qa_id
-          ? [project.qa_id]
+          ? [project.qa_id.toString()]
           : []
       : [],
     monthlyTarget: project?.monthly_hours_target?.toString() || "",
-    projectFile: project?.project_file || null,
+    projectCategoryId: project?.project_category_id?.toString() || "",
   });
 
+  const [projectFiles, setProjectFiles] = useState<File[]>([]);
+  const [existingFile, setExistingFile] = useState<string | null>(project?.project_file || null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
+  const [errors, setErrors] = useState<Partial<Record<keyof FormDataState, string>>>(
     {},
   );
 
   const validate = () => {
-    const newErrors: Partial<Record<keyof FormData, string>> = {};
+    const newErrors: Partial<Record<keyof FormDataState, string>> = {};
     if (!formData.name.trim()) newErrors.name = "Project name is required";
     if (!formData.projectCode.trim())
       newErrors.projectCode = "Project code is required";
@@ -106,16 +108,21 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("File size must be less than 5MB");
-        return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      const oversized = newFiles.some(f => f.size > 5 * 1024 * 1024);
+      if (oversized) {
+        toast.error("Some files exceed the 5MB limit");
       }
-      const base64 = await fileToBase64(file);
-      setFormData({ ...formData, projectFile: base64 as string });
+      const validFiles = newFiles.filter(f => f.size <= 5 * 1024 * 1024);
+      setProjectFiles(prev => [...prev, ...validFiles]);
     }
+  };
+
+  const removeFile = (index: number) => {
+    setProjectFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -123,23 +130,27 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
     if (!validate()) return;
     try {
       setIsSubmitting(true);
-      const payload = {
-        project_name: formData.name,
-        project_code: formData.projectCode,
-        project_description: formData.description,
-        owner_id: formData.ownerId,
-        apm_id: formData.apmIds,
-        qa_id: formData.qaIds,
-        monthly_hours_target: Number(formData.monthlyTarget),
-        project_file: formData.projectFile,
-        device_id,
-        device_type,
-      };
+      
+      const submitData = new FormData();
+      submitData.append("project_name", formData.name);
+      submitData.append("project_code", formData.projectCode);
+      submitData.append("project_description", formData.description);
+      submitData.append("owner_id", formData.ownerId);
+      submitData.append("monthly_hours_target", formData.monthlyTarget);
+      submitData.append("project_category_id", formData.projectCategoryId);
+      submitData.append("device_id", device_id);
+      submitData.append("device_type", device_type);
+
+      formData.apmIds.forEach(id => submitData.append("apm_id", id.toString()));
+      formData.qaIds.forEach(id => submitData.append("qa_id", id.toString()));
+      
+      projectFiles.forEach(file => submitData.append("project_file", file));
+
       if (isEditMode && project) {
-        await updateProject(project.project_id, payload);
+        await updateProject(project.project_id, submitData);
         toast.success("Project updated successfully");
       } else {
-        await createProject(payload);
+        await createProject(submitData);
         toast.success("Project created successfully");
       }
       onSuccess();
@@ -240,6 +251,43 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                 placeholder="e.g. 100"
                 className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.monthlyTarget ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
+            </div>
+
+            {/* PROJECT CATEGORY */}
+            <div className="md:col-span-2 space-y-1.5">
+              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5" />
+                Project Category
+              </label>
+              <Select
+                value={formData.projectCategoryId}
+                onValueChange={(val) =>
+                  setFormData({ ...formData, projectCategoryId: val })
+                }
+              >
+                <SelectTrigger
+                  className={` w-full bg-gray-50 border-gray-200 focus:bg-white transition-all`}
+                >
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dropdowns.projectCategories && dropdowns.projectCategories.length > 0 ? (
+                    dropdowns.projectCategories.map((cat, idx) => {
+                      const id = (cat.project_category_id || cat.id)?.toString() || "";
+                      const name = String(cat.project_category_name || cat.label || cat.name || id);
+                      return (
+                        <SelectItem key={`${id}-${idx}`} value={id}>
+                          {name}
+                        </SelectItem>
+                      );
+                    })
+                  ) : (
+                    <SelectItem value="none" disabled>
+                      No categories available
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* DESCRIPTION */}
@@ -441,49 +489,77 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
             <div className="md:col-span-2 space-y-1.5">
               <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
                 <Upload className="w-3.5 h-3.5" />
-                Project File (Guidelines/SOP)
+                Project Files (Guidelines/SOP)
               </label>
+              
+              {/* Existing file display if any */}
+              {existingFile && (
+                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-amber-800 text-sm">
+                    <FileText className="w-4 h-4" />
+                    <span>Existing file: {existingFile.split(/[\\/]/).pop()}</span>
+                  </div>
+                  <Button 
+                    type="button"
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-amber-700 hover:text-amber-900"
+                    onClick={() => setExistingFile(null)}
+                  >
+                    Replace
+                  </Button>
+                </div>
+              )}
+
               <div
                 className="relative group cursor-pointer border-2 border-dashed border-gray-200 rounded p-6 bg-gray-50/50 hover:bg-white hover:border-blue-400 transition-all text-center flex flex-col items-center gap-3"
                 onClick={() => fileInputRef.current?.click()}
               >
-                {formData.projectFile ? (
-                  <div className="flex items-center gap-3 text-blue-600 font-semibold bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
-                    <FileText className="w-5 h-5" />
-                    <span className="text-sm">File Uploaded</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="w-6 h-6 hover:bg-blue-100 text-blue-600 p-0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setFormData({ ...formData, projectFile: null });
-                      }}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="w-12 h-12 bg-white rounded shadow-sm border border-gray-100 flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors">
-                      <Upload className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
-                        Click to upload project files
-                      </p>
-                      <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mt-1">
-                        PDF, DOCX, XLSX (MAX 5MB)
-                      </p>
-                    </div>
-                  </>
-                )}
+                <div className="w-12 h-12 bg-white rounded shadow-sm border border-gray-100 flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors">
+                  <Upload className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
+                    Click to upload project files
+                  </p>
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mt-1">
+                    PDF, DOCX, XLSX (MAX 5MB per file)
+                  </p>
+                </div>
               </div>
+              
+              {/* Selected files preview */}
+              {projectFiles.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {projectFiles.map((file, idx) => (
+                    <div key={idx} className="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200 justify-between">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <FileText className="w-5 h-5 text-blue-600 shrink-0" />
+                        <span className="text-sm text-blue-700 truncate">{file.name}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="w-6 h-6 hover:bg-blue-100 text-blue-600 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeFile(idx);
+                        }}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 className="hidden"
+                multiple
                 accept=".pdf,.doc,.docx,.xls,.xlsx"
               />
             </div>

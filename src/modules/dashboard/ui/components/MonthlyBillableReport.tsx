@@ -142,7 +142,7 @@ const MonthlyBillableReport: React.FC = () => {
           ? Number(u.pending_target).toFixed(2)
           : "-",
         "Avg. QC Score": u.avg_qc_score
-          ? Number(u.avg_qc_score).toFixed(2)
+          ? `${Number(u.avg_qc_score).toFixed(2)}%`
           : "-",
       }));
       const totalBillable = exportData.reduce(
@@ -202,7 +202,7 @@ const MonthlyBillableReport: React.FC = () => {
         "Pending Target": row.pending_target
           ? Number(row.pending_target).toFixed(2)
           : "-",
-        "Avg. QC Score": row.avg_qc_score ?? "-",
+        "Avg. QC Score": row.avg_qc_score ? `${Number(row.avg_qc_score).toFixed(2)}%` : "-",
       }));
       const totalBillable = exportData.reduce(
         (sum, r) => sum + (Number(r["Billable Hours Delivered"]) || 0),
@@ -291,7 +291,8 @@ const MonthlyBillableReport: React.FC = () => {
               ? Number(row.billable_hours).toFixed(2)
               : "-",
         "QC score":
-          row.qc_score != null ? Number(row.qc_score).toFixed(2) : "-",
+          row.qc_score != null ? `${Number(row.qc_score).toFixed(2)}%` : "-",
+        "Tracker Count": row.trackers_count_day ?? "-",
         "Daily Required Hours":
           row.daily_required_hours != null
             ? Number(row.daily_required_hours).toFixed(2)

@@ -192,7 +192,9 @@ const AgentBillableReport = () => {
         "Worked Hours": row.billable_hours
           ? Number(row.billable_hours).toFixed(2)
           : "-",
-        "QC score": "-",
+        "QC score":
+          row.qc_score != null ? `${Number(row.qc_score).toFixed(2)}%` : "-",
+        "Tracker Count": row.trackers_count_day ?? "-",
         "Daily Required Hours": row.tenure_target
           ? Number(row.tenure_target).toFixed(2)
           : "-",
@@ -210,10 +212,10 @@ const AgentBillableReport = () => {
         );
 
         const validQC = trackers.filter(
-          (r: any) => !Number.isNaN(Number.parseFloat(r.qc_score)),
+          (r: TrackerRow) => !Number.isNaN(Number.parseFloat(String(r.qc_score))),
         );
         const totalQC = validQC.reduce(
-          (sum: number, r: any) => sum + (Number.parseFloat(r.qc_score) || 0),
+          (sum: number, r: TrackerRow) => sum + (Number.parseFloat(String(r.qc_score)) || 0),
           0,
         );
         const avgQC = validQC.length > 0 ? totalQC / validQC.length : 0;
@@ -222,7 +224,12 @@ const AgentBillableReport = () => {
           "Date-Time": "Total",
           "Assign Hours": "",
           "Worked Hours": totalWorked.toFixed(2),
-          "QC score": avgQC > 0 ? avgQC.toFixed(2) : "-",
+          "QC score": avgQC > 0 ? `${avgQC.toFixed(2)}%` : "-",
+          "Tracker Count": trackers.reduce(
+            (sum: number, r: TrackerRow) =>
+              sum + (Number(r.trackers_count_day) || 0),
+            0,
+          ),
           "Daily Required Hours": totalRequired.toFixed(2),
         });
       }
@@ -322,7 +329,8 @@ const AgentBillableReport = () => {
           row.cumulative_billable_hours_till_day != null
             ? Number(row.cumulative_billable_hours_till_day).toFixed(2)
             : "-",
-        "QC score": row.qc_score ? Number(row.qc_score).toFixed(2) : "-",
+        "QC score": row.qc_score != null ? `${Number(row.qc_score).toFixed(2)}%` : "-",
+        "Tracker Count": row.trackers_count_day ?? "-",
         "Daily Required Hours":
           row.daily_required_hours != null
             ? Number(row.daily_required_hours).toFixed(2)
@@ -353,7 +361,11 @@ const AgentBillableReport = () => {
           "Date-Time": "Total",
           "Assign Hours": "",
           "Worked Hours": totalWorked.toFixed(2),
-          "QC score": avgQC > 0 ? avgQC.toFixed(2) : "-",
+          "QC score": avgQC > 0 ? `${avgQC.toFixed(2)}%` : "-",
+          "Tracker Count": filteredDailyData.reduce(
+            (sum, r) => sum + (Number(r.trackers_count_day) || 0),
+            0,
+          ),
           "Daily Required Hours": totalRequired.toFixed(2),
         });
       }

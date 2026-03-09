@@ -2,8 +2,10 @@ import axios, {
   AxiosHeaders,
   type AxiosInstance,
   type InternalAxiosRequestConfig,
+  isAxiosError,
 } from "axios";
 import config, { log, logError } from "../config/environment";
+import { getFriendlyErrorMessage } from "../utils/errorMessages";
 
 const api: AxiosInstance = axios.create({
   baseURL: config.apiBaseUrl,
@@ -39,13 +41,25 @@ const applyInterceptors = (instance: AxiosInstance) => {
             `Bearer ${token}`;
         }
       }
+
+      // If the request data is FormData, remove Content-Type to let browser set it with boundary
+      if (requestConfig.data instanceof FormData) {
+        const headers = requestConfig.headers;
+        if (headers && "delete" in headers && typeof headers.delete === "function") {
+          headers.delete('Content-Type');
+        } else if (headers) {
+          delete (headers as Record<string, string>)['Content-Type'];
+        }
+        log('[API Request] Detected FormData, removed Content-Type header');
+      }
+
       log(
-        `[QC API Request] ${requestConfig.method?.toUpperCase()} ${requestConfig.url}`,
+        `[API Request] ${requestConfig.method?.toUpperCase() || 'GET'} ${requestConfig.url}`,
       );
       return requestConfig;
     },
     (error: unknown) => {
-      logError("[QC API Request Error]", error);
+      logError("[API Request Error]", error);
       return Promise.reject(error);
     },
   );
@@ -53,23 +67,49 @@ const applyInterceptors = (instance: AxiosInstance) => {
   instance.interceptors.response.use(
     (response) => {
       log(
-        `[QC API Response] ${response.config.url} - Status: ${response.status}`,
+        `[API Response] ${response.config.url} - Status: ${response.status}`,
       );
       return response;
     },
     (error: unknown) => {
-      if (axios.isAxiosError(error)) {
+      if (isAxiosError(error)) {
         logError(
-          "[QC API Response Error]",
+          "[API Response Error]",
           error.response?.status,
           error.message,
         );
-        if (error.response?.status === 401) {
+
+        // Handle 401 unauthorized - token expired or invalid
+        const isAuthEndpoint = error.config?.url?.includes('/auth/');
+        const isLoginPage = window.location.pathname === '/login' || window.location.pathname === '/';
+
+        if (error.response?.status === 401 && !isAuthEndpoint && !isLoginPage) {
+          log("[API] 401 detected, redirecting to login");
           localStorage.removeItem(config.tokenKey);
           localStorage.removeItem(config.userKey);
           sessionStorage.clear();
           window.location.href = "/login";
+          return Promise.reject(error);
         }
+
+        // Handle 403 forbidden - insufficient permissions
+        if (error.response?.status === 403) {
+          logError('[API] Access forbidden - Insufficient permissions');
+        }
+
+        // Handle 500 server errors
+        if (error.response?.status && error.response.status >= 500) {
+          logError('[API] Server error occurred');
+        }
+
+        // Add friendly message to the error object
+        const responseData = error.response?.data;
+        const errorCode = typeof responseData === 'object' && responseData !== null 
+          ? (responseData as any).code || (responseData as any).message 
+          : undefined;
+        
+        const friendlyMessage = getFriendlyErrorMessage(errorCode || error.message);
+        (error as any).friendlyMessage = friendlyMessage;
       }
       return Promise.reject(error);
     },

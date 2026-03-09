@@ -119,7 +119,7 @@ const ManageView: React.FC = () => {
   const loadProjectsData = useCallback(async () => {
     try {
       setLoadingProjects(true);
-      const data = await fetchProjectsList();
+      const data = await fetchProjectsList(user?.user_id);
       if (data.status === 200) {
         setProjects(data.data || []);
       }
@@ -129,7 +129,7 @@ const ManageView: React.FC = () => {
     } finally {
       setLoadingProjects(false);
     }
-  }, []);
+  }, [user?.user_id]);
 
   useEffect(() => {
     if (activeTab === "users" && !hasFetchedUsers.current) {

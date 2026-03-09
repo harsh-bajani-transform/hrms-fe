@@ -16,6 +16,7 @@ import { useState, useMemo } from "react";
 import type { MonthlyBillableReportRow } from "../../services/billableReportService";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
 
 interface MonthObj {
   label: string;
@@ -98,11 +99,32 @@ export default function MonthCard({
       },
       {
         header: "Avg. QC Score",
-        accessorFn: (row) =>
-          row.avg_qc_score ? Number(row.avg_qc_score).toFixed(2) : "-",
-        cell: ({ getValue }) => (
-          <div className="text-center font-mono">{getValue<string>()}</div>
-        ),
+        accessorFn: (row) => row.avg_qc_score,
+        cell: ({ getValue }) => {
+          const val = getValue();
+          if (val === null || val === undefined) {
+            return (
+              <div className="text-center text-gray-400 font-medium italic">
+                —
+              </div>
+            );
+          }
+          const numScore = Number(val);
+          let colorClass = "text-slate-700";
+          if (numScore >= 98)
+            colorClass = "text-green-800 bg-green-100 font-bold";
+          else if (numScore >= 95)
+            colorClass = "text-yellow-700 bg-yellow-100 font-bold";
+          else colorClass = "text-red-700 bg-red-200 font-bold";
+
+          return (
+            <div className="text-center">
+              <Badge className={`${colorClass} border-transparent`}>
+                {numScore.toFixed(2)}%
+              </Badge>
+            </div>
+          );
+        },
       },
       {
         id: "actions",

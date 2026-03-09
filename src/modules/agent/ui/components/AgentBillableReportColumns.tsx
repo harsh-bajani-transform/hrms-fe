@@ -51,15 +51,46 @@ export function createDailyColumns(): ColumnDef<TrackerRow, unknown>[] {
         ),
       },
     ) as ColumnDef<TrackerRow, unknown>,
-    dailyColumnHelper.display({
+    dailyColumnHelper.accessor((row) => row.qc_score as unknown, {
       id: "qc_score",
       header: () => <div className="text-center">QC Score</div>,
-      cell: () => (
-        <div className="px-6 py-4 text-center text-gray-400 font-medium italic">
-          —
-        </div>
-      ),
-    }),
+      cell: (info) => {
+        const score = info.getValue() as number | string | null;
+        if (score === null || score === undefined || score === "-") {
+          return (
+            <div className="px-6 py-4 text-center text-gray-400 font-medium italic">
+              —
+            </div>
+          );
+        }
+        const numScore = Number(score);
+        let colorClass = "text-slate-700";
+        if (numScore >= 98) colorClass = "text-green-800 bg-green-100 font-bold";
+        else if (numScore >= 95)
+          colorClass = "text-yellow-700 bg-yellow-100 font-bold";
+        else colorClass = "text-red-700 bg-red-200 font-bold";
+
+        return (
+          <div className="px-6 py-4 text-center">
+            <Badge className={`${colorClass} border-transparent`}>
+              {numScore.toFixed(2)}%
+            </Badge>
+          </div>
+        );
+      },
+    }) as ColumnDef<TrackerRow, unknown>,
+    dailyColumnHelper.accessor((row) => row.trackers_count_day as unknown, {
+      id: "trackers_count_day",
+      header: () => <div className="text-center">Tracker Count</div>,
+      cell: (info) => {
+        const count = info.getValue() as number | string | null;
+        return (
+          <div className="px-6 py-4 text-center text-gray-900 font-medium">
+            {count ?? "—"}
+          </div>
+        );
+      },
+    }) as ColumnDef<TrackerRow, unknown>,
     dailyColumnHelper.accessor((row) => row.daily_required_hours as unknown, {
       id: "daily_required_hours",
       header: () => <div className="text-center">Daily Target (Hrs)</div>,
@@ -141,11 +172,30 @@ export function createMonthlyColumns(
     monthlyColumnHelper.accessor((row) => row.avg_qc_score as unknown, {
       id: "avg_qc_score",
       header: () => <div className="text-center">Avg. QC Score</div>,
-      cell: (info) => (
-        <div className="px-6 py-4 text-center text-gray-400 font-medium italic">
-          {info.row.original.avg_qc_score ?? "—"}
-        </div>
-      ),
+      cell: (info) => {
+        const score = info.getValue() as number | string | null;
+        if (score === null || score === undefined || score === "-") {
+          return (
+            <div className="px-6 py-4 text-center text-gray-400 font-medium italic">
+              —
+            </div>
+          );
+        }
+        const numScore = Number(score);
+        let colorClass = "text-slate-700";
+        if (numScore >= 98) colorClass = "text-green-800 bg-green-100 font-bold";
+        else if (numScore >= 95)
+          colorClass = "text-yellow-700 bg-yellow-100 font-bold";
+        else colorClass = "text-red-700 bg-red-200 font-bold";
+
+        return (
+          <div className="px-6 py-4 text-center">
+            <Badge className={`${colorClass} border-transparent`}>
+              {numScore.toFixed(2)}%
+            </Badge>
+          </div>
+        );
+      },
     }) as ColumnDef<MonthlyBillableReportRow, unknown>,
     monthlyColumnHelper.display({
       id: "actions",

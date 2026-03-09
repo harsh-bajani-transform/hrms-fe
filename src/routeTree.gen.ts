@@ -24,47 +24,53 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() =>
+  import('./routes/reset-password.lazy').then((d) => d.Route),
+)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/login.lazy').then((d) => d.Route))
 const EntryRoute = EntryRouteImport.update({
   id: '/entry',
   path: '/entry',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/entry.lazy').then((d) => d.Route))
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/dashboard.lazy').then((d) => d.Route))
 const AgentProjectsRoute = AgentProjectsRouteImport.update({
   id: '/agent-projects',
   path: '/agent-projects',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() =>
+  import('./routes/agent-projects.lazy').then((d) => d.Route),
+)
 const AgentBillableReportRoute = AgentBillableReportRouteImport.update({
   id: '/agent-billable-report',
   path: '/agent-billable-report',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() =>
+  import('./routes/agent-billable-report.lazy').then((d) => d.Route),
+)
 const AgentRoute = AgentRouteImport.update({
   id: '/agent',
   path: '/agent',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/agent.lazy').then((d) => d.Route))
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/admin.lazy').then((d) => d.Route))
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/about.lazy').then((d) => d.Route))
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',

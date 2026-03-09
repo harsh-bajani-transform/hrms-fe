@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "../../../../context/AuthContext";
 import { deleteProject, deleteTask } from "../../services/manageService";
-import { fetchProjectsList } from "../../../dashboard/services/projectService";
 
 import ProjectFormModal from "./ProjectFormModal";
 import TaskFormModal from "./TaskFormModal";
@@ -49,7 +48,7 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
   onRefresh,
   dropdowns,
 }) => {
-  const { canManageProjects, user } = useAuth();
+  const { canManageProjects } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProject, setEditingProject] = useState<ProjectType | null>(
@@ -125,39 +124,22 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
     }
   };
 
-  const handleDownloadFile = async (project: ProjectType) => {
-    try {
-      const res = await fetchProjectsList(user?.user_id);
-      const projectsList = res.data || [];
-
-      const current = projectsList.find(
-        (p) => String(p.project_id) === String(project.project_id),
-      );
-
-      if (!current) {
-        toast.error("Project not found in latest list.");
-        return;
-      }
-
-      if (!current.project_file || current.project_file === "null") {
-        toast.error("No file available for this project.");
-        return;
-      }
-
-      const filePath = current.project_file;
-      const fileName =
-        filePath.split(/[\\/]/).filter(Boolean).pop() || "project-file";
-
-      const link = document.createElement("a");
-      link.href = filePath;
-      link.setAttribute("download", fileName);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      console.error("Download error:", err);
-      toast.error("Failed to download file.");
+  const handleDownloadFile = (project: ProjectType) => {
+    if (!project.project_file || project.project_file === "null") {
+      toast.error("No file available for this project.");
+      return;
     }
+
+    const filePath = project.project_file;
+    const fileName =
+      filePath.split(/[\\/]/).filter(Boolean).pop() || "project-file";
+
+    const link = document.createElement("a");
+    link.href = filePath;
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const openTaskModal = (

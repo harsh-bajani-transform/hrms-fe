@@ -91,6 +91,7 @@ export interface TrackerRow {
   // New fields from latest backend changes
   cumulative_billable_hours_till_day?: number | string | null;
   daily_required_hours?: number | string | null;
+  trackers_count_day?: number | string | null;
   work_date?: string;
 
   // backend may send extra fields

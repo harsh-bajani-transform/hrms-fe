@@ -113,7 +113,7 @@ export interface AIEvalResult {
   details: {
     totalRecords: number;
     issuesFound: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   criticalIssues?: AIEvalDetail[];
   summary?:
@@ -129,8 +129,8 @@ export interface AIEvalResult {
 export interface DuplicateRow {
   row: number;
   duplicateColumns: string[];
-  duplicateValues: Record<string, any>;
-  data: Record<string, any>;
+  duplicateValues: Record<string, unknown>;
+  data: Record<string, unknown>;
 }
 
 export interface DuplicateCheckResult {
@@ -154,6 +154,7 @@ export type DailyExportRow = {
   "Assign Hours": string | number;
   "Worked Hours": string | number;
   "QC score": string | number;
+  "Tracker Count": string | number;
   "Daily Required Hours": string | number;
 };
 
