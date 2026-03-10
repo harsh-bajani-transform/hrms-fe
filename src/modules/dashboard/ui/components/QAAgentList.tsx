@@ -37,10 +37,10 @@ const QAAgentList: React.FC = () => {
       </div>
 
       <Tabs defaultValue="agent_files" className="w-full h-full">
-        <TabsList className="bg-slate-100 py-8 px-2 rounded-lg border border-slate-200 mb-8 inline-flex h-14">
+        <TabsList className="bg-slate-100 py-6 px-2 rounded-lg border border-slate-200 mb-8 inline-flex h-14">
           <TabsTrigger
             value="agent_files"
-            className="rounded-md px-6 py-6 h-full font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm text-base"
+            className="rounded-md px-6 py-5 h-full font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm text-base"
           >
             <div className="flex items-center gap-2.5">
               <FileText className="w-5 h-5" />
@@ -49,7 +49,7 @@ const QAAgentList: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger
             value="qc_report"
-            className="rounded-md px-6 py-6 h-full font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm text-base"
+            className="rounded-md px-6 py-5 h-full font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm text-base"
           >
             <div className="flex items-center gap-2.5">
               <FileCheck className="w-5 h-5" />

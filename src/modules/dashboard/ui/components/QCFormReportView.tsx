@@ -123,7 +123,13 @@ const QCFormReportView: React.FC = () => {
   const stats = useMemo(() => {
     const total = filteredReports.length;
     if (total === 0)
-      return { total: 0, regular: 0, rework: 0, correction: 0, avgScore: "0.00" };
+      return {
+        total: 0,
+        regular: 0,
+        rework: 0,
+        correction: 0,
+        avgScore: "0.00",
+      };
 
     const regular = filteredReports.filter(
       (r) => (r.status || "").toLowerCase().trim() === "regular",
@@ -164,7 +170,10 @@ const QCFormReportView: React.FC = () => {
             <Filter className="w-5 h-5 text-blue-600" />
             Advanced Filters
           </h3>
-          {(searchQuery || statusFilter !== "all" || startDate !== getTodayDate() || endDate !== getTodayDate()) && (
+          {(searchQuery ||
+            statusFilter !== "all" ||
+            startDate !== getTodayDate() ||
+            endDate !== getTodayDate()) && (
             <Button
               variant="ghost"
               size="sm"

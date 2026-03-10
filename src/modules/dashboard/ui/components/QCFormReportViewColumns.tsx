@@ -130,11 +130,11 @@ export const createQCReportColumns = ({
     ),
   },
   {
-    accessorKey: "10%_qc_file_records",
+    accessorKey: "10%_data_generated_count",
     header: "QC Record",
     cell: ({ row }) => (
       <span className="font-medium text-slate-700">
-        {row.original["10%_qc_file_records"] ?? "0"}
+        {row.original["10%_data_generated_count"] ?? "0"}
       </span>
     ),
   },
