@@ -9,6 +9,7 @@ import {
   Settings,
   Sparkles,
   User as UserIcon,
+  UserCheck,
   Users,
   X,
   type LucideIcon,
@@ -50,7 +51,8 @@ type HeaderView =
   | "ENTRY"
   | "TRACKER_REPORT"
   | "AGENT_LIST"
-  | "AI_EVALUATION";
+  | "AI_EVALUATION"
+  | "QA_AGENT_AUDIT";
 type TargetPath = "/dashboard" | "/admin" | "/entry" | "/agent";
 
 type LooseSearch = {
@@ -136,6 +138,9 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
     } else if (view === "AI_EVALUATION") {
       targetPath = "/agent";
       dashboardSearch = { tab: "ai_evaluation" };
+    } else if (view === "QA_AGENT_AUDIT") {
+      targetPath = "/dashboard";
+      dashboardSearch = { view: "qa-agent-audit" };
     }
 
     // Assistant Manager: Manage lives under /dashboard?tab=manage
@@ -213,7 +218,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
               icon: LayoutDashboard,
             },
             { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
-            { view: "AGENT_LIST", label: "Agent File Report", icon: Users },
+            { view: "AGENT_LIST", label: "Agent Files & QC Report", icon: Users },
           ];
 
         // Project Manager tabs (role_id 3)
@@ -237,7 +242,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
               icon: LayoutDashboard,
             },
             { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
-            { view: "AGENT_LIST", label: "Agent File Report", icon: Users },
+            { view: "AGENT_LIST", label: "Agent Files & QC Report", icon: Users },
             { view: "ADMIN_PANEL", label: "Manage", icon: Settings },
             { view: "ENTRY", label: "User Permission", icon: PenTool },
           ];
@@ -249,6 +254,25 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
             label: "Analytics",
             icon: LayoutDashboard,
           },
+          ...(roleId === 1
+            ? [
+                {
+                  view: "TRACKER_REPORT" as const,
+                  label: "Tracker Report",
+                  icon: FileText,
+                },
+                {
+                  view: "AGENT_LIST" as const,
+                  label: "Agent Files & QC Report",
+                  icon: Users,
+                },
+                {
+                  view: "QA_AGENT_AUDIT" as const,
+                  label: "QA Agent Audit",
+                  icon: UserCheck,
+                },
+              ]
+            : []),
           { view: "ADMIN_PANEL", label: "Manage", icon: Settings },
           { view: "ENTRY", label: "User Permission", icon: PenTool },
         ];
@@ -265,7 +289,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
           icon: LayoutDashboard,
         },
         { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
-        { view: "AGENT_LIST", label: "Agent File Report", icon: Users },
+        { view: "AGENT_LIST", label: "Agent Files & QC Report", icon: Users },
       ];
     }
 
@@ -278,7 +302,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
           icon: LayoutDashboard,
         },
         { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
-        { view: "AGENT_LIST", label: "Agent File Report", icon: Users },
+        { view: "AGENT_LIST", label: "Agent Files & QC Report", icon: Users },
         { view: "ADMIN_PANEL", label: "Manage", icon: Settings },
         { view: "ENTRY", label: "User Permission", icon: PenTool },
       ];
@@ -346,7 +370,8 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
     if (
       item.view === "DASHBOARD" ||
       item.view === "TRACKER_REPORT" ||
-      item.view === "AGENT_LIST"
+      item.view === "AGENT_LIST" ||
+      item.view === "QA_AGENT_AUDIT"
     ) {
       isActive =
         pathname === "/dashboard" && (!search.tab || search.tab !== "manage");
@@ -357,6 +382,9 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
           pathname === "/dashboard" && search.view === "tracker-report";
       } else if (item.view === "AGENT_LIST") {
         isActive = pathname === "/dashboard" && search.view === "agent-list";
+      } else if (item.view === "QA_AGENT_AUDIT") {
+        isActive =
+          pathname === "/dashboard" && search.view === "qa-agent-audit";
       } else if (item.view === "DASHBOARD") {
         // Analytics is active if we are on dashboard and NOT on a specific sub-view
         isActive =
@@ -404,7 +432,8 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
     if (
       item.view === "DASHBOARD" ||
       item.view === "TRACKER_REPORT" ||
-      item.view === "AGENT_LIST"
+      item.view === "AGENT_LIST" ||
+      item.view === "QA_AGENT_AUDIT"
     ) {
       isActive =
         pathname === "/dashboard" && (!search.tab || search.tab !== "manage");
@@ -413,6 +442,9 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
           pathname === "/dashboard" && search.view === "tracker-report";
       } else if (item.view === "AGENT_LIST") {
         isActive = pathname === "/dashboard" && search.view === "agent-list";
+      } else if (item.view === "QA_AGENT_AUDIT") {
+        isActive =
+          pathname === "/dashboard" && search.view === "qa-agent-audit";
       } else if (item.view === "DASHBOARD") {
         isActive =
           pathname === "/dashboard" &&

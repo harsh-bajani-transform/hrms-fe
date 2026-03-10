@@ -25,15 +25,6 @@ export const createQATrackerColumns = ({
     ),
   },
   {
-    id: "agentName",
-    header: "Agent Name",
-    cell: ({ row }) => (
-      <div className="text-slate-700 font-bold whitespace-nowrap">
-        {row.original.user_name || "-"}
-      </div>
-    ),
-  },
-  {
     id: "projectName",
     header: "Project Name",
     cell: ({ row }) => (
@@ -50,24 +41,6 @@ export const createQATrackerColumns = ({
         {row.original.task_name ||
           dropdownTaskNameMap[String(row.original.task_id)] ||
           "-"}
-      </div>
-    ),
-  },
-  {
-    id: "assignedHours",
-    header: "Assigned Hours",
-    cell: ({ row }) => (
-      <div className="text-slate-700 whitespace-nowrap">
-        {`${row.original.assigned_hours ?? "-"}`}
-      </div>
-    ),
-  },
-  {
-    id: "qcScore",
-    header: "QC Score",
-    cell: ({ row }) => (
-      <div className="text-slate-700 whitespace-nowrap">
-        {`${row.original.qc_score ?? "-"}`}
       </div>
     ),
   },

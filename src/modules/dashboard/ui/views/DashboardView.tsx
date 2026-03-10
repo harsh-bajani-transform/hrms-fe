@@ -15,6 +15,7 @@ import OverviewTab from "../components/overview/OverviewTab";
 import BillableReport from "../components/BillableReport";
 import QATrackerReport from "../components/QATrackerReport";
 import QAAgentList from "../components/QAAgentList";
+import QAAgentAudit from "../../../qa/ui/components/QAAgentAudit";
 import AssistantManagerDashboard from "../components/AssistantManagerDashboard";
 import QAAgentDashboard from "../components/QAAgentDashboard";
 import ManageView from "../../../manage/ui/views/ManageView";
@@ -282,12 +283,15 @@ const DashboardView = () => {
     if (viewParam === "agent-list") {
       return <QAAgentList />;
     }
+    if (viewParam === "qa-agent-audit") {
+      return <QAAgentAudit />;
+    }
     return null;
   };
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-6xl mx-auto pb-10 px-4 sm:px-6 lg:px-8 pt-6">
+      <div className={`space-y-6 mx-auto pb-10 px-4 sm:px-6 lg:px-8 pt-6 ${viewParam ? 'max-w-[1600px]' : 'max-w-6xl'}`}>
         {/* Special Views override anything else */}
         {viewParam ? (
           renderSpecialView()

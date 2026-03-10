@@ -44,3 +44,17 @@ export const fetchAFDList = async (): Promise<QCResponse> => {
     throw error;
   }
 };
+
+export const getQCRecordsList = async (logged_in_user_id: number | string | null = null): Promise<QCResponse> => {
+  try {
+    const url = logged_in_user_id
+      ? `/qc-records/list?logged_in_user_id=${logged_in_user_id}`
+      : "/qc-records/list";
+    const response = await qcApi.get(url);
+    return response.data;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error("Error fetching QC records:", message);
+    throw error;
+  }
+};
