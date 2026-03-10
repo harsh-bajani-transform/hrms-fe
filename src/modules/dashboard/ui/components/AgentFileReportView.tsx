@@ -60,7 +60,7 @@ const AgentFileReportView: React.FC<AgentFileReportViewProps> = ({
     string | number | null
   >(null);
   const [agentSearchQuery, setAgentSearchQuery] = useState("");
-  const [startDate, setStartDate] = useState(getFirstDayOfMonth());
+  const [startDate, setStartDate] = useState(getTodayDate());
   const [endDate, setEndDate] = useState(getTodayDate());
   const [agentTrackers, setAgentTrackers] = useState<AgentTrackersMap>({});
   const [dropdownTaskNameMap, setDropdownTaskNameMap] =
@@ -186,31 +186,36 @@ const AgentFileReportView: React.FC<AgentFileReportViewProps> = ({
     );
   }, [agents, selectedAgentId]);
 
-  const selectedAgentTrackersFiltered = useMemo(() => {
-    if (!selectedAgentId) return [];
-    const trackers = agentTrackers[String(selectedAgentId)] || [];
+  const filteredAgentTrackersMap = useMemo(() => {
     const sDate = startDate || getFirstDayOfMonth();
     const eDate = endDate || getTodayDate();
+    const map: AgentTrackersMap = {};
 
-    return trackers.filter((t) => {
-      if (!t.date_time) return false;
-      try {
-        const d = new Date(t.date_time);
-        if (isNaN(d.getTime())) {
-          const dateStr = String(t.date_time).slice(0, 10);
-          return dateStr >= sDate && dateStr <= eDate;
+    Object.entries(agentTrackers).forEach(([userId, trackers]) => {
+      map[userId] = trackers.filter((t) => {
+        if (!t.date_time) return false;
+        try {
+          const d = new Date(t.date_time);
+          if (isNaN(d.getTime())) {
+            const dateStr = String(t.date_time).slice(0, 10);
+            return dateStr >= sDate && dateStr <= eDate;
+          }
+          const iso = d.toISOString();
+          if (!iso) return false;
+          const isoStr = iso.split("T")[0] || "";
+          return isoStr >= sDate && isoStr <= eDate;
+        } catch {
+          return false;
         }
-        const iso = d.toISOString();
-        if (!iso) return false;
-        const isoParts = iso.split("T");
-        const isoStr = isoParts[0] || "";
-        if (!isoStr) return false;
-        return isoStr >= sDate && isoStr <= eDate;
-      } catch {
-        return false;
-      }
+      });
     });
-  }, [agentTrackers, selectedAgentId, startDate, endDate]);
+    return map;
+  }, [agentTrackers, startDate, endDate]);
+
+  const selectedAgentTrackersFiltered = useMemo(() => {
+    if (!selectedAgentId) return [];
+    return filteredAgentTrackersMap[String(selectedAgentId)] || [];
+  }, [filteredAgentTrackersMap, selectedAgentId]);
 
   const handleResetToToday = () => {
     setStartDate(getTodayDate());
@@ -252,8 +257,9 @@ const AgentFileReportView: React.FC<AgentFileReportViewProps> = ({
               filteredAgentsForSidebar.map((agent) => {
                 const isSelected =
                   String(agent.user_id) === String(selectedAgentId);
-                const fileCount = (agentTrackers[String(agent.user_id)] || [])
-                  .length;
+                const fileCount = (
+                  filteredAgentTrackersMap[String(agent.user_id)] || []
+                ).length;
 
                 return (
                   <div
@@ -331,9 +337,7 @@ const AgentFileReportView: React.FC<AgentFileReportViewProps> = ({
                           className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-none px-3 py-1 font-bold flex items-center gap-1.5"
                         >
                           <FileText className="w-3.5 h-3.5" />
-                          {agentTrackers[String(selectedAgent.user_id)]
-                            ?.length || 0}{" "}
-                          Files Total
+                          {selectedAgentTrackersFiltered.length} Files in Range
                         </Badge>
                         <span className="text-slate-400 text-sm font-medium">
                           •

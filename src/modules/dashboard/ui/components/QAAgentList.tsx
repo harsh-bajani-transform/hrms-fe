@@ -4,20 +4,43 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, FileCheck } from "lucide-react";
 import AgentFileReportView from "./AgentFileReportView";
 import QCFormReportView from "./QCFormReportView";
-import DailyEntryFormModal from "../../../../components/common/DailyEntryFormModal";
+import QCFormView from "./QCFormView";
 import type { TrackerRow as Tracker } from "../../types";
 import { log } from "../../../../config/environment";
 
 const QAAgentList: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTracker, setSelectedTracker] = useState<Tracker | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [view, setView] = useState<"list" | "form">("list");
 
   const handleQCForm = useCallback((tracker: Tracker) => {
-    log("[QAAgentList] Opening QC Form for tracker:", tracker.tracker_id);
+    log("[QAAgentList] Transitioning to QC Form for tracker:", tracker.tracker_id);
     setSelectedTracker(tracker);
-    setIsModalOpen(true);
+    setView("form");
   }, []);
+
+  const handleBackToList = () => {
+    setView("list");
+    setSelectedTracker(null);
+  };
+
+  const handleSubmitSuccess = () => {
+    setRefreshTrigger((prev) => prev + 1);
+    setView("list");
+    setSelectedTracker(null);
+  };
+
+  if (view === "form" && selectedTracker) {
+    return (
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <QCFormView
+          tracker={selectedTracker}
+          onBack={handleBackToList}
+          onSubmitSuccess={handleSubmitSuccess}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -75,43 +98,6 @@ const QAAgentList: React.FC = () => {
           <QCFormReportView />
         </TabsContent>
       </Tabs>
-
-      {/* QC Form Modal */}
-      {selectedTracker && (
-        <DailyEntryFormModal
-          isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setSelectedTracker(null);
-          }}
-          onSubmit={() => {
-            setRefreshTrigger((prev) => prev + 1);
-          }}
-          isEditMode={
-            !!(selectedTracker?.qc_score || selectedTracker?.assigned_hours)
-          }
-          initialData={{
-            ...(selectedTracker?.qc_score !== undefined &&
-              selectedTracker?.qc_score !== null && {
-                qcScore: selectedTracker.qc_score as string | number,
-              }),
-            ...(selectedTracker?.assigned_hours !== undefined &&
-              selectedTracker?.assigned_hours !== null && {
-                assignHours: selectedTracker.assigned_hours as string | number,
-              }),
-          }}
-          user={{
-            user_id: (selectedTracker?.user_id as string | number) || "",
-            user_name: selectedTracker?.user_name || "",
-          }}
-          userId={(selectedTracker?.user_id as string | number) || ""}
-          date={
-            selectedTracker?.date_time
-              ? selectedTracker.date_time.slice(0, 10)
-              : null
-          }
-        />
-      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { Filter, FileDown, Users as UsersIcon } from "lucide-react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { Filter, FileDown, Users as UsersIcon, RefreshCw, Plus } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { format } from "date-fns";
@@ -17,7 +17,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { createColumns, Tracker } from "./QATrackerReportColumns";
-import { Agent, DropdownTaskMap, ProjectWithTasks } from "../../types";
+import { Agent, DropdownTaskMap, ProjectWithTasks, UserRef, ProjectRef } from "../../types";
+import { getUsersList } from "../../../../services/qcService";
+import AddTrackerModal from "./AddTrackerModal";
+import { SearchableCombobox, SearchableComboboxItem } from "@/components/common/SearchableCombobox";
 
 const getTodayDate = () => {
   const today = new Date();
@@ -30,6 +33,10 @@ const QATrackerReport: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [assignedAgents, setAssignedAgents] = useState<Agent[]>([]);
   const [loadingAgents, setLoadingAgents] = useState(false);
+  const [allAgents, setAllAgents] = useState<UserRef[]>([]);
+  const [allProjects, setAllProjects] = useState<ProjectRef[]>([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const [selectedAgent, setSelectedAgent] = useState("");
   const [startDate, setStartDate] = useState(getTodayDate());
@@ -43,84 +50,115 @@ const QATrackerReport: React.FC = () => {
     [dropdownTaskMap],
   );
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoadingAgents(true);
-        setLoading(true);
-        const dropdownRes = await api.post("/dropdown/get", {
-          dropdown_type: "projects with tasks",
-          logged_in_user_id: user?.user_id,
-        });
-        const projectsWithTasks: ProjectWithTasks[] =
-          dropdownRes.data?.data || [];
-        const taskMap: DropdownTaskMap = {};
-        projectsWithTasks.forEach((project) => {
-          (project.tasks || []).forEach((task) => {
-            taskMap[String(task.task_id)] = task.task_target || 0;
-          });
-        });
-        setDropdownTaskMap(taskMap);
+  const fetchData = useCallback(async () => {
+    try {
+      setLoadingAgents(true);
+      setLoading(true);
 
-        const payload: Record<string, unknown> = {
-          logged_in_user_id: user?.user_id,
-        };
-        if (selectedAgent) payload.user_id = selectedAgent;
-        if (startDate) payload.date_from = startDate;
-        if (endDate) payload.date_to = endDate;
-
-        log("[QATrackerReport] Fetching tracker/view data", payload);
-        const res = await api.post("/tracker/view", payload);
-        const data = res.data?.data || {};
-
-        const fetchedTrackers: Tracker[] = Array.isArray(data.trackers)
-          ? data.trackers
-          : [];
-        const monthSummary: Record<string, unknown>[] = Array.isArray(
-          data.month_summary,
-        )
-          ? data.month_summary
-          : [];
-
-        setTrackers(fetchedTrackers);
-
-        // Update assigned agents from summary if not filtered
-        if (!selectedAgent && monthSummary.length > 0) {
-          const uniqueAgents: Agent[] = [];
-          const seen = new Set<string>();
-          monthSummary.forEach((s) => {
-            const uid = String(s.user_id);
-            if (!seen.has(uid)) {
-              seen.add(uid);
-              uniqueAgents.push({
-                user_id: s.user_id as number,
-                user_name: s.user_name as string,
-              });
-            }
-          });
-          setAssignedAgents(uniqueAgents);
-        }
-
-        log("[QATrackerReport] Trackers loaded:", fetchedTrackers.length);
-      } catch (err) {
-        logError("[QATrackerReport] Error fetching tracker/view:", err);
-        toast.error("Failed to load tracker data");
-        setAssignedAgents([]);
-        setTrackers([]);
-      } finally {
-        setLoadingAgents(false);
-        setLoading(false);
+      // Fetch agents list for "Add Tracker" form
+      const agentsRes = await getUsersList({
+        user_id: String(user?.user_id || ""),
+        device_id: "DUMMY_ID",
+        device_type: "DUMMY_TYPE",
+      });
+      if (agentsRes.data) {
+        setAllAgents(agentsRes.data);
       }
-    };
+
+      const dropdownRes = await api.post("/dropdown/get", {
+        dropdown_type: "projects with tasks",
+        logged_in_user_id: user?.user_id,
+      });
+      const projectsWithTasks: ProjectWithTasks[] =
+        dropdownRes.data?.data || [];
+      setAllProjects(projectsWithTasks);
+
+      const taskMap: DropdownTaskMap = {};
+      projectsWithTasks.forEach((project) => {
+        (project.tasks || []).forEach((task) => {
+          taskMap[String(task.task_id)] = task.task_target || 0;
+        });
+      });
+      setDropdownTaskMap(taskMap);
+
+      const payload: Record<string, unknown> = {
+        logged_in_user_id: user?.user_id,
+      };
+      if (selectedAgent && selectedAgent !== "_all")
+        payload.user_id = selectedAgent;
+      if (startDate) payload.date_from = startDate;
+      if (endDate) payload.date_to = endDate;
+
+      log("[QATrackerReport] Fetching tracker/view data", payload);
+      const res = await api.post("/tracker/view", payload);
+      const data = res.data?.data || {};
+
+      const fetchedTrackers: Tracker[] = Array.isArray(data.trackers)
+        ? data.trackers
+        : [];
+      const monthSummary: Record<string, unknown>[] = Array.isArray(
+        data.month_summary,
+      )
+        ? data.month_summary
+        : [];
+
+      setTrackers(fetchedTrackers);
+
+      // Update assigned agents from summary if not filtered
+      if (
+        (!selectedAgent || selectedAgent === "_all") &&
+        monthSummary.length > 0
+      ) {
+        const uniqueAgents: Agent[] = [];
+        const seen = new Set<string>();
+        monthSummary.forEach((s) => {
+          const uid = String(s.user_id);
+          if (!seen.has(uid)) {
+            seen.add(uid);
+            uniqueAgents.push({
+              user_id: s.user_id as number,
+              user_name: s.user_name as string,
+            });
+          }
+        });
+        setAssignedAgents(uniqueAgents);
+      }
+
+      log("[QATrackerReport] Trackers loaded:", fetchedTrackers.length);
+    } catch (err) {
+      logError("[QATrackerReport] Error fetching tracker/view:", err);
+      toast.error("Failed to load tracker data");
+      setAssignedAgents([]);
+      setTrackers([]);
+    } finally {
+      setLoadingAgents(false);
+      setLoading(false);
+    }
+  }, [user?.user_id, selectedAgent, startDate, endDate]);
+
+  useEffect(() => {
     if (user?.user_id) {
       fetchData();
     }
-  }, [user?.user_id, startDate, endDate, selectedAgent]);
+  }, [user?.user_id, fetchData, refreshTrigger]);
 
   // API handles date/user filtering, so we just return the trackers
   const filteredTrackers = useMemo(() => {
     return trackers;
   }, [trackers]);
+
+  const assignedAgentItems = useMemo<SearchableComboboxItem[]>(() => {
+    const items: SearchableComboboxItem[] = [
+      { value: "_all", label: "All Agents" },
+    ];
+    assignedAgents.forEach((a) => {
+      items.push({
+        value: String(a.user_id),
+        label: a.user_name || "Unknown Agent",
+      });
+    });
+    return items;
+  }, [assignedAgents]);
 
   const handleClearFilters = () => {
     setSelectedAgent("");
@@ -216,7 +254,7 @@ const QATrackerReport: React.FC = () => {
               Filters
             </h3>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="default"
               size="sm"
@@ -226,6 +264,27 @@ const QATrackerReport: React.FC = () => {
             >
               <FileDown className="w-4 h-4" />
               Export
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setRefreshTrigger((prev) => prev + 1)}
+              disabled={loading}
+              className="h-9 px-4 flex items-center gap-2"
+            >
+              <RefreshCw
+                className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setShowAddModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 h-9 px-4 flex items-center gap-2 shadow-md shadow-blue-100"
+            >
+              <Plus className="w-4 h-4" />
+              Add Tracker
             </Button>
             <Button
               variant="outline"
@@ -269,23 +328,14 @@ const QATrackerReport: React.FC = () => {
             <label className="block text-xs font-semibold text-blue-900 mb-1">
               Assigned Agent
             </label>
-            <Select
-              value={selectedAgent}
+            <SearchableCombobox
+              items={assignedAgentItems}
+              value={selectedAgent || "_all"}
               onValueChange={setSelectedAgent}
+              placeholder="Search Agent..."
               disabled={loadingAgents}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Agents" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="_all">All Agents</SelectItem>
-                {assignedAgents.map((agent) => (
-                  <SelectItem key={agent.user_id} value={String(agent.user_id)}>
-                    {agent.user_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              className="h-9 rounded-md"
+            />
             {loadingAgents && (
               <p className="text-xs text-gray-500 mt-1">Loading agents...</p>
             )}
@@ -349,6 +399,14 @@ const QATrackerReport: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Add Tracker Modal */}
+      <AddTrackerModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={() => setRefreshTrigger((prev) => prev + 1)}
+        agents={allAgents}
+        projects={allProjects}
+      />
     </div>
   );
 };

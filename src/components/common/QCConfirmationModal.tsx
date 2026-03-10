@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
-import { X, User, Mail, FolderOpen, Briefcase, Award, XCircle, ListChecks, CheckCircle2, AlertCircle, MessageSquare } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import React, { useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  X,
+  User,
+  Mail,
+  FolderOpen,
+  Briefcase,
+  Award,
+  AlertCircle,
+  ListChecks,
+  CheckCircle2,
+  MessageSquare,
+  Send,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Textarea } from "../ui/textarea";
 
 export interface QCConfirmationData {
   qaName: string;
@@ -26,105 +33,115 @@ interface QCConfirmationModalProps {
   onClose: () => void;
   onConfirm: (comments: string) => void;
   data: Partial<QCConfirmationData>;
-  submissionType?: 'regular' | 'rework' | 'correction' | '';
+  submissionType?: "regular" | "rework" | "correction" | "";
   loading?: boolean;
 }
 
-const QCConfirmationModal: React.FC<QCConfirmationModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  data = {}, 
-  loading = false 
+const QCConfirmationModal: React.FC<QCConfirmationModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  data = {},
+  loading = false,
 }) => {
-  const [comments, setComments] = useState('');
-  
+  const [comments, setComments] = useState("");
+
   const {
-    qaName = 'N/A',
-    agentEmail = 'N/A',
-    projectName = 'N/A',
-    taskName = 'N/A',
-    status = 'Regular',
+    qaName = "N/A",
+    agentEmail = "N/A",
+    projectName = "N/A",
+    taskName = "N/A",
+    status = "Regular",
     qcScore = 0,
     errorCount = 0,
-    errorList = []
+    errorList = [],
   } = data;
 
-  const handleSubmit = () => {
-    onConfirm(comments);
-  };
+  const statusLower = status.toLowerCase();
+  const statusColor =
+    statusLower === "regular"
+      ? "bg-green-100 text-green-700 border-green-200"
+      : statusLower === "rework"
+        ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+        : "bg-red-100 text-red-700 border-red-200";
+
+  const scoreColor =
+    qcScore >= 95
+      ? "text-green-600"
+      : qcScore >= 80
+        ? "text-yellow-600"
+        : "text-red-600";
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
-        {/* Header */}
-        <DialogHeader className="bg-linear-to-r from-blue-600 to-indigo-600 p-6 flex-row items-center justify-between space-y-0">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/30">
-              <CheckCircle2 className="w-7 h-7 text-white" />
+      <DialogContent className="w-full p-0 overflow-hidden rounded-2xl border-none shadow-2xl gap-0">
+        {/* ── Header ── */}
+        <div className="bg-blue-600 px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5 text-white" />
             </div>
-            <div className="text-left">
-              <DialogTitle className="text-2xl font-bold text-white tracking-tight">Confirm QC Submission</DialogTitle>
-              <p className="text-blue-100 text-sm font-medium opacity-90 leading-relaxed">Please review the details before finalizing your submission</p>
+            <div>
+              <h2 className="text-lg font-bold text-white leading-tight">
+                Confirm QC Submission
+              </h2>
+              <p className="text-blue-100 text-xs font-medium">
+                Review details before finalizing
+              </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            disabled={loading}
-            className="text-white hover:bg-white/20 hover:text-white rounded-xl transition-all h-10 w-10 shrink-0"
-          >
-            <X className="w-6 h-6" />
-          </Button>
-        </DialogHeader>
+        </div>
 
-        {/* Scrollable Body */}
-        <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh] custom-scrollbar bg-slate-50/30">
-          {/* QA & Project Info Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* QA Information */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm space-y-5">
-              <h3 className="text-xs font-bold text-blue-700 uppercase tracking-widest flex items-center gap-2 mb-2">
-                <User className="size-4" />
-                QA Information
-              </h3>
-              <div className="space-y-4">
-                <div className="bg-blue-50/40 rounded-xl p-4 border border-blue-100/50 transition-all hover:border-blue-200">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">QA Agent</p>
-                  <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+        {/* ── Body ── */}
+        <div className="overflow-y-auto max-h-[65vh] bg-slate-50 p-6 space-y-4">
+          {/* Row 1 — Info cards */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* QA Info */}
+            <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                <User className="w-3 h-3" /> QA Information
+              </p>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    QA Agent
+                  </p>
+                  <p className="text-sm font-bold text-slate-800 mt-0.5">
                     {qaName}
                   </p>
                 </div>
-                <div className="bg-blue-50/40 rounded-xl p-4 border border-blue-100/50 transition-all hover:border-blue-200">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Agent Email</p>
-                  <p className="text-sm font-bold text-blue-700 break-all flex items-center gap-2">
-                    <Mail className="size-3.5 opacity-70" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    Agent Email
+                  </p>
+                  <p className="text-sm font-bold text-blue-600 mt-0.5 break-all">
                     {agentEmail}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Project Details */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm space-y-5">
-              <h3 className="text-xs font-bold text-indigo-700 uppercase tracking-widest flex items-center gap-2 mb-2">
-                <FolderOpen className="size-4" />
-                Project Details
-              </h3>
-              <div className="space-y-4">
-                <div className="bg-indigo-50/40 rounded-xl p-4 border border-indigo-100/50 transition-all hover:border-indigo-200">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Project Name</p>
-                  <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                    <Briefcase className="size-3.5 text-indigo-500 opacity-70" />
+            {/* Project Info */}
+            <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                <FolderOpen className="w-3 h-3" /> Project Details
+              </p>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    Project Name
+                  </p>
+                  <p className="text-sm font-bold text-slate-800 mt-0.5 flex items-center gap-1.5">
+                    <Briefcase className="w-3.5 h-3.5 text-slate-400" />
                     {projectName}
                   </p>
                 </div>
-                <div className="bg-indigo-50/40 rounded-xl p-4 border border-indigo-100/50 transition-all hover:border-indigo-200">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Task Category</p>
-                  <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                    <ListChecks className="size-3.5 text-indigo-500 opacity-70" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    Task
+                  </p>
+                  <p className="text-sm font-bold text-slate-800 mt-0.5 flex items-center gap-1.5">
+                    <ListChecks className="w-3.5 h-3.5 text-slate-400" />
                     {taskName}
                   </p>
                 </div>
@@ -132,126 +149,124 @@ const QCConfirmationModal: React.FC<QCConfirmationModalProps> = ({
             </div>
           </div>
 
-          {/* Scores & Status Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-             {/* Evaluation Status */}
-             <div className="bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm space-y-5">
-                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 mb-2">
-                  <Award className="size-4 text-orange-500" />
-                  Evaluation Metrics
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/60 flex flex-col items-center text-center">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">Submission Status</p>
-                    <div className={cn(
-                      "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border whitespace-nowrap",
-                      status.toLowerCase() === 'regular' ? 'bg-green-100/80 text-green-700 border-green-200' : 
-                      status.toLowerCase() === 'rework' ? 'bg-yellow-100/80 text-yellow-700 border-yellow-200' : 
-                      'bg-red-100/80 text-red-700 border-red-200'
-                    )}>
-                      {status}
-                    </div>
-                  </div>
-                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/60 flex flex-col items-center text-center">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Quality Score</p>
-                    <p className={cn(
-                      "text-2xl font-black tabular-nums tracking-tighter",
-                      qcScore >= 95 ? "text-green-600" : qcScore >= 80 ? "text-yellow-600" : "text-red-600"
-                    )}>
-                      {qcScore.toFixed(1)}%
-                    </p>
-                  </div>
-                </div>
-             </div>
+          {/* Row 2 — Score & Errors */}
+          <div className="grid grid-cols-3 gap-4">
+            {/* QC Score */}
+            <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col items-center justify-center text-center">
+              <Award className={cn("w-6 h-6 mb-1", scoreColor)} />
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">
+                QC Score
+              </p>
+              <p className={cn("text-3xl font-black tabular-nums", scoreColor)}>
+                {qcScore.toFixed(1)}%
+              </p>
+            </div>
 
-             {/* Error Summary */}
-             <div className="bg-red-50/30 rounded-2xl p-6 border border-red-100/60 shadow-sm space-y-4">
-              <h3 className="text-xs font-bold text-red-800 uppercase tracking-widest flex items-center gap-2 mb-2">
-                <AlertCircle className="size-4" />
-                Accuracy Summary
-              </h3>
-              <div className="bg-white rounded-xl p-4 border border-red-100/50 flex items-center justify-between shadow-xs">
-                <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Discrepancies</p>
-                  <p className="text-xs font-medium text-slate-500">Errors identified in this audit</p>
-                </div>
-                <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center border border-red-200 shadow-inner">
-                  <p className="text-2xl font-black text-red-600 tabular-nums leading-none">{errorCount}</p>
-                </div>
-              </div>
-              {errorList.length > 0 && (
-                <div className="max-h-24 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                  {errorList.map((error, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2.5 bg-white/80 rounded-lg border border-red-100/40 hover:border-red-200/60 transition-colors">
-                      <span className="text-[10px] font-bold text-slate-700 truncate mr-3">{error.name}</span>
-                      <span className="text-[11px] font-black text-red-600 bg-red-50/50 px-2 py-0.5 rounded-md border border-red-100">{error.count}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-             </div>
+            {/* Status */}
+            <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col items-center justify-center text-center">
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">
+                Status
+              </p>
+              <span
+                className={cn(
+                  "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border",
+                  statusColor,
+                )}
+              >
+                {status}
+              </span>
+            </div>
+
+            {/* Error Count */}
+            <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col items-center justify-center text-center">
+              <AlertCircle className="w-6 h-6 text-red-500 mb-1" />
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">
+                Total Errors
+              </p>
+              <p className="text-3xl font-black text-red-600 tabular-nums">
+                {errorCount}
+              </p>
+            </div>
           </div>
 
-          {/* Comments Section */}
-          <div className="space-y-4">
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
-              <MessageSquare className="size-4 text-purple-600" />
-              Evaluation Comments <span className="text-red-600">*</span>
-            </h3>
-            <div className="relative group">
-              <textarea
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
-                placeholder="Please provide comprehensive justification for this QC score and detailed feedback for the agent..."
-                rows={4}
-                className="w-full p-6 text-sm text-slate-700 bg-white border-2 border-slate-200 rounded-2xl outline-none focus:border-blue-500 transition-all shadow-sm placeholder:text-slate-400 resize-none group-hover:border-slate-300"
-              />
-              <div className="absolute bottom-4 right-6 flex items-center gap-4">
-                <span className={cn(
-                  "text-[10px] font-black uppercase tracking-widest",
-                  comments.length < 10 ? "text-slate-300" : "text-green-500"
-                )}>
-                  {comments.length} CHR
-                </span>
-                {!comments.trim() && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-500 rounded-md border border-red-100 animate-pulse">
-                    <AlertCircle className="size-3" />
-                    <span className="text-[9px] font-black uppercase">REQUIRED</span>
+          {/* Error Breakdown (only if errors exist) */}
+          {errorList.length > 0 && (
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <ListChecks className="w-3 h-3" /> Error Breakdown
+              </p>
+              <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                {errorList.map((error, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between px-3 py-2 bg-red-50 rounded-lg border border-red-100"
+                  >
+                    <span className="text-xs font-semibold text-slate-700 truncate mr-3">
+                      {error.name}
+                    </span>
+                    <span className="text-xs font-black text-red-600 shrink-0">
+                      {error.count} error{error.count !== 1 ? "s" : ""}
+                    </span>
                   </div>
-                )}
+                ))}
               </div>
+            </div>
+          )}
+
+          {/* Comments */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-2">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+              <MessageSquare className="w-3 h-3" /> Comments{" "}
+              <span className="text-red-500">*</span>
+            </p>
+            <Textarea
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+              placeholder="Provide feedback and justification for this QC score..."
+              rows={3}
+              className="w-full text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:border-blue-500 focus:bg-white transition-all resize-none placeholder:text-slate-400"
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-slate-400 font-medium">
+                {comments.length} characters
+              </span>
+              {!comments.trim() && (
+                <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider">
+                  Required
+                </span>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <DialogFooter className="bg-slate-50/80 p-6 flex flex-row items-center justify-end gap-4 border-t border-slate-200/60 backdrop-blur-sm sticky bottom-0">
+        {/* ── Footer ── */}
+        <div className="bg-white px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-200">
           <Button
             variant="outline"
             onClick={onClose}
             disabled={loading}
-            className="font-bold border-2 border-slate-200 hover:bg-slate-100 rounded-xl px-6 h-12 transition-all active:scale-95"
+            className="font-bold border-slate-200 hover:bg-slate-50 rounded px-5 h-10"
           >
-            Go Back
+            Cancel
           </Button>
           <Button
-            onClick={handleSubmit}
+            onClick={() => onConfirm(comments)}
             disabled={loading || !comments.trim()}
-            className="px-10 h-12 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-300 disabled:to-slate-400 text-white font-black rounded-xl transition-all shadow-xl hover:shadow-blue-500/20 active:scale-95 flex items-center gap-3 overflow-hidden"
+            className="px-6 h-10 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold rounded flex items-center gap-2 transition-colors"
           >
             {loading ? (
-              <div className="flex items-center gap-3">
+              <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Processing...
-              </div>
+              </>
             ) : (
               <>
-                <CheckCircle2 className="size-5" />
-                Finalize & Submit Audit
+                <Send className="w-4 h-4" />
+                Finalize & Submit
               </>
             )}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

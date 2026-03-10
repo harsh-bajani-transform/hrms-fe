@@ -66,6 +66,7 @@ export interface UserRef {
   designation?: string;
   device_id?: string;
   device_type?: string;
+  user_tenure?: number | string;
 }
 
 export interface TrackerRow {
@@ -186,7 +187,7 @@ export type TaskMapValue = {
 export interface Agent {
   user_id: number | string;
   user_name: string;
-  // Add more specific fields as needed
+  user_tenure?: number | string;
 }
 
 export interface Task {
@@ -201,4 +202,44 @@ export interface ProjectWithTasks {
 
 export interface DropdownTaskMap {
   [taskId: string]: number | string;
+}
+
+export interface QCFormViewProps {
+  tracker: TrackerRow;
+  onBack: () => void;
+  onSubmitSuccess: () => void;
+}
+
+export interface AFDSubcategory {
+  qc_afd_id: number;
+  name: string;
+  points: number;
+}
+
+export interface AFDCategory {
+  qc_afd_id: number;
+  name: string;
+  points: number;
+  subcategories: AFDSubcategory[];
+}
+
+export interface AFDData {
+  afd_id: number;
+  afd_name: string;
+  categories: AFDCategory[];
+}
+
+export interface ErrorSelection {
+  categoryId: number;
+  subcategoryId: number;
+}
+
+export interface FormRow {
+  id: string | number;
+  originalData: Record<string, unknown>;
+  errors: ErrorSelection[];
+}
+export interface PendingSelection {
+  category: string;
+  subcategories: number[];
 }
