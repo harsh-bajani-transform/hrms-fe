@@ -3,11 +3,8 @@ import type { LucideIcon } from "lucide-react";
 import {
   LayoutGrid,
   Briefcase,
-  Users,
-  FileWarning,
-  DollarSign,
-  Gem,
   FileText,
+  BarChart3,
 } from "lucide-react";
 
 export interface TabsNavigationProps {
@@ -15,8 +12,6 @@ export interface TabsNavigationProps {
   setActiveTab: (tabId: string) => void;
   isAgent: boolean;
   isQA: boolean;
-  canViewIncentivesTab: boolean;
-  canViewAdherence: boolean;
   canAccessManage?: boolean;
 }
 
@@ -33,8 +28,6 @@ const TabsNavigation = ({
   setActiveTab,
   isAgent,
   isQA,
-  canViewIncentivesTab,
-  canViewAdherence,
 }: TabsNavigationProps) => {
   const tabsRef = useRef<HTMLDivElement | null>(null);
 
@@ -57,23 +50,10 @@ const TabsNavigation = ({
       icon: FileText,
       visible: true,
     },
-    { id: "agents", label: "Agent Performance", icon: Users, visible: !isQA },
     {
-      id: "adherence",
-      label: "Reporting Adherence",
-      icon: FileWarning,
-      visible: (canViewAdherence && !isQA) || isAgent,
-    },
-    {
-      id: "incentives",
-      label: "Agent Incentives",
-      icon: DollarSign,
-      visible: (canViewIncentivesTab && !isQA) || isAgent,
-    },
-    {
-      id: "mgmt_incentives",
-      label: "Management Incentives",
-      icon: Gem,
+      id: "project_monthly_report",
+      label: "Project Monthly Report",
+      icon: BarChart3,
       visible: !isAgent && !isQA,
     },
   ];

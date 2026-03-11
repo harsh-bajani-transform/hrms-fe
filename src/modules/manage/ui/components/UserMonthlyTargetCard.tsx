@@ -14,7 +14,7 @@ import {
 import { DataTable } from "@/components/ui/data-table";
 import { createColumns, type Agent } from "./UserMonthlyTargetCardColumns";
 import { useAuth } from "../../../../context/AuthContext";
-import { fetchMonthlyBillableReport } from "../../../dashboard/services/billableReportService";
+import { fetchMonthlyBillableReport, type MonthlyBillableReportRow } from "../../../dashboard/services/billableReportService";
 
 interface MonthData {
   key: string;
@@ -50,6 +50,16 @@ const UserMonthlyTargetCard: React.FC = () => {
   const [dateRanges, setDateRanges] = useState<Record<string, [Dayjs, Dayjs]>>(
     {},
   );
+
+  const handleEditTarget = (agent: Agent) => {
+    toast.info(`Edit target for ${agent.userName}`);
+    // Implement edit modal or logic here
+  };
+
+  const handleDeleteAgent = (agent: Agent) => {
+    toast.info(`Delete agent ${agent.userName}`);
+    // Implement delete confirmation or logic here
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -87,14 +97,15 @@ const UserMonthlyTargetCard: React.FC = () => {
           const res = await fetchMonthlyBillableReport(payload);
           const apiAgents: Agent[] = (
             Array.isArray(res.data) ? res.data : []
-          ).map((row: any) => ({
-            id: row.user_id || 0,
+          ).map((row: MonthlyBillableReportRow) => ({
+            id: Number(row.user_id || 0),
             userName: row.user_name || "Unknown",
-            workingDays: row.working_days || 0,
-            dailyRequiredHours: row.daily_required_hours || 0,
-            monthlyTotalTarget: row.monthly_target || row.monthly_goal || 0,
+            team: row.team_name || (row.team as string) || "N/A",
+            workingDays: Number(row.working_days || 0),
+            extraAssignHours: Number(row.extra_assigned_hours || row.extra_assign_hours || 0),
+            monthlyTarget: Number(row.monthly_target || row.monthly_goal || 0),
             monthlyAchievedTarget:
-              row.total_billable_hours || row.total_billable_hours_month || 0,
+              Number(row.total_billable_hours || row.total_billable_hours_month || 0),
           }));
 
           return { ...m, agents: apiAgents };
@@ -128,37 +139,12 @@ const UserMonthlyTargetCard: React.FC = () => {
     }
 
     const exportData = monthData.agents.map((agent) => ({
-      "Agent Name": agent.userName,
+      "User Name": agent.userName,
+      "Team": agent.team,
+      "Monthly Target": agent.monthlyTarget,
+      "Extra Assign Hours": agent.extraAssignHours,
       "Working Days": agent.workingDays,
-      "Daily Required Hours": Number(agent.dailyRequiredHours).toFixed(2),
-      "Monthly Goal": Number(agent.monthlyTotalTarget).toFixed(2),
-      "Achieved Target": Number(agent.monthlyAchievedTarget).toFixed(2),
     }));
-
-    const totalWorkingDays = monthData.agents.reduce(
-      (sum, agent) => sum + Number(agent.workingDays || 0),
-      0,
-    );
-    const totalRequired = monthData.agents.reduce(
-      (sum, agent) => sum + Number(agent.dailyRequiredHours || 0),
-      0,
-    );
-    const totalGoal = monthData.agents.reduce(
-      (sum, agent) => sum + Number(agent.monthlyTotalTarget || 0),
-      0,
-    );
-    const totalAchieved = monthData.agents.reduce(
-      (sum, agent) => sum + Number(agent.monthlyAchievedTarget || 0),
-      0,
-    );
-
-    exportData.push({
-      "Agent Name": "Total",
-      "Working Days": totalWorkingDays,
-      "Daily Required Hours": totalRequired.toFixed(2),
-      "Monthly Goal": totalGoal.toFixed(2),
-      "Achieved Target": totalAchieved.toFixed(2),
-    } as any);
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
@@ -168,7 +154,7 @@ const UserMonthlyTargetCard: React.FC = () => {
   };
 
   // Create columns
-  const columns = useMemo(() => createColumns(), []);
+  const columns = useMemo(() => createColumns(handleEditTarget, handleDeleteAgent), []);
 
   if (loading && monthsData.length === 0) {
     return (
@@ -185,7 +171,7 @@ const UserMonthlyTargetCard: React.FC = () => {
           </div>
           <div>
             <h2 className="text-2xl font-bold">User Monthly Targets</h2>
-            <p className="text-slate-600 mt-1">
+            <p className="text-slate-600 mt-1 font-medium">
               Review and manage monthly production goals for agents.
             </p>
           </div>
@@ -263,7 +249,7 @@ const UserMonthlyTargetCard: React.FC = () => {
                 <Button
                   variant="default"
                   onClick={() => handleExportExcel(month.label)}
-                  className="bg-emerald-600 hover:bg-emerald-700 px-4"
+                  className="bg-emerald-600 hover:bg-emerald-700 px-4 font-bold"
                 >
                   <Download className="w-4 h-4" />
                   <span>Export</span>

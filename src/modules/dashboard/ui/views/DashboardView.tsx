@@ -20,6 +20,7 @@ import AssistantManagerDashboard from "../components/AssistantManagerDashboard";
 import QAAgentDashboard from "../components/QAAgentDashboard";
 import ManageView from "../../../manage/ui/views/ManageView";
 import UserMonthlyTargetCard from "../../../manage/ui/components/UserMonthlyTargetCard";
+import ProjectMonthlyReport from "../components/ProjectMonthlyReport";
 import AgentBillableReport from "../../../agent/ui/components/AgentBillableReport";
 import AppLayout from "../../../../components/layout/AppLayout";
 
@@ -66,12 +67,6 @@ const DashboardView = () => {
   );
   const roleId = Number(currentUser?.role_id);
 
-  const isAdmin =
-    roleId === 1 ||
-    role.toLowerCase() === "admin" ||
-    userRole.toUpperCase() === "ADMIN" ||
-    designation === "Admin";
-
   const isAgent =
     roleId === 6 ||
     role.toLowerCase() === "agent" ||
@@ -89,18 +84,7 @@ const DashboardView = () => {
     designation === "Assistant Manager" ||
     role.toLowerCase().includes("assistant");
 
-  const isProjectManager =
-    roleId === 3 ||
-    designation === "Project Manager" ||
-    role.toLowerCase().includes("project_manager");
-
   const canAccessManage = canManageUsers || canManageProjects || isSuperAdmin;
-  const canViewIncentivesTab =
-    isAdmin ||
-    userRole.toUpperCase() === "FINANCE_HR" ||
-    isProjectManager ||
-    isSuperAdmin;
-  const canViewAdherence = isAdmin || isProjectManager || isQA || isSuperAdmin;
 
   const navigate = useNavigate({ from: "/dashboard" });
 
@@ -291,7 +275,9 @@ const DashboardView = () => {
 
   return (
     <AppLayout>
-      <div className={`space-y-6 mx-auto pb-10 px-4 sm:px-6 lg:px-8 pt-6 ${viewParam ? 'max-w-[1600px]' : 'max-w-6xl'}`}>
+      <div
+        className={`space-y-6 mx-auto pb-10 px-4 sm:px-6 lg:px-8 pt-6 ${viewParam ? "max-w-[1600px]" : "max-w-6xl"}`}
+      >
         {/* Special Views override anything else */}
         {viewParam ? (
           renderSpecialView()
@@ -319,8 +305,6 @@ const DashboardView = () => {
                 setActiveTab={handleTabChange}
                 isAgent={isAgent}
                 isQA={isQA}
-                canViewIncentivesTab={canViewIncentivesTab}
-                canViewAdherence={canViewAdherence}
                 canAccessManage={canAccessManage}
               />
             )}
@@ -346,10 +330,12 @@ const DashboardView = () => {
 
             {activeTab === "monthly_target" && <UserMonthlyTargetCard />}
 
+            {activeTab === "project_monthly_report" && <ProjectMonthlyReport />}
+
             {activeTab === "manage" && <ManageView />}
 
             {/* Fallback for other tabs */}
-            {activeTab !== "overview" &&
+            {/* {activeTab !== "overview" &&
               activeTab !== "manage" &&
               activeTab !== "billable_report" &&
               activeTab !== "monthly_target" && (
@@ -362,7 +348,7 @@ const DashboardView = () => {
                     We are currently migrating this section.
                   </p>
                 </div>
-              )}
+              )} */}
           </>
         )}
       </div>

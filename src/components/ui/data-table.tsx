@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import React from "react"
+import React from "react";
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 
-import Loading from "@/components/common/Loading"
+import Loading from "@/components/common/Loading";
 import {
   Table,
   TableBody,
@@ -17,23 +17,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { DataTablePagination } from "./pagination"
+} from "@/components/ui/table";
+import { DataTablePagination } from "./pagination";
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-  loading?: boolean
-  loadingMessage?: string
-  emptyMessage?: string
-  emptyIcon?: React.ComponentType<{ className?: string }>
-  showPagination?: boolean
-  pageSize?: number
-  containerClassName?: string
-  tableClassName?: string
-  headerClassName?: string
-  rowClassName?: string
-  rowHoverClassName?: string
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  loading?: boolean;
+  loadingMessage?: string;
+  emptyMessage?: string;
+  emptyIcon?: React.ComponentType<{ className?: string }>;
+  showPagination?: boolean;
+  pageSize?: number;
+  containerClassName?: string;
+  tableClassName?: string;
+  headerClassName?: string;
+  rowClassName?: string;
+  rowHoverClassName?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -61,7 +61,7 @@ export function DataTable<TData, TValue>({
         pageSize,
       },
     },
-  })
+  });
 
   return (
     <div className={containerClassName}>
@@ -77,10 +77,10 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -88,9 +88,12 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center p-0">
-                  <Loading 
-                    title={loadingMessage} 
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center p-0"
+                >
+                  <Loading
+                    title={loadingMessage}
                     size="sm"
                     fullHeight={false}
                   />
@@ -105,19 +108,26 @@ export function DataTable<TData, TValue>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   <div className="flex flex-col items-center gap-2">
-                    {emptyIcon && React.createElement(emptyIcon, { className: "w-12 h-12 text-gray-300" })}
-                    <span>
-                      {emptyMessage}
-                    </span>
+                    {emptyIcon &&
+                      React.createElement(emptyIcon, {
+                        className: "w-12 h-12 text-gray-300",
+                      })}
+                    <span>{emptyMessage}</span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -149,5 +159,5 @@ export function DataTable<TData, TValue>({
         }
       `}</style>
     </div>
-  )
+  );
 }

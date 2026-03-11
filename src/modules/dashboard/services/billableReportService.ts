@@ -68,3 +68,53 @@ export const fetchMonthlyBillableReport = async (
   );
   return res.data;
 };
+
+// Project Monthly Tracker
+export interface ProjectMonthlyReportRow {
+  project_monthly_tracker_id: Id;
+  project_id: Id;
+  project_name: string;
+  month_year: string;
+  monthly_target: string | number;
+  achieved_hours?: string | number;
+  pending_hours?: string | number;
+}
+
+export const fetchProjectMonthlyReport = async (
+  payload: Record<string, unknown> = {},
+): Promise<ApiEnvelope<{ rows: ProjectMonthlyReportRow[] }>> => {
+  const user_id = getLoggedInUserId();
+  const reqBody = { logged_in_user_id: user_id, ...payload };
+  const res = await api.post<ApiEnvelope<{ rows: ProjectMonthlyReportRow[] }>>(
+    "/project_monthly_tracker/list",
+    reqBody,
+  );
+  return res.data;
+};
+
+export const addProjectMonthlyTarget = async (payload: {
+  project_id: Id;
+  month_year: string;
+  monthly_target: string | number;
+}) => {
+  const res = await api.post("/project_monthly_tracker/add", payload);
+  return res.data;
+};
+
+export const updateProjectMonthlyTarget = async (payload: {
+  project_monthly_tracker_id: Id;
+  month_year: string;
+  monthly_target: string | number;
+}) => {
+  const res = await api.post("/project_monthly_tracker/update", payload);
+  return res.data;
+};
+
+export const deleteProjectMonthlyTarget = async (
+  project_monthly_tracker_id: Id,
+) => {
+  const res = await api.post("/project_monthly_tracker/delete", {
+    project_monthly_tracker_id,
+  });
+  return res.data;
+};
