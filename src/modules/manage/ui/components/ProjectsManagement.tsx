@@ -31,6 +31,7 @@ import { deleteProject, deleteTask } from "../../services/manageService";
 
 import ProjectFormModal from "./ProjectFormModal";
 import TaskFormModal from "./TaskFormModal";
+import ProjectTasks from "./ProjectTasks";
 import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { UserDropdowns } from "../../../../hooks/useUserDropdowns";
 import type { ProjectType, TaskType } from "../../types";
@@ -304,116 +305,13 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
                       {p.project_description}
                     </div>
                   )}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 mt-6">
-                    <Card>
-                      <CardHeader className="p-4 pb-2">
-                        <CardDescription className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                          Team Owner
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-indigo-500" />
-                          <span className="text-sm font-bold text-slate-700">
-                            {p.owner_name || "Not assigned"}
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="p-4 pb-2">
-                        <CardDescription className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                          Assistant Manager
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-indigo-500" />
-                          <span className="text-sm font-bold text-slate-700">
-                            {p.apm_name || "Not assigned"}
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="p-4 pb-2">
-                        <CardDescription className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                          QA Owner
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-indigo-500" />
-                          <span className="text-sm font-bold text-slate-700">
-                            {p.qa_name || "Not assigned"}
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-indigo-500" /> Project
-                        Tasks
-                      </h4>
-                      {canManageProjects && (
-                        <Button
-                          variant="link"
-                          size="sm"
-                          onClick={() => openTaskModal(p)}
-                          className="h-auto p-0 text-[10px] font-bold text-indigo-600 uppercase tracking-wider hover:underline flex items-center gap-1"
-                        >
-                          <Plus className="w-3 h-3" /> Add Task
-                        </Button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {p.tasks && p.tasks.length > 0 ? (
-                        p.tasks.map((t) => (
-                          <div
-                            key={t.task_id}
-                            className="bg-white px-4 py-3 rounded-lg border border-slate-100 flex items-center justify-between group hover:border-indigo-200 transition-colors"
-                          >
-                            <div
-                              className="flex-1 mr-2 cursor-pointer"
-                              onClick={() =>
-                                canManageProjects && openTaskModal(p, t)
-                              }
-                            >
-                              <span className="text-sm text-slate-600 font-medium group-hover:text-indigo-600 transition-colors">
-                                {t.task_name}
-                              </span>
-                              {typeof t.task_target === "string" ||
-                              typeof t.task_target === "number" ? (
-                                <div className="text-[10px] text-slate-400 mt-0.5">
-                                  Target: {t.task_target} hrs
-                                </div>
-                              ) : null}
-                            </div>
-                            {canManageProjects && (
-                              <Button
-                                variant="ghost"
-                                size="icon-xs"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteTask(p.project_id, t);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-rose-500"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </Button>
-                            )}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="col-span-full py-4 text-center text-xs text-slate-400 italic">
-                          No tasks added to this project.
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <ProjectTasks
+                    project={p}
+                    canManageProjects={canManageProjects}
+                    openTaskModal={openTaskModal}
+                    handleDeleteTask={handleDeleteTask}
+                  />
                 </AccordionContent>
               </AccordionItem>
             ))}

@@ -23,11 +23,7 @@ export function DataTablePagination<TData>({
   table,
 }: DataTablePaginationProps<TData>) {
   return (
-    <div className="flex items-center justify-between px-4 py-4 border-t border-gray-200 bg-gray-50">
-      <div className="flex-1 text-sm text-gray-600 font-medium">
-        {table.getFilteredSelectedRowModel().rows.length} of{" "}
-        {table.getFilteredRowModel().rows.length} row(s) selected.
-      </div>
+    <div className="flex items-center justify-end px-4 py-4 border-t border-gray-200 bg-gray-50">
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium text-gray-700">Rows per page</p>
@@ -41,11 +37,22 @@ export function DataTablePagination<TData>({
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
-              {Array.from(new Set([5, 10, 20, 50, 100, Number(table.getState().pagination.pageSize)])).sort((a, b) => a - b).map((pageSize) => (
-                <SelectItem key={pageSize} value={`${pageSize}`}>
-                  {pageSize}
-                </SelectItem>
-              ))}
+              {Array.from(
+                new Set([
+                  5,
+                  10,
+                  20,
+                  50,
+                  100,
+                  Number(table.getState().pagination.pageSize),
+                ]),
+              )
+                .sort((a, b) => a - b)
+                .map((pageSize) => (
+                  <SelectItem key={pageSize} value={`${pageSize}`}>
+                    {pageSize}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>

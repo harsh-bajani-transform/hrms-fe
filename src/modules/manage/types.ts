@@ -201,4 +201,7 @@ export interface APIResponseContainer {
   categories?: APIResponseCategory[];
   afd_id?: string | number;
   afd_name?: string;
+  qc_afd_id?: string | number;
+  afd_points?: number;
+  id?: string | number;
 }

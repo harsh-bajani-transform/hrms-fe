@@ -10,7 +10,10 @@ import {
   Hash,
   ChevronDown,
   Trash2,
+  Table as TableIcon,
+  Layers,
 } from "lucide-react";
+import * as XLSX from "xlsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +38,6 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { fileToBase64 } from "../../../../lib/fileToBase64";
 import { addTask, updateTask } from "../../services/manageService";
 import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 
@@ -84,6 +86,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
   const [attachmentPreview, setAttachmentPreview] = useState<string | null>(
     task?.attachment || null,
   );
+  const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
     {},
@@ -106,7 +109,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
     if (!validate()) return;
     try {
       setIsSubmitting(true);
-      
+
       const submitData = new FormData();
       submitData.append("project_id", formData.projectId);
       submitData.append("task_name", formData.name);
@@ -114,15 +117,19 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       submitData.append("task_target", formData.target);
       submitData.append("device_id", device_id);
       submitData.append("device_type", device_type);
-      
-      // Legacy backend formats for arrays (JSON strings of numbers)
-      submitData.append("task_team_id", JSON.stringify(formData.teamIds.map(Number)));
-      
+
+      submitData.append(
+        "task_team_id",
+        JSON.stringify(formData.teamIds.map(Number)),
+      );
+
       if (formData.importantColumns.length > 0) {
-        submitData.append("important_columns", JSON.stringify(formData.importantColumns));
+        submitData.append(
+          "important_columns",
+          JSON.stringify(formData.importantColumns),
+        );
       }
 
-      // Legacy backend expects 'task_file'
       if (fileInputRef.current?.files?.[0]) {
         submitData.append("task_file", fileInputRef.current.files[0]);
       }
@@ -146,13 +153,56 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Attachment size must be less than 5MB");
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File size must be less than 10MB");
         return;
       }
-      const base64 = await fileToBase64(file);
-      setFormData({ ...formData, attachment: base64 as string });
+
       setAttachmentPreview(file.name);
+
+      // Parse Excel headers if it's a spreadsheet
+      const isExcel = file.name.match(/\.(xlsx|xls|csv)$/);
+      if (isExcel) {
+        try {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const buffer = event.target?.result;
+            if (buffer instanceof ArrayBuffer) {
+              const data = new Uint8Array(buffer);
+              const workbook = XLSX.read(data, { type: "array" });
+              const firstSheetName = workbook.SheetNames[0];
+              if (firstSheetName) {
+                const worksheet = workbook.Sheets[firstSheetName];
+                if (worksheet) {
+                  const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+                    header: 1,
+                  }) as string[][];
+
+                  if (jsonData && jsonData.length > 0 && jsonData[0]) {
+                    const headers = jsonData[0]
+                      .filter(
+                        (h) =>
+                          h !== null &&
+                          h !== undefined &&
+                          String(h).trim() !== "",
+                      )
+                      .map((h) => String(h).trim());
+                    setExcelHeaders(headers);
+                    setFormData((prev) => ({ ...prev, importantColumns: [] }));
+                    toast.success(
+                      `Successfully parsed ${headers.length} columns from file`,
+                    );
+                  }
+                }
+              }
+            }
+          };
+          reader.readAsArrayBuffer(file);
+        } catch (err) {
+          console.error("Error parsing spreadsheet:", err);
+          toast.error("Failed to parse spreadsheet headers");
+        }
+      }
     }
   };
 
@@ -191,10 +241,10 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
               className="relative group cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
             >
-              <div className="w-20 h-20 rounded bg-slate-50 border-2 border-dashed border-slate-200 group-hover:border-blue-400 overflow-hidden flex items-center justify-center transition-all">
+              <div className="w-20 h-20 rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 group-hover:border-blue-400 overflow-hidden flex items-center justify-center transition-all bg-linear-to-b from-white to-slate-50">
                 {attachmentPreview ? (
                   <div className="flex flex-col items-center gap-1">
-                    <FileText className="w-8 h-8 text-blue-600" />
+                    <TableIcon className="w-8 h-8 text-blue-600" />
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-1 text-slate-400 group-hover:text-blue-500">
@@ -206,25 +256,30 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 <PlusCircle className="w-4 h-4" />
               </div>
             </div>
-            <p className="text-xs text-slate-400 font-medium italic">
-              {attachmentPreview
-                ? attachmentPreview
-                : "Attach brief/reference (Max 5MB)"}
-            </p>
+            <div className="text-center">
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
+                {attachmentPreview ? "File Ready" : "Upload Reference file"}
+              </p>
+              <p className="text-[10px] text-slate-400 mt-0.5 max-w-[200px] truncate italic">
+                {attachmentPreview
+                  ? attachmentPreview
+                  : ".xlsx, .xls, .csv preferred"}
+              </p>
+            </div>
             <input
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
               className="hidden"
-              accept="application/pdf,image/*"
+              accept=".xlsx,.xls,.csv"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             {/* TASK NAME */}
             <div className="md:col-span-2 space-y-1.5">
-              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
-                <ClipboardList className="w-3.5 h-3.5" />
+              <label className="text-[11px] font-bold text-slate-500 px-1 flex items-center gap-1.5 uppercase tracking-wider">
+                <ClipboardList className="w-3.5 h-3.5 text-blue-500" />
                 Task Title
               </label>
               <Input
@@ -234,14 +289,14 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="e.g. Data Analysis"
-                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={` h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all text-sm font-medium ${errors.name ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
             </div>
 
             {/* PROJECT */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5" />
+              <label className="text-[11px] font-bold text-slate-500 px-1 flex items-center gap-1.5 uppercase tracking-wider">
+                <FileText className="w-3.5 h-3.5 text-blue-500" />
                 Project
               </label>
               <Select
@@ -251,15 +306,16 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 }
               >
                 <SelectTrigger
-                  className={` w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.projectId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={` h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all text-sm font-medium ${errors.projectId ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 >
                   <SelectValue placeholder="Select Project" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl border-slate-200 shadow-xl">
                   {dropdowns.projects.map((p) => (
                     <SelectItem
                       key={(p.project_id || p.id)?.toString()}
                       value={(p.project_id || p.id)?.toString() || ""}
+                      className="text-xs font-medium focus:bg-blue-50 focus:text-blue-700 py-2.5 rounded-lg my-0.5"
                     >
                       {p.label}
                     </SelectItem>
@@ -270,8 +326,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
             {/* ASSIGN TO */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5" />
+              <label className="text-[11px] font-bold text-slate-500 px-1 flex items-center gap-1.5 uppercase tracking-wider">
+                <Users className="w-3.5 h-3.5 text-blue-500" />
                 Assignee
               </label>
               <Select
@@ -281,15 +337,16 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 }
               >
                 <SelectTrigger
-                  className={` w-full bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.assignedTo ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                  className={` h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all text-sm font-medium ${errors.assignedTo ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
                 >
                   <SelectValue placeholder="Select User" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl border-slate-200 shadow-xl">
                   {dropdowns.users.map((u) => (
                     <SelectItem
                       key={(u.user_id || u.id)?.toString()}
                       value={(u.user_id || u.id)?.toString() || ""}
+                      className="text-xs font-medium focus:bg-blue-50 focus:text-blue-700 py-2.5 rounded-lg my-0.5"
                     >
                       {u.label}
                     </SelectItem>
@@ -298,62 +355,10 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
               </Select>
             </div>
 
-            {/* START DATE */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5" />
-                Start Date
-              </label>
-              <Input
-                name="startDate"
-                type="date"
-                value={formData.startDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, startDate: e.target.value })
-                }
-                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.startDate ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
-              />
-            </div>
-
-            {/* END DATE */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5" />
-                End Date
-              </label>
-              <Input
-                name="endDate"
-                type="date"
-                value={formData.endDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, endDate: e.target.value })
-                }
-                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.endDate ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
-              />
-            </div>
-
-            {/* DESCRIPTION */}
-            <div className="md:col-span-2 space-y-1.5">
-              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5" />
-                Task Description
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                rows={3}
-                placeholder="Detail the expectations..."
-                className="w-full p-4 text-sm rounded bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-400 focus:ring-blue-100 transition-all outline-hidden resize-none"
-              />
-            </div>
-
             {/* TARGET (HOURS) */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
-                <Hash className="w-3.5 h-3.5" />
+              <label className="text-[11px] font-bold text-slate-500 px-1 flex items-center gap-1.5 uppercase tracking-wider">
+                <Hash className="w-3.5 h-3.5 text-blue-500" />
                 Target (Hrs)
               </label>
               <Input
@@ -364,10 +369,10 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                   setFormData({ ...formData, target: e.target.value })
                 }
                 placeholder="e.g. 10"
-                className={` bg-gray-50 border-gray-200 focus:bg-white transition-all ${errors.target ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                className={` h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all text-sm font-medium ${errors.target ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
               />
               {errors.target && (
-                <p className="text-xs text-red-500 font-medium mt-1 px-1">
+                <p className="text-[10px] text-red-500 font-bold mt-1 px-1">
                   {errors.target}
                 </p>
               )}
@@ -375,25 +380,25 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
             {/* TEAM ASSIGNMENT (AGENTS) */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700 px-1 flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5" />
-                Select Agent(s)
+              <label className="text-[11px] font-bold text-slate-500 px-1 flex items-center gap-1.5 uppercase tracking-wider">
+                <Users className="w-3.5 h-3.5 text-blue-500" />
+                Agent(s)
               </label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    className={` w-full bg-gray-50 border-gray-200 flex justify-between px-3 font-normal font-sans ${errors.teamIds ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100"}`}
+                    className={` h-11 w-full bg-slate-50/50 border-slate-200 flex justify-between px-3 text-sm font-medium ${errors.teamIds ? "border-red-500 ring-red-50/50" : "focus:border-blue-400 focus:ring-blue-100 hover:bg-white"}`}
                   >
                     <span className="truncate">
                       {formData.teamIds.length > 0
-                        ? `${formData.teamIds.length} selected`
+                        ? `${formData.teamIds.length} Agents Selected`
                         : "Select Agents"}
                     </span>
                     <ChevronDown className="w-4 h-4 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 max-h-[300px] overflow-y-auto">
+                <DropdownMenuContent className="w-64 max-h-[300px] overflow-y-auto rounded-xl border-slate-200 shadow-xl p-1">
                   {dropdowns.users.map((u) => {
                     const id = (u.user_id || u.id)?.toString() || "";
                     return (
@@ -406,6 +411,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                             : formData.teamIds.filter((x) => x !== id);
                           setFormData({ ...formData, teamIds: nextIds });
                         }}
+                        className="text-xs font-medium py-2.5 rounded-lg my-0.5 focus:bg-blue-50 focus:text-blue-700"
                       >
                         {u.label}
                       </DropdownMenuCheckboxItem>
@@ -413,119 +419,205 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                   })}
                 </DropdownMenuContent>
               </DropdownMenu>
-              {formData.teamIds.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {formData.teamIds.map((id) => {
-                    const agent = dropdowns.users.find(
-                      (a) => (a.user_id || a.id)?.toString() === id.toString(),
-                    );
-                    return (
-                      <Badge
-                        key={id}
-                        variant="secondary"
-                        className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2 py-0.5 border-none"
-                      >
-                        {agent?.label || id}
-                        <X
-                          className="w-3 h-3 ml-1 cursor-pointer"
-                          onClick={() => {
-                            setFormData({
-                              ...formData,
-                              teamIds: formData.teamIds.filter((x) => x !== id),
-                            });
-                          }}
-                        />
-                      </Badge>
-                    );
-                  })}
-                </div>
-              )}
               {errors.teamIds && (
-                <p className="text-xs text-red-500 font-medium mt-1 px-1">
+                <p className="text-[10px] text-red-500 font-bold mt-1 px-1">
                   {errors.teamIds}
                 </p>
               )}
             </div>
 
-            {/* IMPORTANT COLUMNS */}
-            <div className="md:col-span-2 space-y-3">
+            {/* IMPORTANT COLUMNS - REFACTORED TO SELECTION DROPDOWN */}
+            <div className="md:col-span-2 space-y-4 pt-2">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <label className="text-sm font-bold text-gray-800 flex items-center gap-1.5 uppercase tracking-wider">
-                  <ClipboardList className="w-4 h-4 text-blue-600" />
+                <label className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wider">
+                  <TableIcon className="w-4 h-4 text-blue-600" />
                   Important Columns
                 </label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    setFormData({
-                      ...formData,
-                      importantColumns: [...formData.importantColumns, ""],
-                    })
-                  }
-                  className="h-7 text-[10px] font-bold text-blue-600 uppercase tracking-wider hover:bg-blue-50"
-                >
-                  <PlusCircle className="w-3.5 h-3.5 mr-1" /> Add Column
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {formData.importantColumns.map((col, idx) => (
-                  <div key={idx} className="group flex items-center gap-2">
-                    <Input
-                      value={col}
-                      onChange={(e) => {
-                        const newCols = [...formData.importantColumns];
-                        newCols[idx] = e.target.value;
-                        setFormData({ ...formData, importantColumns: newCols });
-                      }}
-                      placeholder={`Column ${idx + 1}`}
-                      className="bg-gray-50 border-gray-100 focus:bg-white h-9 text-xs"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        const newCols = formData.importantColumns.filter((_, i) => i !== idx);
-                        setFormData({ ...formData, importantColumns: newCols });
-                      }}
-                      className="h-9 w-9 text-slate-300 hover:text-rose-500 group-hover:opacity-100"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                ))}
-                {formData.importantColumns.length === 0 && (
-                  <p className="col-span-full text-center py-4 text-[11px] text-slate-400 italic">
-                    Add column names that are critical for tracker accuracy
-                  </p>
+                {!excelHeaders.length && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        importantColumns: [...formData.importantColumns, ""],
+                      })
+                    }
+                    className="h-7 text-[10px] font-bold text-blue-600 uppercase tracking-wider hover:bg-blue-50"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5 mr-1" /> Add Manual
+                  </Button>
                 )}
               </div>
+
+              {excelHeaders.length > 0 ? (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <p className="text-[10px] text-green-600 font-bold px-1 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                    SELECT COLUMNS FROM {excelHeaders.length} FOUND HEADERS
+                  </p>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="h-11 w-full bg-blue-50/30 border-blue-200 flex justify-between px-3 text-sm font-medium hover:bg-blue-50/50 text-blue-800"
+                      >
+                        <span className="truncate">
+                          {formData.importantColumns.length > 0
+                            ? `${formData.importantColumns.length} Columns Selected`
+                            : "Select Important Columns"}
+                        </span>
+                        <ChevronDown className="w-4 h-4 opacity-50" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-64 max-h-[300px] overflow-y-auto rounded-xl border-slate-200 shadow-xl p-1">
+                      {excelHeaders.map((header) => (
+                        <DropdownMenuCheckboxItem
+                          key={header}
+                          checked={formData.importantColumns.includes(header)}
+                          onCheckedChange={(checked) => {
+                            const nextCols = checked
+                              ? [...formData.importantColumns, header]
+                              : formData.importantColumns.filter(
+                                  (x) => x !== header,
+                                );
+                            setFormData({
+                              ...formData,
+                              importantColumns: nextCols,
+                            });
+                          }}
+                          className="text-xs font-medium py-2.5 rounded-lg my-0.5 focus:bg-blue-50 focus:text-blue-700"
+                        >
+                          {header}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {formData.importantColumns.map((col, idx) => (
+                    <div key={idx} className="group flex items-center gap-2">
+                      <Input
+                        value={col}
+                        onChange={(e) => {
+                          const newCols = [...formData.importantColumns];
+                          newCols[idx] = e.target.value;
+                          setFormData({
+                            ...formData,
+                            importantColumns: newCols,
+                          });
+                        }}
+                        placeholder={`Column ${idx + 1}`}
+                        className="bg-slate-50 border-slate-200 focus:bg-white h-11 text-xs font-medium"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const newCols = formData.importantColumns.filter(
+                            (_, i) => i !== idx,
+                          );
+                          setFormData({
+                            ...formData,
+                            importantColumns: newCols,
+                          });
+                        }}
+                        className="h-11 w-11 text-slate-300 hover:text-rose-500 hover:bg-rose-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {formData.importantColumns.length === 0 && (
+                    <div className="col-span-full py-10 flex flex-col items-center justify-center bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100">
+                      <TableIcon className="w-8 h-8 text-slate-200 mb-2" />
+                      <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest text-center">
+                        Upload Excel to extract columns
+                        <br />
+                        <span className="text-[9px] font-medium normal-case italic">
+                          or add manually using the button above
+                        </span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Selected Columns Visualization */}
+              {formData.importantColumns.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {formData.importantColumns.map(
+                    (col, idx) =>
+                      col && (
+                        <Badge
+                          key={idx}
+                          variant="secondary"
+                          className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-none px-3 py-1 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
+                        >
+                          {col}
+                          {/* <X
+                            className="w-3 h-3 cursor-pointer"
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                importantColumns: prev.importantColumns.filter(
+                                  (_, i) => i !== idx,
+                                ),
+                              }));
+                            }}
+                          /> */}
+                        </Badge>
+                      ),
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* DESCRIPTION */}
+            <div className="md:col-span-2 space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 px-1 flex items-center gap-1.5 uppercase tracking-wider">
+                <FileText className="w-3.5 h-3.5 text-blue-500" />
+                Task Description
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                rows={4}
+                placeholder="Detail the expectations and goals..."
+                className="w-full p-4 text-sm font-medium rounded-xl bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50/50 transition-all outline-none resize-none scrollbar-hide"
+              />
             </div>
           </div>
 
-          <DialogFooter className="pt-4 border-t border-slate-100 flex-row gap-4">
+          <DialogFooter className="pt-6 border-t border-slate-100 flex gap-4">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               onClick={onClose}
-              className="flex-1 h-12 font-bold text-slate-500 hover:text-slate-900 transition-colors"
+              className="flex-1 h-12 font-bold text-slate-500 border-slate-200 hover:bg-slate-50 rounded-xl transition-all"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 rounded transition-all border-none"
+              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200 text-white font-bold rounded-xl transition-all border-none scale-100 active:scale-95"
             >
               {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Processing...</span>
+                </div>
               ) : isEditMode ? (
                 "Save Changes"
               ) : (
-                "Assign Task"
+                "Create Task"
               )}
             </Button>
           </DialogFooter>

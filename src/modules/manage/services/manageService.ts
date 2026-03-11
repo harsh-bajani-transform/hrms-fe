@@ -190,6 +190,19 @@ export const deleteProject = async (projectId: string | number) => {
   }
 };
 
+export const fetchProjectTasks = async (projectId: string | number) => {
+  try {
+    const response = await api.post("/task/list", {
+      project_id: projectId,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch project tasks",
+    );
+  }
+};
+
 // Task Management
 export const addTask = async (taskData: Record<string, unknown> | FormData) => {
   try {

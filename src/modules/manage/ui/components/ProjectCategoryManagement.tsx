@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   FolderKanban,
   Plus,
@@ -8,6 +8,7 @@ import {
   FileText,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ColumnDef } from "@tanstack/react-table";
 import {
   fetchProjectCategories,
   createProjectCategory,
@@ -18,6 +19,7 @@ import {
 import { ProjectCategory, AFDRecord } from "../../types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Loading from "@/components/common/Loading";
 import CategoryFormModal from "./CategoryFormModal";
@@ -123,22 +125,89 @@ const ProjectCategoryManagement: React.FC = () => {
     }
   };
 
-  const getAfdName = (afdId: string | number) => {
-    const record = afdRecords.find(
-      (r) => String(r.afd_id || r.id) === String(afdId),
-    );
-    return record?.afd_name || record?.name || `AFD #${afdId}`;
-  };
+  const getAfdName = useCallback(
+    (afdId: string | number) => {
+      const record = afdRecords.find(
+        (r) => String(r.afd_id || r.id) === String(afdId),
+      );
+      return record?.afd_name || record?.name || `AFD #${afdId}`;
+    },
+    [afdRecords],
+  );
 
-  const filteredCategories = categories.filter((cat) => {
-    const nameMatch = (cat?.project_category_name || "")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const afdMatch = getAfdName(cat?.afd_id || "")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    return nameMatch || afdMatch;
-  });
+  const columns: ColumnDef<ProjectCategory>[] = useMemo(
+    () => [
+      {
+        id: "srNo",
+        header: "Sr. No.",
+        cell: ({ row }) => (
+          <span className="text-slate-500 font-medium">{row.index + 1}</span>
+        ),
+      },
+      {
+        accessorKey: "project_category_name",
+        header: "Category Name",
+        cell: ({ row }) => (
+          <span className="font-bold text-slate-700">
+            {row.original.project_category_name}
+          </span>
+        ),
+      },
+      {
+        id: "afdName",
+        header: "AFD Name",
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2 text-slate-600">
+            <div className="p-1.5 bg-blue-50 rounded-lg shrink-0">
+              <FileText className="w-3.5 h-3.5 text-blue-600" />
+            </div>
+            <span className="font-medium">
+              {getAfdName(row.original.afd_id)}
+            </span>
+          </div>
+        ),
+      },
+      {
+        id: "actions",
+        header: () => <div className="text-center">Actions</div>,
+        cell: ({ row }) => (
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+              onClick={() => handleEditClick(row.original)}
+              title="Edit Category"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 text-rose-500 hover:text-rose-600 hover:bg-rose-50"
+              onClick={() => handleDeleteClick(row.original)}
+              title="Delete Category"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [getAfdName],
+  );
+
+  const filteredCategories = useMemo(() => {
+    return categories.filter((cat) => {
+      const nameMatch = (cat?.project_category_name || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const afdMatch = getAfdName(cat?.afd_id || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      return nameMatch || afdMatch;
+    });
+  }, [categories, searchTerm, getAfdName]);
 
   if (loading && categories.length === 0) {
     return <Loading />;
@@ -147,122 +216,48 @@ const ProjectCategoryManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Card */}
-      <div className="border-none overflow-hidden">
-        <div className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <FolderKanban className="w-7 h-7 text-blue-700" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold">Project Categories</h3>
-                <p className="text-muted-foreground">
-                  Define and manage categories for project classification
-                </p>
-              </div>
-            </div>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700"
-              onClick={() => {
-                setEditingCategory(null);
-                setIsModalOpen(true);
-              }}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Category
-            </Button>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-50 rounded-lg">
+            <FolderKanban className="w-7 h-7 text-blue-700" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold">Project Categories</h3>
+            <p className="text-muted-foreground text-sm font-medium">
+              Define and manage categories for project classification
+            </p>
           </div>
         </div>
+        <Button
+          className="bg-blue-600 hover:bg-blue-700 font-bold"
+          onClick={() => {
+            setEditingCategory(null);
+            setIsModalOpen(true);
+          }}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Category
+        </Button>
       </div>
 
-      {/* Search and List */}
-      <Card>
-        <CardHeader className="pb-0">
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="pb-4">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               placeholder="Search categories..."
-              className="pl-10"
+              className="pl-10 h-11 bg-slate-50/50 border-slate-200"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </CardHeader>
-        <CardContent className="pt-6">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-b">
-                <tr>
-                  <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider">
-                    Sr. No.
-                  </th>
-                  <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider">
-                    Category Name
-                  </th>
-                  <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider">
-                    AFD Name
-                  </th>
-                  <th className="px-4 py-3 text-center font-bold text-slate-600 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filteredCategories.length > 0 ? (
-                  filteredCategories.map((cat, idx) => (
-                    <tr
-                      key={cat.project_category_id}
-                      className="hover:bg-slate-50/50"
-                    >
-                      <td className="px-4 py-4 text-slate-500 font-medium">
-                        {idx + 1}
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="font-semibold text-slate-900">
-                          {cat.project_category_name}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <FileText className="w-4 h-4 text-blue-500" />
-                          {getAfdName(cat.afd_id)}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
-                            onClick={() => handleEditClick(cat)}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-rose-500 hover:text-rose-600 hover:bg-rose-50"
-                            onClick={() => handleDeleteClick(cat)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="py-12 text-center text-slate-400 italic"
-                    >
-                      No categories found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+        <CardContent>
+          <DataTable
+            columns={columns}
+            data={filteredCategories}
+            loading={loading}
+          />
         </CardContent>
       </Card>
 
