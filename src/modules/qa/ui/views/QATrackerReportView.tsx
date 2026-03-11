@@ -259,7 +259,8 @@ const QATrackerReportView: React.FC = () => {
 
   // Calculate totals from filtered trackers
   const totals = useMemo(() => {
-    return trackers.reduce(
+    const uniqueUserIds = new Set<string | number>();
+    const baseTotals = trackers.reduce(
       (
         acc: {
           tenureTarget: number;
@@ -268,6 +269,7 @@ const QATrackerReportView: React.FC = () => {
         },
         tracker: TrackerRow,
       ) => {
+        if (tracker.user_id) uniqueUserIds.add(tracker.user_id);
         acc.tenureTarget += Number(tracker.tenure_target) || 0;
         acc.production += Number(tracker.production) || 0;
         acc.billableHours += Number(tracker.billable_hours) || 0;
@@ -275,6 +277,15 @@ const QATrackerReportView: React.FC = () => {
       },
       { tenureTarget: 0, production: 0, billableHours: 0 },
     );
+
+    const activeAgents = uniqueUserIds.size;
+    const assignedHours = activeAgents * 9;
+
+    return {
+      ...baseTotals,
+      activeAgents,
+      assignedHours,
+    };
   }, [trackers]);
 
   // Export to Excel function

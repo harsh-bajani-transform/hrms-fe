@@ -1,7 +1,16 @@
 import React from "react";
+import {
+  Users,
+  Calendar,
+  Target,
+  TrendingUp,
+  Clock,
+} from "lucide-react";
 
 interface QATrackerReportSummaryProps {
   totals: {
+    activeAgents: number;
+    assignedHours: number;
     tenureTarget: number;
     production: number;
     billableHours: number;
@@ -17,42 +26,92 @@ const QATrackerReportSummary: React.FC<QATrackerReportSummaryProps> = ({
 }) => {
   if (isLoading || !hasData) return null;
 
+  const cards = [
+    {
+      title: "Total Active Agents",
+      value: totals.activeAgents,
+      icon: Users,
+      bgColor: "bg-blue-50",
+      iconBgColor: "bg-blue-100",
+      borderColor: "border-blue-200",
+      textColor: "text-blue-700",
+      iconColor: "text-blue-600",
+      isDecimal: false,
+    },
+    {
+      title: "Total Assigned Hours",
+      value: totals.assignedHours,
+      icon: Calendar,
+      bgColor: "bg-orange-50",
+      iconBgColor: "bg-orange-100",
+      borderColor: "border-orange-200",
+      textColor: "text-orange-700",
+      iconColor: "text-orange-600",
+      isDecimal: true,
+    },
+    {
+      title: "Total Per Hour Target",
+      value: totals.tenureTarget,
+      icon: Target,
+      bgColor: "bg-purple-50",
+      iconBgColor: "bg-purple-100",
+      borderColor: "border-purple-200",
+      textColor: "text-purple-700",
+      iconColor: "text-purple-600",
+      isDecimal: true,
+    },
+    {
+      title: "Total Production",
+      value: totals.production,
+      icon: TrendingUp,
+      bgColor: "bg-teal-50",
+      iconBgColor: "bg-teal-100",
+      borderColor: "border-teal-200",
+      textColor: "text-teal-700",
+      iconColor: "text-teal-600",
+      isDecimal: true,
+    },
+    {
+      title: "Total Billable Hours",
+      value: totals.billableHours,
+      icon: Clock,
+      bgColor: "bg-green-50",
+      iconBgColor: "bg-green-100",
+      borderColor: "border-green-200",
+      textColor: "text-green-700",
+      iconColor: "text-green-600",
+      isDecimal: true,
+    },
+  ];
+
   return (
-    <div className="mt-8 bg-blue-50 rounded p-6 border border-blue-200 shadow-sm">
-      <h3 className="text-sm font-bold text-blue-900 mb-5 flex items-center gap-2 uppercase tracking-tight">
+    <div className="mt-8 bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
+      <h3 className="text-sm font-bold text-slate-900 mb-6 flex items-center gap-2 uppercase tracking-tight">
         <span className="inline-block w-2.5 h-2.5 bg-blue-600 rounded-full"></span>
         Summary Totals
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Total Per Hour Target */}
-        <div className="bg-white rounded p-5 shadow-sm border border-blue-100 hover:border-blue-300 transition-colors">
-          <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">
-            Total Per Hour Target
-          </p>
-          <p className="text-3xl font-extrabold text-blue-700">
-            {totals.tenureTarget.toFixed(2)}
-          </p>
-        </div>
-
-        {/* Total Production */}
-        <div className="bg-white rounded p-5 shadow-sm border border-green-100 hover:border-green-300 transition-colors">
-          <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">
-            Total Production
-          </p>
-          <p className="text-3xl font-extrabold text-green-700">
-            {totals.production.toFixed(2)}
-          </p>
-        </div>
-
-        {/* Total Billable Hours */}
-        <div className="bg-white rounded p-5 shadow-sm border border-purple-100 hover:border-purple-300 transition-colors">
-          <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">
-            Total Billable Hours
-          </p>
-          <p className="text-3xl font-extrabold text-purple-700">
-            {totals.billableHours.toFixed(2)}
-          </p>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {cards.map((card, index) => (
+          <div
+            key={index}
+            className={`bg-white rounded-xl p-4 shadow-sm border ${card.borderColor} hover:shadow-md transition-all duration-300 group`}
+          >
+            <div className="flex justify-between items-start mb-3">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">
+                {card.title}
+              </p>
+              <div className={`p-1.5 rounded-lg ${card.iconBgColor} transition-colors group-hover:bg-opacity-80`}>
+                <card.icon className={`w-4 h-4 ${card.iconColor}`} />
+              </div>
+            </div>
+            <p className={`text-2xl font-black ${card.textColor} tracking-tight`}>
+              {card.isDecimal ? card.value.toFixed(2) : card.value}
+            </p>
+            <div className={`h-1 w-full mt-3 rounded-full ${card.iconBgColor} bg-opacity-30 overflow-hidden`}>
+              <div className={`h-full w-1/3 rounded-full ${card.iconColor.replace('text', 'bg')}`}></div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

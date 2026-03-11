@@ -1,5 +1,15 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { Filter, FileDown, Users as UsersIcon, RefreshCw, Plus } from "lucide-react";
+import {
+  Filter,
+  FileDown,
+  Users as UsersIcon,
+  RefreshCw,
+  Plus,
+  Calendar,
+  Target,
+  TrendingUp,
+  Clock,
+} from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { format } from "date-fns";
@@ -17,10 +27,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { createColumns, Tracker } from "./QATrackerReportColumns";
-import { Agent, DropdownTaskMap, ProjectWithTasks, UserRef, ProjectRef } from "../../types";
+import {
+  Agent,
+  DropdownTaskMap,
+  ProjectWithTasks,
+  UserRef,
+  ProjectRef,
+} from "../../types";
 import { getUsersList } from "../../../../services/qcService";
 import AddTrackerModal from "./AddTrackerModal";
-import { SearchableCombobox, SearchableComboboxItem } from "@/components/common/SearchableCombobox";
+import {
+  SearchableCombobox,
+  SearchableComboboxItem,
+} from "@/components/common/SearchableCombobox";
 
 const getTodayDate = () => {
   const today = new Date();
@@ -167,8 +186,10 @@ const QATrackerReport: React.FC = () => {
   };
 
   const totals = useMemo(() => {
-    return filteredTrackers.reduce(
+    const uniqueUserIds = new Set<string | number>();
+    const baseTotals = filteredTrackers.reduce(
       (acc, tracker) => {
+        if (tracker.user_id) uniqueUserIds.add(tracker.user_id);
         acc.tenureTarget += Number(tracker.tenure_target) || 0;
         acc.production += Number(tracker.production) || 0;
         acc.billableHours += Number(tracker.billable_hours) || 0;
@@ -176,6 +197,15 @@ const QATrackerReport: React.FC = () => {
       },
       { tenureTarget: 0, production: 0, billableHours: 0 },
     );
+
+    const activeAgents = uniqueUserIds.size;
+    const assignedHours = activeAgents * 9;
+
+    return {
+      ...baseTotals,
+      activeAgents,
+      assignedHours,
+    };
   }, [filteredTrackers]);
 
   const handleExportToExcel = () => {
@@ -361,40 +391,100 @@ const QATrackerReport: React.FC = () => {
 
       {/* Totals Summary Card */}
       {!loading && filteredTrackers.length > 0 && (
-        <div className="mt-6 bg-linear-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 shadow-lg">
-          <h3 className="text-lg font-bold text-blue-900 mb-6 flex items-center gap-2">
-            <span className="inline-block w-2 h-2 bg-blue-600 rounded-full"></span>
+        <div className="mt-8 bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 mb-6 flex items-center gap-2 uppercase tracking-tight">
+            <span className="inline-block w-2.5 h-2.5 bg-blue-600 rounded-full"></span>
             Summary Totals
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Total Per Hour Target */}
-            <div className="bg-white rounded p-6 shadow border border-blue-100 flex flex-col items-center">
-              <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
-                Total Per Hour Target
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* Total Active Agents */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-blue-200 hover:shadow-md transition-all duration-300 group">
+              <div className="flex justify-between items-center">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">
+                  Total Active Agents
+                </p>
+                <div className="p-1.5 rounded-lg bg-blue-100 transition-colors group-hover:bg-opacity-80">
+                  <UsersIcon className="w-4 h-4 text-blue-600" />
+                </div>
+              </div>
+              <p className="text-2xl font-black text-blue-700 tracking-tight">
+                {totals.activeAgents}
               </p>
-              <p className="text-3xl font-extrabold text-blue-700">
+              <div className="h-1 w-full mt-3 rounded-full bg-blue-100 bg-opacity-30 overflow-hidden">
+                <div className="h-full w-1/3 rounded-full bg-blue-600"></div>
+              </div>
+            </div>
+
+            {/* Total Assigned Hours */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-orange-200 hover:shadow-md transition-all duration-300 group">
+              <div className="flex justify-between items-center">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">
+                  Total Assigned Hours
+                </p>
+                <div className="p-1.5 rounded-lg bg-orange-100 transition-colors group-hover:bg-opacity-80">
+                  <Calendar className="w-4 h-4 text-orange-600" />
+                </div>
+              </div>
+              <p className="text-2xl font-black text-orange-700 tracking-tight">
+                {totals.assignedHours.toFixed(2)}
+              </p>
+              <div className="h-1 w-full mt-3 rounded-full bg-orange-100 bg-opacity-30 overflow-hidden">
+                <div className="h-full w-1/3 rounded-full bg-orange-600"></div>
+              </div>
+            </div>
+
+            {/* Total Per Hour Target */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-purple-200 hover:shadow-md transition-all duration-300 group">
+              <div className="flex justify-between items-center">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">
+                  Total Per Hour Target
+                </p>
+                <div className="p-1.5 rounded-lg bg-purple-100 transition-colors group-hover:bg-opacity-80">
+                  <Target className="w-4 h-4 text-purple-600" />
+                </div>
+              </div>
+              <p className="text-2xl font-black text-purple-700 tracking-tight">
                 {totals.tenureTarget.toFixed(2)}
               </p>
+              <div className="h-1 w-full mt-3 rounded-full bg-purple-100 bg-opacity-30 overflow-hidden">
+                <div className="h-full w-1/3 rounded-full bg-purple-600"></div>
+              </div>
             </div>
 
             {/* Total Production */}
-            <div className="bg-white rounded p-6 shadow border border-green-100 flex flex-col items-center">
-              <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
-                Total Production
-              </p>
-              <p className="text-3xl font-extrabold text-green-700">
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-teal-200 hover:shadow-md transition-all duration-300 group">
+              <div className="flex justify-between items-center">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">
+                  Total Production
+                </p>
+                <div className="p-1.5 rounded-lg bg-teal-100 transition-colors group-hover:bg-opacity-80">
+                  <TrendingUp className="w-4 h-4 text-teal-600" />
+                </div>
+              </div>
+              <p className="text-2xl font-black text-teal-700 tracking-tight">
                 {totals.production.toFixed(2)}
               </p>
+              <div className="h-1 w-full mt-3 rounded-full bg-teal-100 bg-opacity-30 overflow-hidden">
+                <div className="h-full w-1/3 rounded-full bg-teal-600"></div>
+              </div>
             </div>
 
             {/* Total Billable Hours */}
-            <div className="bg-white rounded p-6 shadow border border-purple-100 flex flex-col items-center">
-              <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
-                Total Billable Hours
-              </p>
-              <p className="text-3xl font-extrabold text-purple-700">
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-green-200 hover:shadow-md transition-all duration-300 group">
+              <div className="flex justify-between items-center">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">
+                  Total Billable Hours
+                </p>
+                <div className="p-1.5 rounded-lg bg-green-100 transition-colors group-hover:bg-opacity-80">
+                  <Clock className="w-4 h-4 text-green-600" />
+                </div>
+              </div>
+              <p className="text-2xl font-black text-green-700 tracking-tight">
                 {totals.billableHours.toFixed(2)}
               </p>
+              <div className="h-1 w-full mt-3 rounded-full bg-green-100 bg-opacity-30 overflow-hidden">
+                <div className="h-full w-1/3 rounded-full bg-green-600"></div>
+              </div>
             </div>
           </div>
         </div>
