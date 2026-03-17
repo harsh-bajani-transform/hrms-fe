@@ -14,7 +14,7 @@ import TabsNavigation from "../components/TabsNavigation";
 import OverviewTab from "../components/overview/OverviewTab";
 import BillableReport from "../components/BillableReport";
 import QATrackerReport from "../components/QATrackerReport";
-import QAAgentList from "../components/QAAgentList";
+import QAAgentListView from "../../../qa/ui/views/QAAgentListView";
 import QAAgentAudit from "../../../qa/ui/components/QAAgentAudit";
 import AssistantManagerDashboard from "../components/AssistantManagerDashboard";
 import QAAgentDashboard from "../components/QAAgentDashboard";
@@ -22,6 +22,7 @@ import ManageView from "../../../manage/ui/views/ManageView";
 import UserMonthlyTargetCard from "../../../manage/ui/components/UserMonthlyTargetCard";
 import ProjectMonthlyReport from "../components/ProjectMonthlyReport";
 import AgentBillableReport from "../../../agent/ui/components/AgentBillableReport";
+import AFDManagementView from "../../../qa/ui/views/AFDManagementView";
 import AppLayout from "../../../../components/layout/AppLayout";
 
 import type {
@@ -32,6 +33,7 @@ import type {
   ProjectRef,
   TrackerRow,
 } from "../../types";
+import type { LucideIcon } from "lucide-react";
 import type { HourlyChartDatum } from "../components/overview/HourlyChart";
 
 const DashboardView = () => {
@@ -265,10 +267,13 @@ const DashboardView = () => {
       return <QATrackerReport />;
     }
     if (viewParam === "agent-list") {
-      return <QAAgentList />;
+      return <QAAgentListView />;
     }
     if (viewParam === "qa-agent-audit") {
       return <QAAgentAudit />;
+    }
+    if (viewParam === "afd-management") {
+      return <AFDManagementView />;
     }
     return null;
   };
@@ -333,6 +338,14 @@ const DashboardView = () => {
             {activeTab === "project_monthly_report" && <ProjectMonthlyReport />}
 
             {activeTab === "manage" && <ManageView />}
+
+            {activeTab === "afd_management" && <AFDManagementView />}
+
+            {activeTab === "tracker_report" && <QATrackerReport />}
+
+            {activeTab === "agent_file_report" && <QAAgentListView />}
+
+            {activeTab === "qa_agent_audit" && <QAAgentAudit />}
 
             {/* Fallback for other tabs */}
             {/* {activeTab !== "overview" &&

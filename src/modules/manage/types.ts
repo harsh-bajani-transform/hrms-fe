@@ -33,6 +33,8 @@ export interface ProjectType {
   project_team_id?: string | number | (string | number)[];
   project_qa_id?: string | number | (string | number)[];
   asst_project_manager_id?: string | number | (string | number)[];
+  requires_ai_evaluation?: boolean;
+  requires_duplicate_check?: boolean;
   [key: string]: unknown;
 }
 

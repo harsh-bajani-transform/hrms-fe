@@ -19,6 +19,7 @@ import {
   createDailyColumns,
   createMonthlyColumns,
 } from "./AgentBillableReportColumns";
+import AgentQCReport from "./AgentQCReport";
 
 import type { TrackerRow } from "../../../dashboard/types";
 import type { MonthlyBillableReportRow } from "../../../dashboard/services/billableReportService";
@@ -31,7 +32,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Calendar, FileDown, TrendingUp, BarChart3, Clock } from "lucide-react";
+import { Calendar, FileDown, TrendingUp, BarChart3, Clock, Award } from "lucide-react";
 import { DailyExportRow, MonthlyExportRow, ToggleTab } from "../../types";
 
 const AgentBillableReport = () => {
@@ -387,8 +388,7 @@ const AgentBillableReport = () => {
             Performance Reports
           </h2>
           <p className="text-gray-500 font-medium">
-            View and export your daily and monthly billable performance
-            summaries.
+            View and export your daily, monthly, and QC performance summaries.
           </p>
         </div>
 
@@ -408,6 +408,14 @@ const AgentBillableReport = () => {
           >
             <BarChart3 className="w-4 h-4 mr-2" />
             Monthly View
+          </Button>
+          <Button
+            variant={activeToggle === "qc" ? "default" : "ghost"}
+            className={`px-4  rounded-lg font-semibold transition-all duration-300 ${activeToggle === "qc" ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"}`}
+            onClick={() => setActiveToggle("qc")}
+          >
+            <Award className="w-4 h-4 mr-2" />
+            QC Report
           </Button>
         </div>
       </div>
@@ -615,6 +623,9 @@ const AgentBillableReport = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* QC Report View */}
+      {activeToggle === "qc" && <AgentQCReport />}
     </div>
   );
 };

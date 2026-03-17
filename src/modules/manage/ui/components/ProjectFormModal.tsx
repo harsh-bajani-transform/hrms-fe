@@ -6,6 +6,7 @@ import {
   Target,
   Users,
   Shield,
+  Brain,
   ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -49,6 +50,8 @@ interface FormDataState {
   monthlyTarget: string;
   projectCategoryId: string;
   teamIds: (string | number)[];
+  requiresAIEvaluation: boolean;
+  requiresDuplicateCheck: boolean;
 }
 
 const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
@@ -83,10 +86,14 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
     monthlyTarget: project?.monthly_hours_target?.toString() || "",
     projectCategoryId: project?.project_category_id?.toString() || "",
     teamIds: project
-      ? Array.isArray((project as any).project_team_id || (project as any).project_team)
-        ? ((project as any).project_team_id || (project as any).project_team).map((u: any) => String(u.user_id || u))
-        : []
+      ? Array.isArray(project.project_team_id)
+        ? project.project_team_id.map(String)
+        : Array.isArray((project as Record<string, unknown>).project_team)
+          ? ((project as Record<string, unknown>).project_team as Array<{ user_id?: string | number } | string | number>).map((u) => String(typeof u === 'object' ? u.user_id || "" : u))
+          : []
       : [],
+    requiresAIEvaluation: !!project?.requires_ai_evaluation,
+    requiresDuplicateCheck: !!project?.requires_duplicate_check,
   });
 
   const [projectFiles, setProjectFiles] = useState<File[]>([]);
@@ -153,6 +160,9 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
       submitData.append("asst_project_manager_id", JSON.stringify(formData.apmIds.map(Number)));
       submitData.append("project_qa_id", JSON.stringify(formData.qaIds.map(Number)));
       submitData.append("project_team_id", JSON.stringify(formData.teamIds.map(Number)));
+      
+      submitData.append("requires_ai_evaluation", formData.requiresAIEvaluation ? "1" : "0");
+      submitData.append("requires_duplicate_check", formData.requiresDuplicateCheck ? "1" : "0");
       
       // Legacy backend expects 'file' key
       projectFiles.forEach(file => submitData.append("file", file));
@@ -325,6 +335,41 @@ const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
                 placeholder="Briefly describe the project scope..."
                 className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-all min-h-[100px] resize-none"
               />
+            </div>
+
+            {/* AI EVALUATION & DUPLICATE CHECK TOGGLES */}
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div 
+                className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-4 ${formData.requiresAIEvaluation ? 'border-blue-500 bg-blue-50/50' : 'border-gray-100 bg-gray-50/30 hover:border-gray-200'}`}
+                onClick={() => setFormData(prev => ({ ...prev, requiresAIEvaluation: !prev.requiresAIEvaluation }))}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${formData.requiresAIEvaluation ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                  <Brain className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-gray-900">Requires AI Evaluation</p>
+                  <p className="text-xs text-gray-500">Enable mandatory AI quality check</p>
+                </div>
+                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${formData.requiresAIEvaluation ? 'bg-blue-500 border-blue-500' : 'border-gray-300'}`}>
+                  {formData.requiresAIEvaluation && <Briefcase className="w-3.5 h-3.5 text-white" />}
+                </div>
+              </div>
+
+              <div 
+                className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-4 ${formData.requiresDuplicateCheck ? 'border-purple-500 bg-purple-50/50' : 'border-gray-100 bg-gray-50/30 hover:border-gray-200'}`}
+                onClick={() => setFormData(prev => ({ ...prev, requiresDuplicateCheck: !prev.requiresDuplicateCheck }))}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${formData.requiresDuplicateCheck ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                  <Shield className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-gray-900">Duplicate Check</p>
+                  <p className="text-xs text-gray-500">Prevent duplicate file submission</p>
+                </div>
+                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${formData.requiresDuplicateCheck ? 'bg-purple-500 border-purple-500' : 'border-gray-300'}`}>
+                  {formData.requiresDuplicateCheck && <Briefcase className="w-3.5 h-3.5 text-white" />}
+                </div>
+              </div>
             </div>
 
             {/* OWNER */}

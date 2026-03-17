@@ -3,7 +3,7 @@ export type FieldName = "selectedProject" | "selectedTask" | "productionTarget";
 export type FieldErrors = Partial<Record<FieldName, string>>;
 export type FieldTouched = Partial<Record<FieldName, boolean>>;
 
-export type ToggleTab = "daily" | "monthly";
+export type ToggleTab = "daily" | "monthly" | "qc";
 
 export interface Task {
   id: number;
@@ -51,7 +51,7 @@ export type AgentTabId =
   | "adherence"
   | "incentives";
 
-import { LucideIcon } from "lucide-react";
+import { LayoutGrid, LucideIcon } from "lucide-react";
 // From AgentDashboardView/TrackerTable
 // Using Id from dashboard/types, assuming it will be imported or we redefine/re-export it content-wise if we want total isolation.
 // For now, let's stick to using 'Id' from global if possible, or simple types.
@@ -68,6 +68,8 @@ export interface AgentTaskOption {
 export interface AgentProjectWithTasks {
   project_id?: Id;
   project_name?: string;
+  requires_ai_evaluation?: boolean;
+  requires_duplicate_check?: boolean;
   tasks?: (AgentTaskOption | TaskRef)[];
 }
 

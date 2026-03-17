@@ -13,6 +13,8 @@ export interface QAExpandedAgentsMap {
 }
 
 export interface AuditRecord {
+  id?: string | number;
+  audit_id?: string | number;
   qa_agent_name?: string;
   qa_agent_id?: string | number;
   agent_name?: string;
@@ -23,9 +25,16 @@ export interface AuditRecord {
   total_qc_performed?: number;
   "10%_data_generated_count"?: number;
   total_errors_found?: number;
+  total_errors?: number;
   error_score?: number;
   audit_datetime?: string;
   date_time?: string;
+  errors_list?: string[];
+  error_list?: string[];
+  status?: string;
+  qc_checked_file?: string;
+  error_notes?: string;
+  notes?: string;
 }
 
 export interface GroupedQAAgent {

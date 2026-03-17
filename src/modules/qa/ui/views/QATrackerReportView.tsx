@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { DataTable } from "@/components/ui/data-table";
 import { useAuth } from "../../../../context/AuthContext";
+import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 import { getTodayDate } from "../../../../lib/utils/dateUtils";
 import { exportToExcel } from "../../../../lib/utils/excelUtils";
 import {
@@ -15,6 +16,7 @@ import type {
   ProjectRef,
   TaskRef,
   DashboardFilterPayload,
+  DashboardFilterData,
 } from "../../../dashboard/types";
 import { createColumns } from "./QATrackerReportViewColumns";
 import { TrackerEditModal } from "./TrackerEditModal";
@@ -31,10 +33,9 @@ interface DropdownTaskMap {
 
 const QATrackerReportView: React.FC = () => {
   const { user } = useAuth();
+  const { device_id, device_type } = useDeviceInfo();
   const [trackers, setTrackers] = useState<TrackerRow[]>([]);
-  const [allTrackers, setAllTrackers] = useState<TrackerRow[]>([]); // Store all trackers for filtering
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
   const [assignedAgents, setAssignedAgents] = useState<UserRef[]>([]);
   const [loadingAgents, setLoadingAgents] = useState<boolean>(false);
 
@@ -42,9 +43,13 @@ const QATrackerReportView: React.FC = () => {
   const [selectedAgent, setSelectedAgent] = useState<string>("");
   const [startDate, setStartDate] = useState<string>(getTodayDate());
   const [endDate, setEndDate] = useState<string>(getTodayDate());
+  const [selectedTeam, setSelectedTeam] = useState<string>("");
+  const [selectedProject, setSelectedProject] = useState<string>("");
+  const [selectedTask, setSelectedTask] = useState<string>("");
 
   // Store per-hour targets from dropdown API
   const [dropdownTaskMap, setDropdownTaskMap] = useState<DropdownTaskMap>({});
+  const [apiTotals, setApiTotals] = useState<DashboardFilterData["totals"] | null>(null);
 
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
@@ -54,14 +59,16 @@ const QATrackerReportView: React.FC = () => {
   // Fetch agents, trackers, and per-hour targets from dropdown/get and dashboard/filter
   useEffect(() => {
     const loadDashboardData = async () => {
+      if (!user?.user_id) return;
+
       try {
         setLoadingAgents(true);
         setLoading(true);
 
-        // Fetch per-hour targets from dropdown/get
+        // 1. Fetch per-hour targets from dropdown/get
         const dropdownRes = await fetchDropdownData({
           dropdown_type: "projects with tasks",
-          logged_in_user_id: user?.user_id,
+          logged_in_user_id: user.user_id,
         });
 
         const projectsWithTasks = Array.isArray(dropdownRes?.data)
@@ -76,22 +83,26 @@ const QATrackerReportView: React.FC = () => {
         });
         setDropdownTaskMap(taskMap);
 
+        // 2. Fetch filtered dashboard data
         const payload: DashboardFilterPayload = {
-          logged_in_user_id: user?.user_id ?? "",
-          device_id:
-            typeof user?.device_id === "string" ? user.device_id : "web123",
-          device_type:
-            typeof user?.device_type === "string" ? user.device_type : "web",
+          logged_in_user_id: user.user_id,
+          device_id,
+          device_type,
+          date_from: startDate,
+          date_to: endDate,
+          user_id: selectedAgent || undefined,
+          team_id: selectedTeam || undefined,
+          project_id: selectedProject || undefined,
+          task_id: selectedTask || undefined,
         };
 
         const res = await fetchDashboardData(payload);
         const data = res?.data || {};
+        
+        if (data.totals) {
+          setApiTotals(data.totals);
+        }
 
-        let filteredAgents: UserRef[] = [];
-        let filteredTrackers: TrackerRow[] = [];
-        const role = String(
-          user?.role_name || user?.user_role || "",
-        ).toLowerCase();
         const allUsers: UserRef[] = Array.isArray(data.users) ? data.users : [];
         const allTrackersData: TrackerRow[] = Array.isArray(data.tracker)
           ? data.tracker
@@ -104,161 +115,62 @@ const QATrackerReportView: React.FC = () => {
             taskNameMap[String(task.task_id)] = task.task_name || "";
         });
 
-        if (role === "assistant manager") {
-          let myTeamIds: string[] = [];
-          if (data.projects) {
-            data.projects.forEach((p) => {
-              if (
-                p.asst_project_manager_id &&
-                user &&
-                p.asst_project_manager_id.includes(String(user.user_id))
-              ) {
-                if (p.project_team_id) {
-                  const ids = p.project_team_id
-                    .replace(/\[|\]/g, "")
-                    .split(",")
-                    .map((x) => x.trim())
-                    .filter(Boolean);
-                  myTeamIds.push(...ids);
-                }
-              }
-            });
-          }
-          filteredAgents = allUsers.filter((u) =>
-            myTeamIds.includes(String(u.user_id)),
-          );
-          filteredTrackers = allTrackersData.filter((t) =>
-            myTeamIds.includes(String(t.user_id)),
-          );
-        } else if (role === "project manager") {
-          let myProjectIds: string[] = [];
-          if (data.projects) {
-            data.projects.forEach((p) => {
-              if (
-                user &&
-                String(p.project_manager_id) === String(user.user_id)
-              ) {
-                if (p.project_team_id) {
-                  const ids = p.project_team_id
-                    .replace(/\[|\]/g, "")
-                    .split(",")
-                    .map((x) => x.trim())
-                    .filter(Boolean);
-                  myProjectIds.push(...ids);
-                }
-              }
-            });
-          }
-          filteredAgents = allUsers.filter((u) =>
-            myProjectIds.includes(String(u.user_id)),
-          );
-          filteredTrackers = allTrackersData.filter((t) =>
-            myProjectIds.includes(String(t.user_id)),
-          );
-        } else if (
-          role === "qa" ||
-          role === "qa agent" ||
-          role === "quality analyst"
-        ) {
-          let myQAIds: string[] = [];
-          if (data.projects) {
-            data.projects.forEach((p) => {
-              if (
-                p.project_qa_id &&
-                user &&
-                p.project_qa_id.includes(String(user.user_id))
-              ) {
-                if (p.project_team_id) {
-                  const ids = p.project_team_id
-                    .replace(/\[|\]/g, "")
-                    .split(",")
-                    .map((x) => x.trim())
-                    .filter(Boolean);
-                  myQAIds.push(...ids);
-                }
-              }
-            });
-          }
-          filteredAgents = allUsers.filter((u) =>
-            myQAIds.includes(String(u.user_id)),
-          );
-          filteredTrackers = allTrackersData.filter((t) =>
-            myQAIds.includes(String(t.user_id)),
-          );
-        } else {
-          filteredAgents = allUsers;
-          filteredTrackers = allTrackersData;
-        }
-
-        // Enrich trackers with task_name from taskNameMap
-        filteredTrackers = filteredTrackers.map((tracker) => ({
+        // Enrich trackers with task_name
+        const enrichedTrackers = allTrackersData.map((tracker) => ({
           ...tracker,
           task_name:
             tracker.task_name || taskNameMap[String(tracker.task_id)] || "-",
         }));
 
-        setAssignedAgents(filteredAgents);
-        setAllTrackers(filteredTrackers);
-        setTrackers(filteredTrackers);
+        setAssignedAgents(allUsers);
+        setTrackers(enrichedTrackers);
       } catch (err) {
         console.error(
-          "[QATrackerReportView] Error fetching dashboard/filter:",
+          "[QATrackerReportView] Error loading dashboard data:",
           err,
         );
         toast.error("Failed to load agent/tracker data");
-        setAssignedAgents([]);
-        setAllTrackers([]);
-        setTrackers([]);
       } finally {
         setLoadingAgents(false);
         setLoading(false);
       }
     };
 
-    if (user?.user_id) {
-      loadDashboardData();
-    }
-  }, [user?.user_role, user]);
-
-  // Filter trackers by selected agent and date range
-  useEffect(() => {
-    if (!user?.user_id) return;
-
-    setLoading(true);
-    setError("");
-
-    // Filter trackers in memory
-    let filtered: TrackerRow[] = allTrackers;
-
-    if (selectedAgent) {
-      filtered = filtered.filter(
-        (t) => String(t.user_id) === String(selectedAgent),
-      );
-    }
-    if (startDate) {
-      filtered = filtered.filter(
-        (t) => t.date_time && t.date_time >= startDate,
-      );
-    }
-    if (endDate) {
-      filtered = filtered.filter(
-        (t) => t.date_time && t.date_time <= endDate + " 23:59:59",
-      );
-    }
-
-    setTrackers(filtered);
-    setLoading(false);
-  }, [selectedAgent, startDate, endDate, allTrackers, user?.user_id]);
+    loadDashboardData();
+  }, [
+    user?.user_id,
+    device_id,
+    device_type,
+    startDate,
+    endDate,
+    selectedAgent,
+    selectedTeam,
+    selectedProject,
+    selectedTask,
+  ]);
 
   // Clear filters
   const handleClearFilters = () => {
     setSelectedAgent("");
+    setSelectedTeam("");
+    setSelectedProject("");
+    setSelectedTask("");
     setStartDate(getTodayDate());
     setEndDate(getTodayDate());
   };
 
-  // Calculate totals from filtered trackers
+  // Calculate totals from filtered trackers or API
   const totals = useMemo(() => {
+    if (apiTotals) {
+      return {
+        tenureTarget: Number(apiTotals.total_tenure_target) || 0,
+        production: Number(apiTotals.total_production) || 0,
+        billableHours: Number(apiTotals.total_billable_hours) || 0,
+        activeAgents: Number(apiTotals.total_active_agents) || 0,
+        assignedHours: Number(apiTotals.total_assigned_hours) || 0,
+      };
+    }
+
     const uniqueUserIds = new Set<string | number>();
     const baseTotals = trackers.reduce(
       (
@@ -286,7 +198,7 @@ const QATrackerReportView: React.FC = () => {
       activeAgents,
       assignedHours,
     };
-  }, [trackers]);
+  }, [trackers, apiTotals]);
 
   // Export to Excel function
   const handleExportToExcel = () => {
@@ -337,7 +249,7 @@ const QATrackerReportView: React.FC = () => {
           const res = await deleteTrackerEntry(tracker.tracker_id);
           if (res.status === 200 || res.status === true) {
             toast.success("Tracker deleted successfully");
-            setAllTrackers((prev) =>
+            setTrackers((prev) =>
               prev.filter((t) => t.tracker_id !== tracker.tracker_id),
             );
           } else {
@@ -379,12 +291,16 @@ const QATrackerReportView: React.FC = () => {
         setEndDate={setEndDate}
         selectedAgent={selectedAgent}
         setSelectedAgent={setSelectedAgent}
+        selectedTeam={selectedTeam}
+        setSelectedTeam={setSelectedTeam}
+        selectedProject={selectedProject}
+        setSelectedProject={setSelectedProject}
+        selectedTask={selectedTask}
+        setSelectedTask={setSelectedTask}
         assignedAgents={assignedAgents}
         isLoadingAgents={loadingAgents}
         onClearFilters={handleClearFilters}
       />
-
-      {error && <div className="text-red-600 mb-2 text-sm">{error}</div>}
 
       {/* Main Table */}
       <DataTable

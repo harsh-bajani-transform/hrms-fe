@@ -107,3 +107,33 @@ export const deleteGeminiApiKey = async (userId: string | number) => {
   const res = await qcApi.post("/gemini-key/delete", { user_id: userId });
   return res.data;
 };
+
+/**
+ * Fetch QC records for an agent (Node Backend)
+ */
+export const fetchQCRecords = async (agentUserId: string | number) => {
+  const res = await qcApi.get("/qc-records/list", {
+    params: { agent_user_id: agentUserId },
+  });
+  return res.data;
+};
+
+/**
+ * Fetch rework trackers for an agent (Python Backend)
+ */
+export const fetchReworkTrackers = async (agentId: string | number) => {
+  const res = await api.post("/qc_rework/view_rework_trackers", {
+    agent_id: typeof agentId === "string" ? parseInt(agentId) : agentId,
+  });
+  return res.data;
+};
+
+/**
+ * Add rework file for a tracker (Python Backend)
+ */
+export const addReworkFile = async (formData: FormData) => {
+  const res = await api.post("/qc_rework/add_rework_file", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+};

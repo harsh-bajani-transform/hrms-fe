@@ -38,6 +38,9 @@ export interface ProjectRef {
   project_qa_id?: string;
   project_team_id?: string;
   project_file?: string | null;
+
+  requires_ai_evaluation?: boolean;
+  requires_duplicate_check?: boolean;
 }
 
 export interface DashboardSummary {
@@ -105,6 +108,13 @@ export interface DashboardFilterData {
   tasks?: TaskRef[];
   users?: UserRef[];
   tracker?: TrackerRow[];
+  totals?: {
+    total_active_agents: number;
+    total_assigned_hours: number;
+    total_tenure_target: number;
+    total_production: number;
+    total_billable_hours: number;
+  };
 }
 
 export interface DashboardFilterPayload {
@@ -118,6 +128,13 @@ export interface DashboardFilterPayload {
   date_to?: string;
   start_date?: string;
   end_date?: string;
+
+  // New fields from sync
+  user_id?: Id | undefined;
+  team_id?: Id | undefined;
+  project_id?: Id | undefined;
+  task_id?: Id | undefined;
+  qc_pending?: number | undefined;
 
   [key: string]: unknown;
 }
@@ -153,6 +170,13 @@ export interface QASummaryRow {
 export interface QATrackerViewData {
   month_summary?: QASummaryRow[];
   trackers?: TrackerRow[];
+  totals?: {
+    total_active_agents: number;
+    total_assigned_hours: number;
+    total_tenure_target: number;
+    total_production: number;
+    total_billable_hours: number;
+  };
 }
 
 export interface QAAgentDashboardProps {

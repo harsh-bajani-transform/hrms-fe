@@ -219,6 +219,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
             },
             { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
             { view: "AGENT_LIST", label: "Agent Files & QC Report", icon: Users },
+            { view: "QA_AGENT_AUDIT", label: "QA Agent Audit", icon: UserCheck },
           ];
 
         // Project Manager tabs (role_id 3)
@@ -243,6 +244,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
             },
             { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
             { view: "AGENT_LIST", label: "Agent Files & QC Report", icon: Users },
+            { view: "QA_AGENT_AUDIT", label: "QA Agent Audit", icon: UserCheck },
             { view: "ADMIN_PANEL", label: "Manage", icon: Settings },
             { view: "ENTRY", label: "User Permission", icon: PenTool },
           ];
@@ -254,7 +256,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
             label: "Analytics",
             icon: LayoutDashboard,
           },
-          ...(roleId === 1
+          ...(roleId === 1 || roleId === 2
             ? [
                 {
                   view: "TRACKER_REPORT" as const,
@@ -290,6 +292,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
         },
         { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
         { view: "AGENT_LIST", label: "Agent Files & QC Report", icon: Users },
+        { view: "QA_AGENT_AUDIT", label: "QA Agent Audit", icon: UserCheck },
       ];
     }
 
@@ -303,6 +306,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
         },
         { view: "TRACKER_REPORT", label: "Tracker Report", icon: FileText },
         { view: "AGENT_LIST", label: "Agent Files & QC Report", icon: Users },
+        { view: "QA_AGENT_AUDIT", label: "QA Agent Audit", icon: UserCheck },
         { view: "ADMIN_PANEL", label: "Manage", icon: Settings },
         { view: "ENTRY", label: "User Permission", icon: PenTool },
       ];

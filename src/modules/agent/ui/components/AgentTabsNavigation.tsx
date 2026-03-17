@@ -3,17 +3,19 @@ import {
   Briefcase,
   DollarSign,
   FileWarning,
+  FileCheck,
+  FolderKanban,
+  Brain,
   LayoutGrid,
-  Sparkles,
-  Users,
   type LucideIcon,
 } from "lucide-react";
 import { AgentTabId, AgentTabsNavigationProps, TabDef } from "../../types";
 
 const tabs: TabDef[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
-  { id: "billable_report", label: "Billable Report", icon: Briefcase },
-  { id: "projects", label: "My Tasks & Projects", icon: Users },
+  { id: "billable_report", label: "Billable & QC Report", icon: Briefcase },
+  { id: "projects", label: "My Projects", icon: FolderKanban },
+  { id: "ai_evaluation", label: "AI Evaluation", icon: Brain, disabled: true },
   {
     id: "adherence",
     label: "Reporting Adherence",

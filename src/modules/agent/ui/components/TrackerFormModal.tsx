@@ -140,6 +140,13 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
     return project?.tasks ?? [];
   }, [selectedProject, projects]);
 
+  const currentProject = useMemo(() => {
+    if (!selectedProject) return null;
+    return projects.find(
+      (p) => String(p.project_id) === String(selectedProject),
+    );
+  }, [selectedProject, projects]);
+
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -223,7 +230,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
     setAiEvalSuccess(null);
     setAiEvalError("");
 
-    let progressInterval: any;
+    let progressInterval: ReturnType<typeof setInterval> | undefined;
 
     try {
       const formData = new FormData();
@@ -268,10 +275,10 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
       } else {
         throw new Error(res.message || "AI Evaluation failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setAiEvalSuccess(false);
       setAiEvalResult(null);
-      const msg = error.response?.data?.message || error.message || "Failed";
+      const msg = error instanceof Error ? (error as any).response?.data?.message || error.message : "Failed";
       setAiEvalError(msg);
       toast.error(msg);
     } finally {
@@ -286,7 +293,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
       return;
     }
 
-    if (!aiEvalSuccess) {
+    if (currentProject?.requires_ai_evaluation && !aiEvalSuccess) {
       toast.error("Please complete AI Evaluation first");
       return;
     }
@@ -326,10 +333,10 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
       } else {
         throw new Error(res.message || "Duplicate check failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setDuplicateCheckSuccess(false);
       setDuplicateCheckResult(null);
-      const msg = error.response?.data?.message || error.message || "Failed";
+      const msg = error instanceof Error ? (error as any).response?.data?.message || error.message : "Failed";
       setDuplicateCheckError(msg);
       toast.error(msg);
     } finally {
@@ -413,11 +420,14 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
     }
   };
 
-  const isFormValid =
-    selectedProject &&
-    selectedTask &&
-    productionTarget &&
-    Object.keys(errors).length === 0;
+  const isFormValid = useMemo(() => {
+    return (
+      selectedProject &&
+      selectedTask &&
+      productionTarget &&
+      Object.keys(errors).length === 0
+    );
+  }, [selectedProject, selectedTask, productionTarget, errors]);
 
   const canSubmit = useMemo(() => {
     // Basic validation
@@ -425,9 +435,11 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
 
     // File requirements
     if (file) {
-      // Must have run both AND BOTH must be strictly successful
-      if (aiEvalSuccess !== true || duplicateCheckSuccess !== true)
-        return false;
+      const requiresAI = !!currentProject?.requires_ai_evaluation;
+      const requiresDup = !!currentProject?.requires_duplicate_check;
+
+      if (requiresAI && aiEvalSuccess !== true) return false;
+      if (requiresDup && duplicateCheckSuccess !== true) return false;
     }
 
     // Submission window
@@ -437,6 +449,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
   }, [
     isFormValid,
     file,
+    currentProject,
     aiEvalSuccess,
     duplicateCheckSuccess,
     isSubmissionWindowOpen,
@@ -624,7 +637,7 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
             </div>
 
             {/* AI Evaluation Steps (Conditional) */}
-            {file && (
+            {file && (currentProject?.requires_ai_evaluation || currentProject?.requires_duplicate_check) && (
               <div className="space-y-4 pt-4 border-t border-slate-200">
                 <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-blue-600" />
@@ -650,216 +663,220 @@ const TrackerFormModal: React.FC<TrackerFormModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Step 1: AI Evaluation */}
-                  <div className="p-4 rounded border border-slate-200 bg-slate-50 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase text-slate-500">
-                        Step 1: AI Evaluation
-                      </span>
-                      {aiEvalSuccess === true ? (
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
-                      ) : aiEvalSuccess === false ? (
-                        <AlertCircle className="w-4 h-4 text-rose-500" />
-                      ) : null}
-                    </div>
-                    <Button
-                      type="button"
-                      onClick={handleAIEvaluation}
-                      disabled={
-                        !geminiApiKey ||
-                        isAIEvaluating ||
-                        isDuplicateChecking ||
-                        !selectedProject ||
-                        !selectedTask
-                      }
-                      variant={aiEvalSuccess ? "outline" : "default"}
-                      className="w-full  text-xs font-bold shadow-sm"
-                    >
-                      {isAIEvaluating ? (
-                        <Loader2 className="w-3 h-3 animate-spin mr-2" />
-                      ) : (
-                        <Brain className="w-3 h-3 mr-2" />
-                      )}
-                      {aiEvalSuccess ? "Re-evaluate" : "Run AI Eval"}
-                    </Button>
-                    {isAIEvaluating && (
-                      <Progress value={aiEvalProgress} className="h-1" />
-                    )}
-                    {aiEvalError && (
-                      <p className="text-[10px] text-rose-500 font-medium">
-                        {aiEvalError}
-                      </p>
-                    )}
-
-                    {aiEvalResult && (
-                      <div className="pt-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            setExpandedSection(
-                              expandedSection === "eval" ? "none" : "eval",
-                            )
-                          }
-                          className="h-7 px-2 text-[10px] font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                        >
-                          {expandedSection === "eval"
-                            ? "Hide AI Details"
-                            : "Show AI Details"}
-                          {expandedSection === "eval" ? (
-                            <ChevronUp className="w-3 h-3 ml-1" />
-                          ) : (
-                            <ChevronDown className="w-3 h-3 ml-1" />
-                          )}
-                        </Button>
-                        {expandedSection === "eval" && (
-                          <div className="mt-2 space-y-2 bg-white/50 p-2 rounded border border-slate-200 animate-in slide-in-from-top-1 duration-200">
-                            <div className="flex items-center justify-between text-[10px]">
-                              <span className="text-slate-500">
-                                Quality Score:
-                              </span>
-                              <span className="font-bold text-blue-600">
-                                {aiEvalResult.qualityScore}%
-                              </span>
-                            </div>
-                            {aiEvalResult.criticalIssues &&
-                              aiEvalResult.criticalIssues.length > 0 && (
-                                <div className="space-y-1 mt-1">
-                                  <p className="text-[9px] font-bold text-rose-500 uppercase">
-                                    Issues Found (
-                                    {aiEvalResult.criticalIssues.length})
-                                  </p>
-                                  {aiEvalResult.criticalIssues
-                                    .slice(0, 3)
-                                    .map((issue, i) => (
-                                      <p
-                                        key={i}
-                                        className="text-[10px] text-slate-700 truncate"
-                                      >
-                                        • {issue.issue}
-                                      </p>
-                                    ))}
-                                </div>
-                              )}
-                          </div>
-                        )}
-                        <div className="mt-2 text-[9px] text-slate-500 italic bg-blue-50/50 p-1.5 rounded border border-blue-100/50">
-                          For detailed analysis, please visit the{" "}
-                          <span className="font-bold text-blue-600">
-                            AI Evaluation
-                          </span>{" "}
-                          tab.
-                        </div>
+                  {currentProject?.requires_ai_evaluation && (
+                    <div className="p-4 rounded border border-slate-200 bg-slate-50 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase text-slate-500">
+                          Step 1: AI Evaluation
+                        </span>
+                        {aiEvalSuccess === true ? (
+                          <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        ) : aiEvalSuccess === false ? (
+                          <AlertCircle className="w-4 h-4 text-rose-500" />
+                        ) : null}
                       </div>
-                    )}
-                  </div>
+                      <Button
+                        type="button"
+                        onClick={handleAIEvaluation}
+                        disabled={
+                          !geminiApiKey ||
+                          isAIEvaluating ||
+                          isDuplicateChecking ||
+                          !selectedProject ||
+                          !selectedTask
+                        }
+                        variant={aiEvalSuccess ? "outline" : "default"}
+                        className="w-full  text-xs font-bold shadow-sm"
+                      >
+                        {isAIEvaluating ? (
+                          <Loader2 className="w-3 h-3 animate-spin mr-2" />
+                        ) : (
+                          <Brain className="w-3 h-3 mr-2" />
+                        )}
+                        {aiEvalSuccess ? "Re-evaluate" : "Run AI Eval"}
+                      </Button>
+                      {isAIEvaluating && (
+                        <Progress value={aiEvalProgress} className="h-1" />
+                      )}
+                      {aiEvalError && (
+                        <p className="text-[10px] text-rose-500 font-medium">
+                          {aiEvalError}
+                        </p>
+                      )}
+
+                      {aiEvalResult && (
+                        <div className="pt-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setExpandedSection(
+                                expandedSection === "eval" ? "none" : "eval",
+                              )
+                            }
+                            className="h-7 px-2 text-[10px] font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          >
+                            {expandedSection === "eval"
+                              ? "Hide AI Details"
+                              : "Show AI Details"}
+                            {expandedSection === "eval" ? (
+                              <ChevronUp className="w-3 h-3 ml-1" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3 ml-1" />
+                            )}
+                          </Button>
+                          {expandedSection === "eval" && (
+                            <div className="mt-2 space-y-2 bg-white/50 p-2 rounded border border-slate-200 animate-in slide-in-from-top-1 duration-200">
+                              <div className="flex items-center justify-between text-[10px]">
+                                <span className="text-slate-500">
+                                  Quality Score:
+                                </span>
+                                <span className="font-bold text-blue-600">
+                                  {aiEvalResult.qualityScore}%
+                                </span>
+                              </div>
+                              {aiEvalResult.criticalIssues &&
+                                aiEvalResult.criticalIssues.length > 0 && (
+                                  <div className="space-y-1 mt-1">
+                                    <p className="text-[9px] font-bold text-rose-500 uppercase">
+                                      Issues Found (
+                                      {aiEvalResult.criticalIssues.length})
+                                    </p>
+                                    {aiEvalResult.criticalIssues
+                                      .slice(0, 3)
+                                      .map((issue, i) => (
+                                        <p
+                                          key={i}
+                                          className="text-[10px] text-slate-700 truncate"
+                                        >
+                                          • {issue.issue}
+                                        </p>
+                                      ))}
+                                  </div>
+                                )}
+                            </div>
+                          )}
+                          <div className="mt-2 text-[9px] text-slate-500 italic bg-blue-50/50 p-1.5 rounded border border-blue-100/50">
+                            For detailed analysis, please visit the{" "}
+                            <span className="font-bold text-blue-600">
+                              AI Evaluation
+                            </span>{" "}
+                            tab.
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Step 2: Duplicate Check */}
-                  <div className="p-4 rounded border border-slate-200 bg-slate-50 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase text-slate-500">
-                        Step 2: Duplicate Check
-                      </span>
-                      {duplicateCheckSuccess === true ? (
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
-                      ) : duplicateCheckSuccess === false ? (
-                        <AlertCircle className="w-4 h-4 text-rose-500" />
-                      ) : null}
-                    </div>
-                    <Button
-                      type="button"
-                      onClick={handleDuplicateCheck}
-                      disabled={
-                        !aiEvalSuccess ||
-                        isAIEvaluating ||
-                        isDuplicateChecking ||
-                        duplicateCheckSuccess === true
-                      }
-                      variant={
-                        duplicateCheckSuccess === true ? "outline" : "default"
-                      }
-                      className="w-full  text-xs font-bold shadow-sm"
-                    >
-                      {isDuplicateChecking ? (
-                        <Loader2 className="w-3 h-3 animate-spin mr-2" />
-                      ) : (
-                        <FileSearch className="w-3 h-3 mr-2" />
-                      )}
-                      {duplicateCheckSuccess === true
-                        ? "Check Passed"
-                        : duplicateCheckSuccess === false
-                          ? "Check Failed (Dups Found)"
-                          : "Check Duplicates"}
-                    </Button>
-                    {isDuplicateChecking && (
-                      <Progress
-                        value={duplicateCheckProgress}
-                        className="h-1"
-                      />
-                    )}
-                    {duplicateCheckError && (
-                      <p className="text-[10px] text-rose-500 font-medium">
-                        {duplicateCheckError}
-                      </p>
-                    )}
-
-                    {duplicateCheckResult && (
-                      <div className="pt-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            setExpandedSection(
-                              expandedSection === "dup" ? "none" : "dup",
-                            )
-                          }
-                          className="h-7 px-2 text-[10px] font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                        >
-                          {expandedSection === "dup"
-                            ? "Hide Dup Details"
-                            : "Show Dup Details"}
-                          {expandedSection === "dup" ? (
-                            <ChevronUp className="w-3 h-3 ml-1" />
-                          ) : (
-                            <ChevronDown className="w-3 h-3 ml-1" />
-                          )}
-                        </Button>
-                        {expandedSection === "dup" && (
-                          <div className="mt-2 space-y-2 bg-white/50 p-2 rounded border border-slate-200 animate-in slide-in-from-top-1 duration-200">
-                            <div className="flex items-center justify-between text-[10px]">
-                              <span className="text-slate-500">Result:</span>
-                              <span
-                                className={`font-bold ${duplicateCheckResult.hasDuplicates ? "text-rose-600" : "text-emerald-600"}`}
-                              >
-                                {duplicateCheckResult.hasDuplicates
-                                  ? "Duplicates Found"
-                                  : "Clean"}
-                              </span>
-                            </div>
-                            {duplicateCheckResult.hasDuplicates && (
-                              <div className="space-y-1 mt-1">
-                                <p className="text-[10px] text-slate-700">
-                                  Found{" "}
-                                  <span className="font-bold">
-                                    {duplicateCheckResult.duplicateCount}
-                                  </span>{" "}
-                                  duplicate rows.
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        <div className="mt-2 text-[9px] text-slate-500 italic bg-blue-50/50 p-1.5 rounded border border-blue-100/50">
-                          For detailed analysis, please visit the{" "}
-                          <span className="font-bold text-blue-600">
-                            AI Evaluation
-                          </span>{" "}
-                          tab.
-                        </div>
+                  {currentProject?.requires_duplicate_check && (
+                    <div className="p-4 rounded border border-slate-200 bg-slate-50 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase text-slate-500">
+                          Step 2: Duplicate Check
+                        </span>
+                        {duplicateCheckSuccess === true ? (
+                          <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        ) : duplicateCheckSuccess === false ? (
+                          <AlertCircle className="w-4 h-4 text-rose-500" />
+                        ) : null}
                       </div>
-                    )}
-                  </div>
+                      <Button
+                        type="button"
+                        onClick={handleDuplicateCheck}
+                        disabled={
+                          (currentProject?.requires_ai_evaluation && !aiEvalSuccess) ||
+                          isAIEvaluating ||
+                          isDuplicateChecking ||
+                          duplicateCheckSuccess === true
+                        }
+                        variant={
+                          duplicateCheckSuccess === true ? "outline" : "default"
+                        }
+                        className="w-full  text-xs font-bold shadow-sm"
+                      >
+                        {isDuplicateChecking ? (
+                          <Loader2 className="w-3 h-3 animate-spin mr-2" />
+                        ) : (
+                          <FileSearch className="w-3 h-3 mr-2" />
+                        )}
+                        {duplicateCheckSuccess === true
+                          ? "Check Passed"
+                          : duplicateCheckSuccess === false
+                            ? "Check Failed (Dups Found)"
+                            : "Check Duplicates"}
+                      </Button>
+                      {isDuplicateChecking && (
+                        <Progress
+                          value={duplicateCheckProgress}
+                          className="h-1"
+                        />
+                      )}
+                      {duplicateCheckError && (
+                        <p className="text-[10px] text-rose-500 font-medium">
+                          {duplicateCheckError}
+                        </p>
+                      )}
+
+                      {duplicateCheckResult && (
+                        <div className="pt-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setExpandedSection(
+                                expandedSection === "dup" ? "none" : "dup",
+                              )
+                            }
+                            className="h-7 px-2 text-[10px] font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          >
+                            {expandedSection === "dup"
+                              ? "Hide Dup Details"
+                              : "Show Dup Details"}
+                            {expandedSection === "dup" ? (
+                              <ChevronUp className="w-3 h-3 ml-1" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3 ml-1" />
+                            )}
+                          </Button>
+                          {expandedSection === "dup" && (
+                            <div className="mt-2 space-y-2 bg-white/50 p-2 rounded border border-slate-200 animate-in slide-in-from-top-1 duration-200">
+                              <div className="flex items-center justify-between text-[10px]">
+                                <span className="text-slate-500">Result:</span>
+                                <span
+                                  className={`font-bold ${duplicateCheckResult.hasDuplicates ? "text-rose-600" : "text-emerald-600"}`}
+                                >
+                                  {duplicateCheckResult.hasDuplicates
+                                    ? "Duplicates Found"
+                                    : "Clean"}
+                                </span>
+                              </div>
+                              {duplicateCheckResult.hasDuplicates && (
+                                <div className="space-y-1 mt-1">
+                                  <p className="text-[10px] text-slate-700">
+                                    Found{" "}
+                                    <span className="font-bold">
+                                      {duplicateCheckResult.duplicateCount}
+                                    </span>{" "}
+                                    duplicate rows.
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          <div className="mt-2 text-[9px] text-slate-500 italic bg-blue-50/50 p-1.5 rounded border border-blue-100/50">
+                            For detailed analysis, please visit the{" "}
+                            <span className="font-bold text-blue-600">
+                              Duplicate Check
+                            </span>{" "}
+                            tab.
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}

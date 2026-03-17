@@ -9,6 +9,12 @@ interface QATrackerReportFiltersProps {
   setEndDate: (date: string) => void;
   selectedAgent: string;
   setSelectedAgent: (agentId: string) => void;
+  selectedTeam: string;
+  setSelectedTeam: (teamId: string) => void;
+  selectedProject: string;
+  setSelectedProject: (projectId: string) => void;
+  selectedTask: string;
+  setSelectedTask: (taskId: string) => void;
   assignedAgents: UserRef[];
   isLoadingAgents: boolean;
   onClearFilters: () => void;
@@ -21,6 +27,12 @@ const QATrackerReportFilters: React.FC<QATrackerReportFiltersProps> = ({
   setEndDate,
   selectedAgent,
   setSelectedAgent,
+  selectedTeam,
+  setSelectedTeam,
+  selectedProject,
+  setSelectedProject,
+  selectedTask,
+  setSelectedTask,
   assignedAgents,
   isLoadingAgents,
   onClearFilters,
@@ -84,6 +96,51 @@ const QATrackerReportFilters: React.FC<QATrackerReportFiltersProps> = ({
               Loading agents...
             </p>
           )}
+        </div>
+
+        {/* Team Dropdown */}
+        <div className="space-y-1.5">
+          <label className="block text-sm font-semibold text-gray-700">
+            Team
+          </label>
+          <select
+            value={selectedTeam}
+            onChange={(e) => setSelectedTeam(e.target.value)}
+            className="w-full  px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          >
+            <option value="">All Teams</option>
+            {/* Populate teams from assignedAgents or additional prop */}
+            {Array.from(new Set(assignedAgents.map(a => a.team_name).filter(Boolean))).map(team => (
+              <option key={team} value={team!}>{team}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Project & Task placeholders - ideally these should be real dropdowns from API */}
+        <div className="space-y-1.5">
+          <label className="block text-sm font-semibold text-gray-700">
+            Project
+          </label>
+          <input
+            type="text"
+            placeholder="Project ID..."
+            value={selectedProject}
+            onChange={(e) => setSelectedProject(e.target.value)}
+            className="w-full  px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="block text-sm font-semibold text-gray-700">
+            Task
+          </label>
+          <input
+            type="text"
+            placeholder="Task ID..."
+            value={selectedTask}
+            onChange={(e) => setSelectedTask(e.target.value)}
+            className="w-full  px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          />
         </div>
       </div>
 

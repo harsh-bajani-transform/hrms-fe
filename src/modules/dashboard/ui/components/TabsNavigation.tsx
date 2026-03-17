@@ -5,6 +5,7 @@ import {
   Briefcase,
   FileText,
   BarChart3,
+  Settings,
 } from "lucide-react";
 
 export interface TabsNavigationProps {
@@ -51,10 +52,34 @@ const TabsNavigation = ({
       visible: true,
     },
     {
+      id: "tracker_report",
+      label: "Tracker Report",
+      icon: BarChart3,
+      visible: !isAgent,
+    },
+    {
+      id: "agent_file_report",
+      label: "Agent File Report",
+      icon: LayoutGrid, // Using LayoutGrid for now
+      visible: !isAgent,
+    },
+    {
+      id: "qa_agent_audit",
+      label: "QA Agent Audit",
+      icon: Briefcase,
+      visible: !isAgent,
+    },
+    {
       id: "project_monthly_report",
       label: "Project Monthly Report",
       icon: BarChart3,
       visible: !isAgent && !isQA,
+    },
+    {
+      id: "afd_management",
+      label: "AFD Management",
+      icon: Settings,
+      visible: !isAgent,
     },
   ];
 

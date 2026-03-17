@@ -21,7 +21,8 @@ import type {
   UserRef as Agent,
   TrackerRow as Tracker,
   ProjectRef as ProjectWithTasks,
-} from "../../types";
+  TaskRef,
+} from "../../../dashboard/types";
 
 interface DropdownTaskNameMap {
   [taskId: string]: string;
@@ -83,7 +84,7 @@ const AgentFileReportView: React.FC<AgentFileReportViewProps> = ({
           if (project.project_id) {
             projectMap[String(project.project_id)] = project.project_name || "";
           }
-          (project.tasks || []).forEach((task) => {
+          (project.tasks || []).forEach((task: TaskRef) => {
             const tName = task.task_name || task.label;
             taskNameMap[String(task.task_id)] = tName || "";
           });
