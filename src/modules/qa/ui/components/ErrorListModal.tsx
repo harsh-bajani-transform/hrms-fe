@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface ErrorListModalProps {
   isOpen: boolean;
   onClose: () => void;
-  errors: string[];
+  errors: any[];
 }
 
 const ErrorListModal: React.FC<ErrorListModalProps> = ({
@@ -21,7 +21,7 @@ const ErrorListModal: React.FC<ErrorListModalProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-red-600">
             <XCircle className="w-5 h-5" />
@@ -37,17 +37,41 @@ const ErrorListModal: React.FC<ErrorListModalProps> = ({
         ) : (
           <ScrollArea className="max-h-[60vh] pr-4">
             <ul className="space-y-3 py-2">
-              {errors.map((error, idx) => (
-                <li
-                  key={idx}
-                  className="flex gap-3 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 animate-in fade-in slide-in-from-top-1"
-                >
-                  <span className="shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-bold">
-                    {idx + 1}
-                  </span>
-                  <div className="flex-1 leading-relaxed">{error}</div>
-                </li>
-              ))}
+              {errors.map((errorItem, idx) => {
+                const isObject =
+                  typeof errorItem === "object" && errorItem !== null;
+                const errorText = isObject
+                  ? errorItem.error || errorItem.message || "Unknown error"
+                  : String(errorItem);
+                const category = isObject ? errorItem.category : null;
+                const subcategory = isObject ? errorItem.subcategory : null;
+
+                return (
+                  <li
+                    key={idx}
+                    className="flex gap-3 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 animate-in fade-in slide-in-from-top-1"
+                  >
+                    <span className="shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-bold">
+                      {idx + 1}
+                    </span>
+                    <div className="flex-1 leading-relaxed">
+                      {category && (
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-bold text-xs uppercase px-1.5 py-0.5 bg-red-200 rounded">
+                            {category}
+                          </span>
+                          {subcategory && (
+                            <span className="text-xs text-red-500 font-medium">
+                              {subcategory}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      <div className="font-medium">{errorText}</div>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </ScrollArea>
         )}

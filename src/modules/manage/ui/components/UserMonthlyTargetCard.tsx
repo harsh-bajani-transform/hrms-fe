@@ -14,7 +14,11 @@ import {
 import { DataTable } from "@/components/ui/data-table";
 import { createColumns, type Agent } from "./UserMonthlyTargetCardColumns";
 import { useAuth } from "../../../../context/AuthContext";
-import { fetchMonthlyBillableReport, type MonthlyBillableReportRow } from "../../../dashboard/services/billableReportService";
+import {
+  fetchMonthlyBillableReport,
+  type MonthlyBillableReportRow,
+} from "../../../dashboard/services/billableReportService";
+import Loading from "@/components/common/Loading";
 
 interface MonthData {
   key: string;
@@ -102,10 +106,13 @@ const UserMonthlyTargetCard: React.FC = () => {
             userName: row.user_name || "Unknown",
             team: row.team_name || (row.team as string) || "N/A",
             workingDays: Number(row.working_days || 0),
-            extraAssignHours: Number(row.extra_assigned_hours || row.extra_assign_hours || 0),
+            extraAssignHours: Number(
+              row.extra_assigned_hours || row.extra_assign_hours || 0,
+            ),
             monthlyTarget: Number(row.monthly_target || row.monthly_goal || 0),
-            monthlyAchievedTarget:
-              Number(row.total_billable_hours || row.total_billable_hours_month || 0),
+            monthlyAchievedTarget: Number(
+              row.total_billable_hours || row.total_billable_hours_month || 0,
+            ),
           }));
 
           return { ...m, agents: apiAgents };
@@ -140,7 +147,7 @@ const UserMonthlyTargetCard: React.FC = () => {
 
     const exportData = monthData.agents.map((agent) => ({
       "User Name": agent.userName,
-      "Team": agent.team,
+      Team: agent.team,
       "Monthly Target": agent.monthlyTarget,
       "Extra Assign Hours": agent.extraAssignHours,
       "Working Days": agent.workingDays,
@@ -154,11 +161,18 @@ const UserMonthlyTargetCard: React.FC = () => {
   };
 
   // Create columns
-  const columns = useMemo(() => createColumns(handleEditTarget, handleDeleteAgent), []);
+  const columns = useMemo(
+    () => createColumns(handleEditTarget, handleDeleteAgent),
+    [],
+  );
 
   if (loading && monthsData.length === 0) {
     return (
-      <div className="flex justify-center p-12">Loading monthly targets...</div>
+      <Loading
+        title="Loading monthly targets..."
+        description="Compiling monthly performance summary and statistics"
+        fullHeight={false}
+      />
     );
   }
 

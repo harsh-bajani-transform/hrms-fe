@@ -1,13 +1,13 @@
-import type { ReactNode } from 'react'
-import Header from './Header'
-import { useAuth } from '../../context/AuthContext'
+import type { ReactNode } from "react";
+import Header from "./Header";
+import { useAuth } from "../../context/AuthContext";
 
 export interface AppLayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 const AppLayout = ({ children }: AppLayoutProps) => {
-  const { user: currentUser } = useAuth()
+  const { user: currentUser } = useAuth();
 
   return (
     <>
@@ -15,19 +15,19 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         currentUser={currentUser}
         handleLogout={() => {
           if (window.sessionStorage) {
-            window.sessionStorage.clear()
-            window.location.href = '/'
+            window.sessionStorage.clear();
+            window.location.href = "/";
           }
         }}
       />
 
-      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50">
+        <div className="space-y-6 mx-auto px-4 sm:px-6 lg:px-8 py-6 transition-all duration-300">
           {children}
         </div>
       </main>
     </>
-  )
-}
+  );
+};
 
-export default AppLayout
+export default AppLayout;

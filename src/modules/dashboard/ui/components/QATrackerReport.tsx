@@ -264,7 +264,7 @@ const QATrackerReport: React.FC = () => {
   };
 
   return (
-    <div className="space-y-10 max-w-6xl mx-auto py-8">
+    <div className="space-y-6 mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="mb-8 flex items-center gap-4">
         <div className="p-3 bg-blue-50 rounded-lg">
           <UsersIcon className="w-7 h-7 text-blue-600" />

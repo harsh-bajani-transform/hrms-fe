@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { useSearch, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 import { fetchDashboardData } from "../../services/dashboardService";
 import { fetchProjectsList } from "../../services/projectService";
@@ -281,8 +282,21 @@ const DashboardView = () => {
   return (
     <AppLayout>
       <div
-        className={`space-y-6 mx-auto pb-10 px-4 sm:px-6 lg:px-8 pt-6 ${viewParam ? "max-w-[1600px]" : "max-w-6xl"}`}
+        className={cn(
+          "space-y-6 mx-auto px-4 sm:px-6 lg:px-8 py-6 transition-all duration-300",
+          viewParam ? "max-w-[1600px]" : "max-w-full",
+        )}
       >
+        {/* Tabs */}
+        {activeTab !== "manage" && (
+          <TabsNavigation
+            activeTab={activeTab}
+            setActiveTab={handleTabChange}
+            isAgent={isAgent}
+            isQA={isQA}
+            canAccessManage={canAccessManage}
+          />
+        )}
         {/* Special Views override anything else */}
         {viewParam ? (
           renderSpecialView()
@@ -300,17 +314,6 @@ const DashboardView = () => {
                 dateRange={dateRange}
                 handleDateRangeChange={handleDateRangeChange}
                 allTasks={allTasks}
-              />
-            )}
-
-            {/* Tabs */}
-            {activeTab !== "manage" && (
-              <TabsNavigation
-                activeTab={activeTab}
-                setActiveTab={handleTabChange}
-                isAgent={isAgent}
-                isQA={isQA}
-                canAccessManage={canAccessManage}
               />
             )}
 

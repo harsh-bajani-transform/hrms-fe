@@ -20,21 +20,26 @@ export interface AuditRecord {
   agent_name?: string;
   project_name?: string;
   task_name?: string;
+  file_name?: string;
+  file_url?: string;
   qc_score?: string | number;
   average_qc_score?: string | number;
   total_qc_performed?: number;
   "10%_data_generated_count"?: number;
+  file_record_count?: number;
   total_errors_found?: number;
   total_errors?: number;
   error_score?: number;
   audit_datetime?: string;
   date_time?: string;
+  timestamp?: string; // Added to resolve TS errors in tabs
   errors_list?: string[];
   error_list?: string[];
   status?: string;
   qc_checked_file?: string;
   error_notes?: string;
   notes?: string;
+  audit_performed?: boolean;
 }
 
 export interface GroupedQAAgent {

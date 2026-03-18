@@ -27,6 +27,7 @@ import {
   TaskMapValue,
   TrackerFile,
 } from "../../types";
+import Loading from "@/components/common/Loading";
 
 const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
   const { user } = useAuth();
@@ -126,8 +127,8 @@ const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
   const handleOpenQCForm = (tracker: any) => {
     log("[QAAgentDashboard] Opening QC Form for tracker:", tracker.tracker_id);
     navigate({
-      to: '/qc-form',
-      state: { tracker } as any
+      to: "/qc-form",
+      state: { tracker } as any,
     });
   };
 
@@ -223,14 +224,11 @@ const QAAgentDashboard: React.FC<QAAgentDashboardProps> = ({ dateRange }) => {
 
             {/* Table Content */}
             {loading ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <span className="text-gray-500">
-                    Loading pending files...
-                  </span>
-                </div>
-              </div>
+              <Loading
+                title="Loading pending files..."
+                description="Compiling pending files"
+                fullHeight={false}
+              />
             ) : pendingFiles.length === 0 ? (
               <div className="p-12 text-center">
                 <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">

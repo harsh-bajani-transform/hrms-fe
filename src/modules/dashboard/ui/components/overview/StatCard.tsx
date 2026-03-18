@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Info } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export type Trend = "up" | "down" | "neutral";
 
@@ -26,51 +27,71 @@ const StatCard = ({
 }: StatCardProps) => {
   return (
     <div
-      className={`
-        bg-white p-5 md:p-6 rounded shadow-sm border min-w-0
-        ${alert ? "border-red-300 bg-linear-to-br from-red-50 to-red-100" : "border-gray-200"}
-        flex flex-row items-center justify-between gap-4 relative group hover:shadow-md transition-all duration-200 ${className}
-      `}
+      className={cn(
+        "relative overflow-hidden rounded-2xl shadow-md border-2 transition-all duration-300 group hover:shadow-lg hover:-translate-y-1",
+        alert ? "bg-white border-red-300" : "bg-white border-slate-200 hover:border-blue-300",
+        className
+      )}
     >
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 mb-1 md:mb-1.5">
-          <p
-            className={`text-xs sm:text-sm font-medium truncate ${alert ? "text-red-600" : "text-slate-500"}`}
-          >
-            {title}
-          </p>
+      {/* Subtle decorative element */}
+      <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -translate-y-12 translate-x-12 group-hover:bg-blue-500/10 transition-colors" />
 
-          {tooltip && (
-            <div className="relative group/tooltip shrink-0">
-              <Info className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-300 hover:text-blue-500 cursor-help transition-colors" />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 sm:w-52 p-2 sm:p-2.5 bg-slate-800 text-white text-xs leading-relaxed rounded-lg shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 pointer-events-none">
-                {tooltip}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800"></div>
+      <div className="relative p-6 flex items-center justify-between gap-4">
+        <div className="flex-1 min-w-0 z-10">
+          <div className="flex items-center gap-1.5 mb-2">
+            <p
+              className={cn(
+                "text-[10px] font-bold uppercase tracking-wider truncate",
+                alert ? "text-red-600" : "text-slate-500"
+              )}
+            >
+              {title}
+            </p>
+
+            {tooltip && (
+              <div className="relative group/tooltip shrink-0">
+                <Info className="w-3 h-3 text-slate-300 hover:text-blue-500 cursor-help transition-colors" />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 bg-slate-800 text-white text-[10px] leading-relaxed rounded-xl shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 pointer-events-none">
+                  {tooltip}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800" />
+                </div>
               </div>
-            </div>
+            )}
+          </div>
+
+          <h3
+            className={cn(
+              "text-2xl sm:text-3xl font-black truncate",
+              alert ? "text-red-700" : "text-slate-900"
+            )}
+          >
+            {value}
+          </h3>
+
+          {subtext && (
+            <p
+              className={cn(
+                "text-xs font-bold mt-2 truncate",
+                trend === "up" ? "text-green-600" : trend === "down" ? "text-red-500" : "text-slate-500"
+              )}
+            >
+              {subtext}
+            </p>
           )}
         </div>
 
-        <h3
-          className={`text-2xl sm:text-3xl font-bold truncate ${alert ? "text-red-700" : "text-gray-900"}`}
+        <div
+          className={cn(
+            "p-3.5 rounded-2xl shadow-sm shrink-0 z-10 transition-transform group-hover:scale-110",
+            alert
+              ? "bg-red-100 text-red-600"
+              : trend === "up"
+              ? "bg-green-100 text-green-600"
+              : "bg-blue-100 text-blue-600"
+          )}
         >
-          {value}
-        </h3>
-
-        {subtext && (
-          <p
-            className={`text-xs sm:text-sm mt-1.5 md:mt-2 truncate font-medium ${trend === "up" ? "text-green-600" : trend === "down" ? "text-red-600" : "text-gray-500"}`}
-          >
-            {subtext}
-          </p>
-        )}
-      </div>
-
-      <div
-        className={`p-3 rounded shrink-0 self-center shadow-sm
-                ${alert ? "bg-linear-to-br from-red-100 to-red-200 text-red-700" : trend === "up" ? "bg-linear-to-br from-green-100 to-green-200 text-green-700" : "bg-linear-to-br from-blue-100 to-blue-200 text-blue-700"}`}
-      >
-        <CardIcon className="w-4 h-4" />
+          <CardIcon className="w-6 h-6" />
+        </div>
       </div>
     </div>
   );

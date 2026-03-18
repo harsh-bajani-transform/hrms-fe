@@ -34,6 +34,7 @@ import {
   createColumns,
   type ProjectReportRow,
 } from "./ProjectMonthlyReportColumns";
+import Loading from "@/components/common/Loading";
 
 const ProjectMonthlyReport: React.FC = () => {
   const { user } = useAuth();
@@ -288,12 +289,11 @@ const ProjectMonthlyReport: React.FC = () => {
       {/* Table Section */}
       <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
         {loading ? (
-          <div className="p-20 flex flex-col items-center justify-center gap-4">
-            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-slate-500 font-medium">
-              Loading project reports...
-            </p>
-          </div>
+          <Loading
+            title="Loading project reports..."
+            description="Compiling project reports"
+            fullHeight={false}
+          />
         ) : displayData.length === 0 ? (
           <div className="p-20 flex flex-col items-center justify-center text-center">
             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">

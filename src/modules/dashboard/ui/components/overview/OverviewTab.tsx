@@ -9,9 +9,12 @@ import {
   TrendingUp,
   Award,
   Briefcase,
+  FileText,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
+import { cn } from "../../../../../lib/utils";
 
 import Loading from "@/components/common/Loading";
 import StatCard from "./StatCard";
@@ -391,92 +394,232 @@ const OverviewTab = ({
         </div>
       )}
 
-      {/* Performance Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-5xl mx-auto w-full">
         {isAgent ? (
           <>
             <StatCard
               title="Total Billable Hours"
               value={agentStats.totalBillableHours.toFixed(2)}
-              subtext="Hours logged"
+              subtext="Hours logged this period"
               icon={Clock}
               trend="neutral"
-              tooltip="Total billable hours tracked."
-              className="min-w-0"
+              tooltip="Total billable hours you've tracked in the selected range."
+              className="shadow-lg border-blue-100 h-full"
             />
             <StatCard
               title="QC Score"
               value={`${agentStats.qcScore}%`}
-              subtext="Quality rating"
+              subtext="Average quality rating"
               icon={CheckCircle}
               trend="neutral"
-              tooltip="Quality control score."
-              className="min-w-0"
-            />
-            <StatCard
-              title="Performance"
-              value={agentStats.taskCount.toLocaleString()}
-              subtext="Tasks assigned"
-              icon={TrendingUp}
-              trend="neutral"
-              tooltip="Total tasks assigned to you."
-              className="min-w-0"
-            />
-            <StatCard
-              title="Projects"
-              value={agentStats.projectCount.toLocaleString()}
-              subtext="Active projects"
-              icon={Award}
-              trend="neutral"
-              tooltip="Number of projects you're working on."
-              className="min-w-0"
+              tooltip="Your average quality control score based on audits."
+              className={cn(
+                "shadow-lg h-full border-2",
+                agentStats.qcScore >= 90 ? "border-green-100" : 
+                agentStats.qcScore >= 80 ? "border-blue-100" : "border-yellow-100"
+              )}
             />
           </>
         ) : (
           <>
             <StatCard
-              title="Production (Selected)"
+              title="Total Billable Hours"
               value={analytics?.prodCurrent.toLocaleString() ?? "0"}
-              subtext={analytics?.trendText ?? ""}
-              icon={Activity}
+              subtext={analytics?.trendText || "Production Volume"}
+              icon={Clock}
               trend={analytics?.trendDir ?? "neutral"}
-              tooltip="Total production volume in range."
-              className="min-w-0"
+              tooltip="Total production volume (billable hours) in range."
+              className="shadow-lg border-blue-100 h-full"
             />
             <StatCard
-              title={`Production (${analytics?.prevRange.label ?? "Previous"})`}
-              value={analytics?.prodPrevious.toLocaleString() ?? "0"}
-              subtext="Vs Previous"
-              icon={Calendar}
-              trend="neutral"
-              tooltip="Comparison period volume."
-              className="min-w-0"
-            />
-            <StatCard
-              title="MTD Progress"
-              value={`${analytics?.goalProgress.toFixed(1) ?? "0.0"}%`}
-              subtext={`Target: ${analytics?.effectiveGoal.toLocaleString() ?? "0"}`}
-              icon={Target}
-              trend="neutral"
-              tooltip="% of Monthly Target achieved."
-              className="min-w-0"
-            />
-            <StatCard
-              title="Active Agents"
+              title="Total Active Agents"
               value={analytics?.agentStats.length ?? 0}
-              subtext="In range"
+              subtext="Agents active in period"
               icon={Users}
               trend="neutral"
-              tooltip="Agent Activity count."
-              className="min-w-0"
+              tooltip="Total number of agents who have logged trackers."
+              className="shadow-lg border-blue-100 h-full"
             />
           </>
         )}
       </div>
 
+      {/* Latest QC Files Section for Admin/AM */}
+      {!isAgent && !isQA && (
+        <div className="bg-white rounded-2xl shadow-lg border-2 border-slate-200 overflow-hidden">
+          <div className="bg-blue-600 px-8 py-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12" />
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
+                  <FileText className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white tracking-tight">
+                    Latest QC Files
+                  </h2>
+                  <p className="text-sm text-blue-100 mt-1 font-medium">
+                    Files recently reviewed for quality check
+                  </p>
+                </div>
+              </div>
+              <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg">
+                <Clock className="w-4 h-4 text-white" />
+                <span className="text-sm font-semibold text-white">
+                  {dashboardData?.tracker?.filter(
+                    (row: TrackerRow) => !!row.tracker_file,
+                  ).length ?? 0}{" "}
+                  Files
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-0">
+            {loading ? (
+              <div className="flex justify-center items-center py-16">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200" />
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent absolute top-0" />
+                  </div>
+                  <span className="text-slate-600 font-semibold">
+                    Loading QC files...
+                  </span>
+                </div>
+              </div>
+            ) : (dashboardData?.tracker?.filter(
+                (row: TrackerRow) => !!row.tracker_file,
+              ).length ?? 0) === 0 ? (
+              <div className="p-16 text-center">
+                <div className="w-20 h-20 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+                  <CheckCircle className="w-10 h-10 text-green-600" />
+                </div>
+                <p className="text-slate-800 font-bold text-xl mb-2">
+                  All Caught Up!
+                </p>
+                <p className="text-slate-500 text-sm">
+                  No QC files found in this period.
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {dashboardData?.tracker
+                  ?.filter((row: TrackerRow) => !!row.tracker_file)
+                  .sort((a: TrackerRow, b: TrackerRow) => {
+                    const dateA = a.date_time
+                      ? new Date(a.date_time).getTime()
+                      : 0;
+                    const dateB = b.date_time
+                      ? new Date(b.date_time).getTime()
+                      : 0;
+                    return dateB - dateA;
+                  })
+                  .slice(0, 5)
+                  .map((file: TrackerRow, index: number) => (
+                    <div
+                      key={file.tracker_id || index}
+                      className="group px-6 py-5 hover:bg-blue-50 transition-all duration-200"
+                    >
+                      <div className="flex items-center gap-5">
+                        <div className="relative">
+                          <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                            <FileText className="w-7 h-7 text-blue-600" />
+                          </div>
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center shadow-sm">
+                            <span className="text-white text-[10px] font-bold">
+                              {index + 1}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-5 gap-4">
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              Date/Time
+                            </p>
+                            <div className="text-sm font-bold text-slate-800">
+                              {file.date_time ? (
+                                <>
+                                  <div>
+                                    {new Date(
+                                      file.date_time,
+                                    ).toLocaleDateString()}
+                                  </div>
+                                  <div className="text-[10px] text-slate-600">
+                                    {new Date(
+                                      file.date_time,
+                                    ).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </div>
+                                </>
+                              ) : (
+                                "-"
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                              Agent
+                            </p>
+                            <p className="text-sm font-bold text-blue-700">
+                              {file.user_name || "-"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                              Project
+                            </p>
+                            <p className="text-sm font-medium text-slate-700 truncate">
+                              {file.project_name || "-"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                              Task
+                            </p>
+                            <p className="text-sm font-medium text-slate-700 truncate">
+                              {file.task_name || "-"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                              File
+                            </p>
+                            {file.tracker_file ? (
+                              <a
+                                href={file.tracker_file}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 text-sm font-bold transition-colors group/link"
+                              >
+                                <Download className="w-4 h-4 group-hover/link:animate-bounce" />
+                                Download
+                              </a>
+                            ) : (
+                              <span className="text-slate-400 text-sm font-medium">
+                                No file
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {isAgent ? (
         <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-5">
+          <div className="bg-blue-600 px-6 py-5">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/20 rounded-lg">
                 <Briefcase className="w-6 h-6 text-white" />

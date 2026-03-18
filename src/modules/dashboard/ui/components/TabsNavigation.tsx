@@ -1,12 +1,6 @@
-import { useRef } from "react";
 import type { LucideIcon } from "lucide-react";
-import {
-  LayoutGrid,
-  Briefcase,
-  FileText,
-  BarChart3,
-  Settings,
-} from "lucide-react";
+import { LayoutGrid, Briefcase, FileText, BarChart3 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface TabsNavigationProps {
   activeTab: string;
@@ -30,8 +24,6 @@ const TabsNavigation = ({
   isAgent,
   isQA,
 }: TabsNavigationProps) => {
-  const tabsRef = useRef<HTMLDivElement | null>(null);
-
   const tabs: TabDef[] = [
     {
       id: "overview",
@@ -40,34 +32,16 @@ const TabsNavigation = ({
       alwaysVisible: true,
     },
     {
-      id: "monthly_target",
-      label: "User Monthly Target",
-      icon: Briefcase,
-      visible: !isAgent && !isQA,
-    },
-    {
       id: "billable_report",
       label: "Billable Reports",
       icon: FileText,
       visible: true,
     },
     {
-      id: "tracker_report",
-      label: "Tracker Report",
-      icon: BarChart3,
-      visible: !isAgent,
-    },
-    {
-      id: "agent_file_report",
-      label: "Agent File Report",
-      icon: LayoutGrid, // Using LayoutGrid for now
-      visible: !isAgent,
-    },
-    {
-      id: "qa_agent_audit",
-      label: "QA Agent Audit",
+      id: "monthly_target",
+      label: "User Monthly Target",
       icon: Briefcase,
-      visible: !isAgent,
+      visible: !isAgent && !isQA,
     },
     {
       id: "project_monthly_report",
@@ -75,24 +49,31 @@ const TabsNavigation = ({
       icon: BarChart3,
       visible: !isAgent && !isQA,
     },
-    {
-      id: "afd_management",
-      label: "AFD Management",
-      icon: Settings,
-      visible: !isAgent,
-    },
+    // {
+    //   id: "agent_file_report",
+    //   label: "Agent File Report",
+    //   icon: Users,
+    //   visible: !isAgent,
+    // },
+    // {
+    //   id: "qa_agent_audit",
+    //   label: "QA Agent Audit",
+    //   icon: Briefcase,
+    //   visible: !isAgent,
+    // },
+    // {
+    //   id: "afd_management",
+    //   label: "AFD Management",
+    //   icon: Settings,
+    //   visible: !isAgent,
+    // },
   ];
 
   const visibleTabs = tabs.filter((tab) => tab.alwaysVisible || tab.visible);
 
   return (
-    <div className="relative w-full bg-white rounded p-4 shadow-sm border border-gray-200">
-      {/* Horizontal draggable/scrollable + equal spacing on large screens */}
-      <div
-        ref={tabsRef}
-        className="flex flex-row overflow-x-auto pb-2 px-1 scroll-smooth scrollbar-hide snap-x snap-mandatory w-full gap-2 lg:gap-3"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      >
+    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-6">
+      <div className="flex border-b border-slate-200">
         {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -101,23 +82,27 @@ const TabsNavigation = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`
-                shrink-0
-                px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg text-sm font-medium
-                flex items-center justify-center gap-2
-                transition-all duration-200 whitespace-nowrap snap-start cursor-pointer
-                ${
-                  isActive
-                    ? "bg-blue-600 text-white shadow-md scale-105"
-                    : "bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 hover:shadow-sm"
-                }
-              `}
+              className={cn(
+                "flex-1 px-4 py-4 text-sm font-bold transition-all relative min-w-[120px]",
+                isActive
+                  ? "text-blue-600 bg-blue-50"
+                  : "text-slate-600 hover:text-slate-800 hover:bg-slate-50",
+              )}
               title={tab.label}
             >
-              <Icon
-                className={`w-4 h-4 ${isActive ? "text-white" : "text-gray-600"}`}
-              />
-              <span className="hidden sm:inline">{tab.label}</span>
+              <div className="flex items-center justify-center gap-2">
+                <Icon
+                  className={cn(
+                    "w-4 h-4",
+                    isActive ? "text-blue-600" : "text-slate-400",
+                  )}
+                />
+                <span className="hidden md:inline">{tab.label}</span>
+                <span className="md:hidden">{tab.label.split(" ")[0]}</span>
+              </div>
+              {isActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600" />
+              )}
             </button>
           );
         })}

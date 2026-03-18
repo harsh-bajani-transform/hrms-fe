@@ -166,10 +166,19 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
       }
     }
 
-    navigate({
-      to: targetPath,
-      ...(dashboardSearch ? { search: dashboardSearch } : {}),
-    });
+    // Crucial: When navigating using the header, we want to start fresh on that view
+    // so we replace the search params entirely to avoid "sticky" params from previous views.
+    // We use a broader type to allow dynamic navigation across different routes.
+    const navOptions: any = { to: targetPath };
+    if (dashboardSearch) {
+      navOptions.search = dashboardSearch;
+    } else if (targetPath === "/dashboard") {
+      // Clear all params for dashboard if not specified
+      navOptions.search = {};
+    }
+    // For other routes like /admin or /agent, we don't pass search if not defined
+
+    navigate(navOptions);
 
     setIsMobileMenuOpen(false);
   };
@@ -398,9 +407,10 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
       }
     } else if (item.view === "ADMIN_PANEL") {
       // Manage can be /admin OR /dashboard?tab=manage
+      // IMPORTANT: Only active if search.view is NOT present to avoid overlap
       isActive =
         pathname === "/admin" ||
-        (pathname === "/dashboard" && search.tab === "manage");
+        (pathname === "/dashboard" && search.tab === "manage" && !search.view);
     } else if (item.view === "ENTRY") {
       isActive =
         (pathname === "/entry" || pathname === "/agent") &&
@@ -458,7 +468,7 @@ const Header = ({ currentUser, handleLogout }: HeaderProps) => {
     } else if (item.view === "ADMIN_PANEL") {
       isActive =
         pathname === "/admin" ||
-        (pathname === "/dashboard" && search.tab === "manage");
+        (pathname === "/dashboard" && search.tab === "manage" && !search.view);
     } else if (item.view === "ENTRY") {
       isActive =
         (pathname === "/entry" || pathname === "/agent") &&
