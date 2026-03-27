@@ -15,9 +15,8 @@ import {
   Clock,
   AlertCircle,
 } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import { exportToCSV } from "../../../../lib/utils/exportUtils";
 import { format } from "date-fns";
 import dayjs from "dayjs";
 import {
@@ -312,24 +311,14 @@ const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
   }, [trackers]);
 
   // Export to Excel function
-  const handleExportToExcel = (): void => {
+  const handleExportToCSV = (): void => {
     if (trackers.length === 0) {
       toast.error("No data to export");
       return;
     }
 
     try {
-      type ExportRow = {
-        "Date/Time": string;
-        Project: string;
-        Task: string;
-        "Per Hour Target": string | number;
-        Production: string | number;
-        "Billable Hours": string;
-        "Has File": string;
-      };
-
-      const exportData: ExportRow[] = trackers.map((tracker) => ({
+      const exportData: Record<string, unknown>[] = trackers.map((tracker) => ({
         "Date/Time": tracker.date_time
           ? format(new Date(tracker.date_time), "M/d/yyyy h:mm a")
           : "-",
@@ -356,33 +345,12 @@ const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
         "Has File": "",
       });
 
-      // Create worksheet
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-
-      // Set column widths
-      worksheet["!cols"] = [
-        { wch: 18 }, // Date/Time
-        { wch: 20 }, // Project
-        { wch: 25 }, // Task
-        { wch: 15 }, // Tenure Target
-        { wch: 12 }, // Production
-        { wch: 15 }, // Billable Hours
-        { wch: 10 }, // Has File
-      ];
-
-      // Create workbook
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Trackers");
-
-      // Generate filename with date range
-      const filename = `Trackers_${startDate}_to_${endDate}.xlsx`;
-
-      // Download file
-      XLSX.writeFile(workbook, filename);
+      const filename = `Trackers_${startDate}_to_${endDate}.csv`;
+      exportToCSV(exportData, filename);
 
       toast.success(`Exported ${trackers.length} records successfully!`);
     } catch (err: unknown) {
-      console.error("[TrackerTable] Excel export error:", err);
+      console.error("[TrackerTable] CSV export error:", err);
       toast.error("Failed to export data");
     }
   };
@@ -473,13 +441,13 @@ const TrackerTable = ({ userId, projects, onAddEntry }: TrackerTableProps) => {
                 </Button>
               )}
               <Button
-                onClick={handleExportToExcel}
+                onClick={handleExportToCSV}
                 disabled={loading || trackers.length === 0}
                 variant="outline"
                 className=" px-6 border-gray-300 bg-green-50 text-green-700 hover:bg-green-100"
               >
                 <FileDown className="w-4 h-4 mr-2" />
-                Export Excel
+                Export CSV
               </Button>
             </div>
           </div>

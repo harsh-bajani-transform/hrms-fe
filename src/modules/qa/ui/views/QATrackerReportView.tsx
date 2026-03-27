@@ -5,7 +5,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { useAuth } from "../../../../context/AuthContext";
 import { useDeviceInfo } from "../../../../hooks/useDeviceInfo";
 import { getTodayDate } from "../../../../lib/utils/dateUtils";
-import { exportToExcel } from "../../../../lib/utils/excelUtils";
+import { exportToCSV } from "../../../../lib/utils/exportUtils";
 import {
   fetchDashboardData,
   fetchDropdownData,
@@ -38,6 +38,7 @@ const QATrackerReportView: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [assignedAgents, setAssignedAgents] = useState<UserRef[]>([]);
   const [loadingAgents, setLoadingAgents] = useState<boolean>(false);
+  const [projectsWithTasks, setProjectsWithTasks] = useState<ProjectRef[]>([]);
 
   // Filter states
   const [selectedAgent, setSelectedAgent] = useState<string>("");
@@ -74,6 +75,8 @@ const QATrackerReportView: React.FC = () => {
         const projectsWithTasks = Array.isArray(dropdownRes?.data)
           ? (dropdownRes.data as ProjectRef[])
           : [];
+        setProjectsWithTasks(projectsWithTasks);
+
         const taskMap: DropdownTaskMap = {};
         projectsWithTasks.forEach((project: ProjectRef) => {
           (project.tasks || []).forEach((task: TaskRef) => {
@@ -159,6 +162,47 @@ const QATrackerReportView: React.FC = () => {
     setEndDate(getTodayDate());
   };
 
+  // Cascading Filter Logic
+  const teams = useMemo(() => {
+    return Array.from(
+      new Set(assignedAgents.map((a) => a.team_name).filter(Boolean)),
+    ) as string[];
+  }, [assignedAgents]);
+
+  const filteredAgents = useMemo(() => {
+    if (!selectedTeam) return assignedAgents;
+    return assignedAgents.filter((a) => a.team_name === selectedTeam);
+  }, [assignedAgents, selectedTeam]);
+
+  const filteredTasks = useMemo(() => {
+    if (!selectedProject) return [];
+    const project = projectsWithTasks.find(
+      (p) => String(p.project_id) === String(selectedProject),
+    );
+    return project?.tasks || [];
+  }, [projectsWithTasks, selectedProject]);
+
+  // Reset dependent filters when parent changes
+  useEffect(() => {
+    if (selectedTeam) {
+      const isAgentInTeam = filteredAgents.some(
+        (a) => String(a.user_id) === String(selectedAgent),
+      );
+      if (!isAgentInTeam) setSelectedAgent("");
+    }
+  }, [selectedTeam, filteredAgents, selectedAgent]);
+
+  useEffect(() => {
+    if (selectedProject) {
+      const isTaskInProject = filteredTasks.some(
+        (t) => String(t.task_id) === String(selectedTask),
+      );
+      if (!isTaskInProject) setSelectedTask("");
+    } else {
+      setSelectedTask("");
+    }
+  }, [selectedProject, filteredTasks, selectedTask]);
+
   // Calculate totals from filtered trackers or API
   const totals = useMemo(() => {
     if (apiTotals) {
@@ -200,9 +244,9 @@ const QATrackerReportView: React.FC = () => {
     };
   }, [trackers, apiTotals]);
 
-  // Export to Excel function
-  const handleExportToExcel = () => {
-    const filename = `QA_Tracker_Report_${startDate}_to_${endDate}.xlsx`;
+  // Export to CSV function
+  const handleExportToCSV = () => {
+    const filename = `QA_Tracker_Report_${startDate}_to_${endDate}.csv`;
     const exportData = trackers.map((tracker: TrackerRow) => ({
       "Date/Time": tracker.date_time
         ? format(new Date(tracker.date_time), "M/d/yyyy h:mm a")
@@ -231,7 +275,7 @@ const QATrackerReportView: React.FC = () => {
       "Has File": "",
     });
 
-    exportToExcel(exportData, filename, "Tracker Report");
+    exportToCSV(exportData, filename);
   };
 
   // Handle edit action
@@ -279,7 +323,7 @@ const QATrackerReportView: React.FC = () => {
   return (
     <div className="space-y-6">
       <QATrackerReportHeader
-        onExport={handleExportToExcel}
+        onExport={handleExportToCSV}
         isLoading={loading}
         hasData={trackers.length > 0}
       />
@@ -297,7 +341,10 @@ const QATrackerReportView: React.FC = () => {
         setSelectedProject={setSelectedProject}
         selectedTask={selectedTask}
         setSelectedTask={setSelectedTask}
-        assignedAgents={assignedAgents}
+        assignedAgents={filteredAgents}
+        teams={teams}
+        projects={projectsWithTasks}
+        tasks={filteredTasks}
         isLoadingAgents={loadingAgents}
         onClearFilters={handleClearFilters}
       />

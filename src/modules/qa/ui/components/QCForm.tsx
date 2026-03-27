@@ -15,6 +15,7 @@ import {
   generateQCSample,
   saveQCRecord,
   fetchAFDList,
+  SaveQCRecordPayload,
 } from "../../../../services/qcService";
 import SearchableSelect from "../../../../components/common/SearchableSelect";
 import MultiSelectWithCheckbox from "../../../../components/common/MultiSelectWithCheckbox";
@@ -62,6 +63,9 @@ const QCForm: React.FC = () => {
   >({});
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<
+    "regular" | "rework" | "correction" | ""
+  >("");
 
   // ── Derived metrics ──────────────────────────────────────────────────────
 
@@ -96,11 +100,18 @@ const QCForm: React.FC = () => {
     }));
 
     let status: "regular" | "rework" | "correction" = "regular";
-    if (qcScore < 80) status = "correction";
-    else if (qcScore < 95) status = "rework";
+    if (qcScore < 98) status = "rework";
+    else if (qcScore < 100) status = "correction";
 
     return { recordCount, tenPercentCount, totalErrors, errorList, status };
   }, [formRows, afdData, qcScore]);
+
+  // Sync auto-status to selectedStatus if not manually touched
+  useEffect(() => {
+    if (!selectedStatus) {
+      setSelectedStatus(errorMetrics.status);
+    }
+  }, [errorMetrics.status, selectedStatus]);
 
   // ── Data fetching ────────────────────────────────────────────────────────
 
@@ -148,6 +159,7 @@ const QCForm: React.FC = () => {
         const sampleResponse = await generateQCSample(
           trackerData.tracker_id,
           (user?.user_id || user?.id)!,
+          Number(trackerData.qc_percentage || 10),
         );
 
         if (sampleResponse.success && sampleResponse.data) {
@@ -347,25 +359,46 @@ const QCForm: React.FC = () => {
         });
       });
 
-      const today = new Date();
-      const formattedDate = today.toISOString().split("T")[0];
+      // Robust Date Extraction
+      const rawDate =
+        trackerData.tracker_date ||
+        trackerData.date_time ||
+        trackerData.date ||
+        trackerData.created_at ||
+        new Date().toISOString();
 
-      const payload = {
-        logged_in_user_id: user?.user_id || user?.id,
+      const dateStr = String(rawDate || "");
+      const formattedDate = dateStr.includes("T")
+        ? dateStr.split("T")[0] || ""
+        : dateStr.split(" ")[0] || "";
+
+      // Robust AM ID Extraction
+      const assistantManagerId =
+        trackerData.assistant_manager_id ||
+        trackerData.asst_manager_id ||
+        trackerData.manager_id ||
+        trackerData.team_lead_id ||
+        null;
+
+      const payload: SaveQCRecordPayload = {
+        logged_in_user_id: (user?.user_id || user?.id || 0) as string | number,
         tracker_id: trackerData.tracker_id,
-        qc_user_id: user?.user_id || user?.id,
-        agent_user_id:
-          trackerData.user_id ||
+        assistant_manager_id: assistantManagerId as string | number | null,
+        qc_user_id: (user?.user_id || user?.id || 0) as string | number,
+        agent_user_id: (trackerData.user_id ||
           trackerData.agent_user_id ||
-          trackerData.agent_id,
-        project_id: trackerData.project_id,
-        task_id: trackerData.task_id,
-        file_path: trackerData.tracker_file || trackerData.file_path || "",
-        date_of_file_submission: formattedDate,
+          trackerData.agent_id ||
+          0) as string | number,
+        project_id: (trackerData.project_id || 0) as string | number,
+        task_id: (trackerData.task_id || 0) as string | number,
+        file_path: String(trackerData.tracker_file || trackerData.file_path || ""),
+        date_of_file_submission: String(formattedDate || ""),
+        date_of_reporting: new Date().toISOString().split("T")[0] || "",
         qc_score: parseFloat(qcScore.toFixed(2)),
-        status: errorMetrics.status,
+        status: selectedStatus || errorMetrics.status,
         file_record_count: totalRecords || errorMetrics.recordCount,
         data_generated_count: sampleSize || errorMetrics.tenPercentCount,
+        sampling_percentage: Number(trackerData.qc_percentage || 10),
         qc_file_records: formData,
         error_score: parseFloat((100 - qcScore).toFixed(2)),
         error_list: errorList,
@@ -516,7 +549,7 @@ const QCForm: React.FC = () => {
                   </td>
                   {dynamicKeys.map((k) => (
                     <td key={k} className="px-4 py-4 text-sm text-slate-600">
-                      {String(row.originalData[k] ?? "")}
+                      {String((row.originalData as Record<string, unknown>)[k] ?? "")}
                     </td>
                   ))}
                   <td className="px-4 py-4 min-w-[200px]">
@@ -681,7 +714,27 @@ const QCForm: React.FC = () => {
           </div>
           <div className="text-center">
             <p className="text-xs font-bold text-slate-400 uppercase mb-1">
-              Status
+              Select Status
+            </p>
+            <SearchableSelect
+              value={selectedStatus}
+              onChange={(val) =>
+                setSelectedStatus(
+                  val as "regular" | "rework" | "correction" | "",
+                )
+              }
+              options={[
+                { value: "regular", label: "Regular" },
+                { value: "rework", label: "Rework" },
+                { value: "correction", label: "Correction" },
+              ]}
+              placeholder="Select Status"
+              className="h-9 w-32 bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+          <div className="text-center">
+            <p className="text-xs font-bold text-slate-400 uppercase mb-1">
+              Auto Status
             </p>
             <div
               className={cn(

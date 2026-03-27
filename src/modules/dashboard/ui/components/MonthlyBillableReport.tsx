@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import { exportToCSV } from "../../../../lib/utils/exportUtils";
 import { toast } from "sonner";
 import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
@@ -127,7 +127,7 @@ const MonthlyBillableReport: React.FC = () => {
     return { label: monthMap[monthPart] || monthPart, year: yearPart };
   };
 
-  const handleExportMonthData = async (
+  const handleExportMonthDataCSV = async (
     monthObj: MonthObj,
     users: MonthlyBillableReportRow[],
   ) => {
@@ -158,7 +158,7 @@ const MonthlyBillableReport: React.FC = () => {
         0,
       );
       const qcScores = exportData
-        .map((r) => Number(r["Avg. QC Score"]))
+        .map((r) => Number(String(r["Avg. QC Score"]).replace("%", "")))
         .filter((v) => !isNaN(v));
       const avgQC =
         qcScores.length > 0
@@ -167,29 +167,20 @@ const MonthlyBillableReport: React.FC = () => {
       exportData.push({
         "User Name / Team": "TOTAL",
         "Billable Hour Delivered": totalBillable.toString(),
-        "Monthly Goal": totalGoal,
+        "Monthly Goal": totalGoal as any,
         "Pending Target": totalPending.toString(),
-        "Avg. QC Score": avgQC,
+        "Avg. QC Score": avgQC !== "-" ? `${avgQC}%` : "-",
       });
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      worksheet["!cols"] = [
-        { wch: 24 },
-        { wch: 24 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 16 },
-      ];
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Month Report");
-      const filename = `Month_Report_${monthObj.label}_${monthObj.year}.xlsx`;
-      XLSX.writeFile(workbook, filename);
-      toast.success("Month report exported!");
-    } catch {
+
+      const filename = `Month_Report_${monthObj.label}_${monthObj.year}.csv`;
+      exportToCSV(exportData, filename);
+    } catch (error) {
+      console.error("Month export error:", error);
       toast.error("Failed to export month report");
     }
   };
 
-  const handleExportMonthlyTable = () => {
+  const handleExportMonthlyTableCSV = () => {
     try {
       const exportData = monthlySummaryData.map((row) => ({
         "Year & Month": row.month_year,
@@ -217,7 +208,7 @@ const MonthlyBillableReport: React.FC = () => {
         0,
       );
       const qcScores = exportData
-        .map((r) => Number(r["Avg. QC Score"]))
+        .map((r) => Number(String(r["Avg. QC Score"]).replace("%", "")))
         .filter((v) => !isNaN(v));
       const avgQC =
         qcScores.length > 0
@@ -226,29 +217,20 @@ const MonthlyBillableReport: React.FC = () => {
       exportData.push({
         "Year & Month": "TOTAL",
         "Billable Hours Delivered": totalBillable.toString(),
-        "Monthly Goal": totalGoal,
+        "Monthly Goal": totalGoal as any,
         "Pending Target": totalPending.toString(),
-        "Avg. QC Score": avgQC,
+        "Avg. QC Score": avgQC !== "-" ? `${avgQC}%` : "-",
       });
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      worksheet["!cols"] = [
-        { wch: 16 },
-        { wch: 24 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 16 },
-      ];
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Report");
-      const filename = `Monthly_Report.xlsx`;
-      XLSX.writeFile(workbook, filename);
-      toast.success("Monthly report exported!");
-    } catch {
+
+      const filename = `Monthly_Report.csv`;
+      exportToCSV(exportData, filename);
+    } catch (error) {
+      console.error("Monthly export error:", error);
       toast.error("Failed to export monthly report");
     }
   };
 
-  const handleExportUserDaily = async (userObj: {
+  const handleExportUserDailyCSV = async (userObj: {
     user_id: string | number;
     user_name: string;
   }) => {
@@ -299,12 +281,10 @@ const MonthlyBillableReport: React.FC = () => {
             : "-",
       }));
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "User Daily Report");
-      XLSX.writeFile(workbook, `Daily_Report_${userObj.user_name}.xlsx`);
-      toast.success("User daily report exported!");
-    } catch {
+      const filename = `Daily_Report_${userObj.user_name}.csv`;
+      exportToCSV(exportData, filename);
+    } catch (error) {
+      console.error("User daily export error:", error);
       toast.error("Failed to export user daily report");
     }
   };
@@ -341,7 +321,7 @@ const MonthlyBillableReport: React.FC = () => {
               <Button
                 variant="default"
                 className="bg-green-600 hover:bg-green-700 px-6"
-                onClick={handleExportMonthlyTable}
+                onClick={handleExportMonthlyTableCSV}
               >
                 Export All Data
               </Button>
@@ -370,12 +350,12 @@ const MonthlyBillableReport: React.FC = () => {
                 month={monthObj}
                 users={users}
                 onExport={(userRow) => {
-                  handleExportUserDaily({
+                  handleExportUserDailyCSV({
                     user_id: userRow.user_id as string,
                     user_name: userRow.user_name as string,
                   });
                 }}
-                onExportMonth={handleExportMonthData}
+                onExportMonth={handleExportMonthDataCSV}
                 teamOptions={teamOptions}
               />
             );

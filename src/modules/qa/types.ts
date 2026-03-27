@@ -67,12 +67,15 @@ export interface TrackerData {
   file_path?: string;
   date_time?: string;
   tracker_date?: string;
+  date?: string;
   created_at?: string;
   assistant_manager_id?: string | number;
   asst_manager_id?: string | number;
   ass_manager_id?: string | number;
   project_manager_id?: string | number;
   manager_id?: string | number;
+  team_lead_id?: string | number;
+  qc_percentage?: number | string;
 }
 
 export interface AFDSubcategory {

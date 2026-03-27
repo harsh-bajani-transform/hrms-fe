@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { format } from "date-fns";
 import { Download, Trash2, Filter, FileDown } from "lucide-react";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import { exportToCSV } from "../../../../lib/utils/exportUtils";
 import { useAuth } from "../../../../context/AuthContext";
 import {
   fetchTrackers,
@@ -247,13 +247,13 @@ const TrackerTable: React.FC<TrackerTableProps> = ({
     );
   }, [trackers]);
 
-  const handleExportToExcel = () => {
+  const handleExportToCSV = () => {
     if (trackers.length === 0) {
       toast.error("No data to export");
       return;
     }
     try {
-      const exportData = trackers.map((tracker) => {
+      const exportData: Record<string, unknown>[] = trackers.map((tracker) => {
         const projectId =
           typeof tracker.project_id === "string" ||
           typeof tracker.project_id === "number"
@@ -280,6 +280,7 @@ const TrackerTable: React.FC<TrackerTableProps> = ({
           "Has File": tracker.tracker_file ? "Yes" : "No",
         };
       });
+
       exportData.push({
         "Date/Time": "",
         Project: "",
@@ -289,23 +290,12 @@ const TrackerTable: React.FC<TrackerTableProps> = ({
         "Billable Hours": totals.billableHours.toFixed(2),
         "Has File": "",
       });
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      worksheet["!cols"] = [
-        { wch: 18 },
-        { wch: 20 },
-        { wch: 25 },
-        { wch: 15 },
-        { wch: 12 },
-        { wch: 15 },
-        { wch: 10 },
-      ];
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Trackers");
-      const filename = `Trackers_${startDate}_to_${endDate}.xlsx`;
-      XLSX.writeFile(workbook, filename);
+
+      const filename = `Trackers_${startDate}_to_${endDate}.csv`;
+      exportToCSV(exportData, filename);
       toast.success(`Exported ${trackers.length} records successfully!`);
     } catch (err) {
-      console.error("[TrackerTable] Excel export error:", err);
+      console.error("[TrackerTable] CSV export error:", err);
       toast.error("Failed to export data");
     }
   };
@@ -316,13 +306,13 @@ const TrackerTable: React.FC<TrackerTableProps> = ({
         <h2 className="text-2xl font-bold text-blue-700">All Trackers</h2>
         <div className="flex gap-2">
           <button
-            onClick={handleExportToExcel}
+            onClick={handleExportToCSV}
             disabled={loading || trackers.length === 0}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
-            title="Export filtered data to Excel"
+            title="Export filtered data to CSV"
           >
             <FileDown className="w-4 h-4" />
-            Export to Excel
+            Export to CSV
           </button>
           <button
             onClick={onClose}

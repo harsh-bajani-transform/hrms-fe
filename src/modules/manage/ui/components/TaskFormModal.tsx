@@ -54,6 +54,7 @@ interface FormData {
   target: string;
   teamIds: (string | number)[];
   importantColumns: string[];
+  qcPercentage: string;
 }
 
 const TaskFormModal: React.FC<TaskFormModalProps> = ({
@@ -81,6 +82,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
         : [task.task_team_id.toString()]
       : [],
     importantColumns: task?.important_columns || [],
+    qcPercentage: task?.qc_percentage?.toString() || "10",
   });
 
   const [attachmentPreview, setAttachmentPreview] = useState<string | null>(
@@ -117,6 +119,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       submitData.append("task_target", formData.target);
       submitData.append("device_id", device_id);
       submitData.append("device_type", device_type);
+      submitData.append("qc_percentage", formData.qcPercentage);
 
       submitData.append(
         "task_team_id",
@@ -424,6 +427,29 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                   {errors.teamIds}
                 </p>
               )}
+            </div>
+
+            {/* QC PERCENTAGE */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 px-1 flex items-center gap-1.5 uppercase tracking-wider">
+                <Hash className="w-3.5 h-3.5 text-blue-500" />
+                QC Percentage (%)
+              </label>
+              <Input
+                name="qcPercentage"
+                type="number"
+                min="0"
+                max="100"
+                value={formData.qcPercentage}
+                onChange={(e) =>
+                  setFormData({ ...formData, qcPercentage: e.target.value })
+                }
+                placeholder="e.g. 10"
+                className="h-11 bg-slate-50/50 border-slate-200 focus:bg-white transition-all text-sm font-medium focus:border-blue-400 focus:ring-blue-100"
+              />
+              <p className="text-[10px] text-slate-400 mt-1 px-1 italic">
+                Default is 10%. Percentage of data to be sampled for QC.
+              </p>
             </div>
 
             {/* IMPORTANT COLUMNS - REFACTORED TO SELECTION DROPDOWN */}

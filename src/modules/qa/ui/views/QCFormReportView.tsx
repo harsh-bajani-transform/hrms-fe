@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   FileCheck,
   Search,
-  X,
   RotateCcw,
   AlertCircle,
   FileText,
@@ -10,10 +9,13 @@ import {
   XCircle,
   Award,
   Filter,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
+import { format } from "date-fns";
 import { useAuth } from "../../../../context/AuthContext";
 import { getQCRecordsList } from "../../../../services/qcService";
+import { exportToCSV } from "../../../../lib/utils/exportUtils";
 import { DataTable } from "@/components/ui/data-table";
 import { createQCReportColumns, QCReport } from "./QCFormReportViewColumns";
 import { Input } from "@/components/ui/input";
@@ -46,8 +48,8 @@ const QCFormReportView: React.FC = () => {
     try {
       setLoading(true);
       // If user is Agent (and not QA/Admin), API will filter for their own records
-      const roleName = (user?.role_name || "").toLowerCase();
-      const designation = (user?.designation_name || "").toLowerCase();
+      const roleName = String(user?.role_name || "").toLowerCase();
+      const designation = String(user?.designation_name || "").toLowerCase();
       const isAgentView =
         (roleName === "agent" || designation === "agent") &&
         !(roleName.includes("qa") || designation.includes("qa"));
@@ -58,7 +60,7 @@ const QCFormReportView: React.FC = () => {
         userIdToPass as string | number | null,
       );
       if (response && response.success) {
-        setQcReports((response.data as QCReport[]) || []);
+        setQcReports((response.data as unknown as QCReport[]) || []);
       }
     } catch (error) {
       console.error("Failed to fetch QC reports", error);
@@ -119,6 +121,43 @@ const QCFormReportView: React.FC = () => {
     setEndDate(getTodayDate());
   };
 
+  const handleExportToCSV = () => {
+    const filename = `QC_Form_Report_${startDate}_to_${endDate}.csv`;
+    const exportData = filteredReports.map((report) => {
+      let eList = [];
+      try {
+        const raw = report.error_list;
+        eList = typeof raw === "string" ? JSON.parse(raw) : raw || [];
+      } catch {
+        eList = [];
+      }
+
+      return {
+        "Evaluation Date": report.timestamp
+          ? format(new Date(report.timestamp), "dd MMM yyyy hh:mm a")
+          : "N/A",
+        "Work Date": report.date_of_file_submission
+          ? format(new Date(report.date_of_file_submission), "dd MMM yyyy")
+          : "N/A",
+        "Assistant Manager": report.am_name || "N/A",
+        "QA Agent": report.qa_name || "N/A",
+        Agent: report.agent_name || "N/A",
+        Project: report.project_name || "N/A",
+        Task: report.task_name || "N/A",
+        "Total Records": report.file_record_count ?? 0,
+        "QC Records":
+          report["10%_data_generated_count"] ??
+          report["10%_qc_file_records"] ??
+          0,
+        Errors: eList.length,
+        Status: report.status || "N/A",
+        Score: `${parseFloat(String(report.qc_score || 0)).toFixed(2)}%`,
+      };
+    });
+
+    exportToCSV(exportData, filename);
+  };
+
   // Calculate summary stats
   const stats = useMemo(() => {
     const total = filteredReports.length;
@@ -170,20 +209,30 @@ const QCFormReportView: React.FC = () => {
             <Filter className="w-5 h-5 text-blue-600" />
             Advanced Filters
           </h3>
-          {(searchQuery ||
-            statusFilter !== "all" ||
-            startDate !== getTodayDate() ||
-            endDate !== getTodayDate()) && (
+          <div className="flex items-center gap-3">
+            {(searchQuery ||
+              statusFilter !== "all" ||
+              startDate !== getTodayDate() ||
+              endDate !== getTodayDate()) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearFilters}
+                className="text-slate-500 hover:text-red-600 font-bold"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Clear All
+              </Button>
+            )}
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearFilters}
-              className="text-slate-500 hover:text-red-600 font-bold"
+              onClick={handleExportToCSV}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2"
+              disabled={filteredReports.length === 0}
             >
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Clear All
+              <Download className="w-4 h-4" />
+              Download Report
             </Button>
-          )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -335,27 +384,34 @@ const QCFormReportView: React.FC = () => {
 
                 return (
                   <div className="space-y-3">
-                    {eList.map((error: any, idx: number) => {
-                      const errorLabel =
-                        typeof error === "object" && error !== null
-                          ? error.error || error.name || JSON.stringify(error)
-                          : String(error);
-                      return (
-                        <div
-                          key={idx}
-                          className="flex items-start gap-4 p-4 bg-red-50 border border-red-100 rounded-xl transition-all hover:bg-red-100/50"
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-red-200/50 flex items-center justify-center shrink-0">
-                            <span className="text-red-700 font-bold text-xs">
-                              {idx + 1}
+                    {eList.map(
+                      (
+                        error: Record<string, unknown> | string,
+                        idx: number,
+                      ) => {
+                        const errorLabel =
+                          typeof error === "object" && error !== null
+                            ? (error.error as string) ||
+                              (error.name as string) ||
+                              JSON.stringify(error)
+                            : String(error);
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-start gap-4 p-4 bg-red-50 border border-red-100 rounded-xl transition-all hover:bg-red-100/50"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-red-200/50 flex items-center justify-center shrink-0">
+                              <span className="text-red-700 font-bold text-xs">
+                                {idx + 1}
+                              </span>
+                            </div>
+                            <span className="text-sm text-slate-700 font-semibold leading-relaxed">
+                              {errorLabel}
                             </span>
                           </div>
-                          <span className="text-sm text-slate-700 font-semibold leading-relaxed">
-                            {errorLabel}
-                          </span>
-                        </div>
-                      );
-                    })}
+                        );
+                      },
+                    )}
                   </div>
                 );
               })()}

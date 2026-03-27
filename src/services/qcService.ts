@@ -45,17 +45,19 @@ export interface SampleResponseData {
 export interface SaveQCRecordPayload {
   logged_in_user_id: number | string;
   tracker_id: number | string;
-  ass_manager_id: number | null;
+  assistant_manager_id: number | string | null;
   qc_user_id: number | string;
   agent_user_id: number | string;
   project_id: number | string;
   task_id: number | string;
   file_path: string;
   date_of_file_submission: string;
+  date_of_reporting: string;
   qc_score: number;
   status: string;
   file_record_count: number;
   data_generated_count: number;
+  sampling_percentage: number;
   qc_file_records: Record<string, unknown>[];
   error_score: number;
   error_list: QCErrorListItem[];
@@ -75,11 +77,13 @@ export interface QCErrorListItem {
 export const generateQCSample = async (
   tracker_id: number | string,
   logged_in_user_id: number | string,
+  sampling_percentage: number = 10,
 ): Promise<QCResponse<SampleResponseData>> => {
   try {
     const response = await qcApi.post("/qc-records/generate-sample", {
       tracker_id,
       logged_in_user_id,
+      sampling_percentage,
     });
     return response.data;
   } catch (error: unknown) {

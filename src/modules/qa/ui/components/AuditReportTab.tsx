@@ -18,7 +18,7 @@ import api from "../../../../services/api";
 import type { AuditRecord, GroupedQAAgent } from "../../types";
 import { DataTable } from "@/components/ui/data-table";
 import { createAuditReportColumns } from "./AuditReportColumns";
-import * as XLSX from "xlsx";
+import { exportToCSV } from "../../../../lib/utils/exportUtils";
 import { toast } from "sonner";
 import {
   Accordion,
@@ -209,16 +209,12 @@ const AuditReportTab: React.FC = () => {
     }
   }, [fetchReportData, user?.user_id, user?.id]);
 
-  const handleExportExcel = () => {
+  const handleExportCSV = () => {
     if (reportData.length === 0) {
       toast.error("No data to export");
       return;
     }
-    const ws = XLSX.utils.json_to_sheet(reportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "AuditReport");
-    XLSX.writeFile(wb, "QA_Agent_Audit_Report.xlsx");
-    toast.success("Data exported successfully");
+    exportToCSV(reportData as unknown as Record<string, unknown>[], "QA_Agent_Audit_Report.csv");
   };
 
   return (
@@ -240,11 +236,11 @@ const AuditReportTab: React.FC = () => {
           </div>
           <div className="flex items-end ml-auto">
             <Button
-              onClick={handleExportExcel}
+              onClick={handleExportCSV}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200 border-none"
             >
               <FileSpreadsheet className="w-4 h-4" />
-              Export
+              Export CSV
             </Button>
           </div>
         </div>

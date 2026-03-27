@@ -7,7 +7,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import { exportToCSV } from "../../../../lib/utils/exportUtils";
 import dayjs from "dayjs";
 
 import { Input } from "@/components/ui/input";
@@ -220,10 +220,7 @@ const ProjectMonthlyReport: React.FC = () => {
       "Pending Target": r.isNew ? "-" : r.pending_hours || 0,
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
-    XLSX.writeFile(workbook, `Project_Monthly_Report_${monthYear}.xlsx`);
+    exportToCSV(exportData, `Project_Monthly_Report_${monthYear}.csv`);
   };
 
   return (
@@ -248,7 +245,7 @@ const ProjectMonthlyReport: React.FC = () => {
               className="bg-emerald-600 hover:bg-emerald-700 font-semibold gap-2 px-6 shadow-sm rounded-lg transition-all text-white"
             >
               <Download className="w-4 h-4" />
-              Export Excel
+              Export CSV
             </Button>
           </div>
         </div>

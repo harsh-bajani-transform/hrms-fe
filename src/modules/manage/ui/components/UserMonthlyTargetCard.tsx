@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import * as XLSX from "xlsx";
+import { exportToCSV } from "../../../../lib/utils/exportUtils";
 import dayjs, { Dayjs } from "dayjs";
 import { Download, Calendar, User } from "lucide-react";
 import { toast } from "sonner";
@@ -138,14 +138,14 @@ const UserMonthlyTargetCard: React.FC = () => {
     setDateRanges((prev) => ({ ...prev, [key]: range }));
   };
 
-  const handleExportExcel = (monthLabel: string) => {
+  const handleExportCSV = (monthLabel: string) => {
     const monthData = monthsData.find((m) => m.label === monthLabel);
     if (!monthData || monthData.agents.length === 0) {
       toast.error("No data to export");
       return;
     }
 
-    const exportData = monthData.agents.map((agent) => ({
+    const exportData: Record<string, unknown>[] = monthData.agents.map((agent) => ({
       "User Name": agent.userName,
       Team: agent.team,
       "Monthly Target": agent.monthlyTarget,
@@ -153,11 +153,8 @@ const UserMonthlyTargetCard: React.FC = () => {
       "Working Days": agent.workingDays,
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Targets");
-    XLSX.writeFile(workbook, `Monthly_Target_${monthLabel}.xlsx`);
-    toast.success(`Exported ${monthLabel} data to Excel!`);
+    exportToCSV(exportData, `Monthly_Target_${monthLabel}.csv`);
+    toast.success(`Exported ${monthLabel} data to CSV!`);
   };
 
   // Create columns
@@ -262,11 +259,11 @@ const UserMonthlyTargetCard: React.FC = () => {
                 </div>
                 <Button
                   variant="default"
-                  onClick={() => handleExportExcel(month.label)}
+                  onClick={() => handleExportCSV(month.label)}
                   className="bg-emerald-600 hover:bg-emerald-700 px-4 font-bold"
                 >
                   <Download className="w-4 h-4" />
-                  <span>Export</span>
+                  <span>Export CSV</span>
                 </Button>
                 <AccordionTrigger className="p-2 rounded-full hover:bg-slate-200 transition-all text-slate-500 hover:no-underline" />
               </div>

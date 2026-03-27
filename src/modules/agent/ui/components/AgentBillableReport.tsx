@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import * as XLSX from "xlsx";
+import { exportToCSV } from "../../../../lib/utils/exportUtils";
 import { toast } from "sonner";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -175,14 +175,14 @@ const AgentBillableReport = () => {
 
   const filteredDailyData = dailyData;
 
-  // Export handler for month daily excel (must be declared before monthlyColumns)
-  const handleExportMonthDailyExcel = useCallback(async (monthYear: string) => {
+  // Export handler for month daily csv
+  const handleExportMonthDailyCSV = useCallback(async (monthYear: string) => {
     try {
       const res = await fetchDailyBillableReport({ month_year: monthYear });
       const trackers: TrackerRow[] = Array.isArray(res.data.trackers)
         ? res.data.trackers
         : [];
-      const exportData: DailyExportRow[] = trackers.map((row) => ({
+      const exportData: Record<string, unknown>[] = trackers.map((row) => ({
         "Date-Time": row.date_time
           ? dayjs(row.date_time).format("DD-MM-YYYY hh:mm A")
           : "-",
@@ -234,12 +234,10 @@ const AgentBillableReport = () => {
           "Daily Required Hours": totalRequired.toFixed(2),
         });
       }
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Month Daily Report");
-      XLSX.writeFile(workbook, `Month_Daily_Report_${monthYear}.xlsx`);
-      toast.success("Exported!");
-    } catch {
+
+      exportToCSV(exportData, `Month_Daily_Report_${monthYear}.csv`);
+    } catch (error) {
+      console.error("Month daily export error:", error);
       toast.error("Export failed");
     }
   }, []);
@@ -249,14 +247,14 @@ const AgentBillableReport = () => {
 
   // Monthly table columns
   const monthlyColumns = useMemo(
-    () => createMonthlyColumns(handleExportMonthDailyExcel),
-    [handleExportMonthDailyExcel],
+    () => createMonthlyColumns(handleExportMonthDailyCSV),
+    [handleExportMonthDailyCSV],
   );
 
   // Export handlers
-  const handleExportMonthlyTable = () => {
+  const handleExportMonthlyTableCSV = () => {
     try {
-      const exportData: MonthlyExportRow[] = monthlySummaryData.map((row) => ({
+      const exportData: Record<string, unknown>[] = monthlySummaryData.map((row) => ({
         "Year & Month": row.month_year ?? "-",
         "Billable Hours Delivered":
           row.total_billable_hours || row.total_billable_hours_month
@@ -306,19 +304,17 @@ const AgentBillableReport = () => {
           "Avg. QC Score": avgQC > 0 ? avgQC.toFixed(2) : "-",
         });
       }
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Report");
-      XLSX.writeFile(workbook, `Monthly_Report.xlsx`);
-      toast.success("Monthly report exported!");
-    } catch {
+
+      exportToCSV(exportData, "Monthly_Report.csv");
+    } catch (error) {
+      console.error("Monthly export error:", error);
       toast.error("Export failed");
     }
   };
 
-  const handleExportDailyExcel = () => {
+  const handleExportDailyCSV = () => {
     try {
-      const exportData: DailyExportRow[] = filteredDailyData.map((row) => ({
+      const exportData: Record<string, unknown>[] = filteredDailyData.map((row) => ({
         "Date-Time": row.work_date
           ? dayjs(row.work_date).format("DD-MM-YYYY")
           : "-",
@@ -370,12 +366,10 @@ const AgentBillableReport = () => {
           "Daily Required Hours": totalRequired.toFixed(2),
         });
       }
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Daily Report");
-      XLSX.writeFile(workbook, `Daily_Report.xlsx`);
-      toast.success("Daily report exported!");
-    } catch {
+
+      exportToCSV(exportData, "Daily_Report.csv");
+    } catch (error) {
+      console.error("Daily export error:", error);
       toast.error("Export failed");
     }
   };
@@ -489,7 +483,7 @@ const AgentBillableReport = () => {
                     <Button
                       variant="default"
                       className="bg-emerald-600 hover:bg-emerald-700 font-semibold gap-2 px-6 shadow-sm rounded-lg transition-all"
-                      onClick={handleExportDailyExcel}
+                      onClick={handleExportDailyCSV}
                     >
                       <FileDown className="w-4 h-4" />
                       Export
@@ -581,7 +575,7 @@ const AgentBillableReport = () => {
                   <Button
                     variant="default"
                     className="bg-emerald-600 hover:bg-emerald-700 font-semibold gap-2 px-6 shadow-sm rounded-lg transition-all"
-                    onClick={handleExportMonthlyTable}
+                    onClick={handleExportMonthlyTableCSV}
                   >
                     <FileDown className="w-4 h-4" />
                     Export All

@@ -1,5 +1,5 @@
 import { useAuth } from "../../../../context/AuthContext";
-import * as XLSX from "xlsx";
+import { exportToCSV } from "../../../../lib/utils/exportUtils";
 import { toast } from "sonner";
 import React, { useState, useMemo } from "react";
 import type { Id, TrackerRow } from "../../types";
@@ -244,14 +244,14 @@ export default function UserCard({
     if (onExport) {
       onExport();
     } else {
-      handleInternalExport(e);
+      handleInternalExportCSV(e);
     }
   };
 
-  const handleInternalExport = (e: React.MouseEvent) => {
+  const handleInternalExportCSV = (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const exportData = filteredRows.map((row) => {
+      const exportData: Record<string, unknown>[] = filteredRows.map((row) => {
         const r = row as Record<string, unknown>;
 
         const workedHours =
@@ -297,23 +297,23 @@ export default function UserCard({
 
       if (exportData.length > 0) {
         const totalWorked = exportData.reduce(
-          (sum: number, r: Record<string, string | number>) =>
+          (sum: number, r: Record<string, unknown>) =>
             sum + (Number.parseFloat(String(r["Worked Hours"])) || 0),
           0,
         );
         const validQC = exportData.filter(
-          (r: Record<string, string | number>) =>
+          (r: Record<string, unknown>) =>
             !Number.isNaN(Number.parseFloat(String(r["QC Score"]))),
         );
         const totalQC = validQC.reduce(
-          (sum: number, r: Record<string, string | number>) =>
+          (sum: number, r: Record<string, unknown>) =>
             sum + (Number.parseFloat(String(r["QC Score"])) || 0),
           0,
         );
         const avgQC = validQC.length > 0 ? totalQC / validQC.length : 0;
 
         const totalRequired = exportData.reduce(
-          (sum: number, r: Record<string, string | number>) =>
+          (sum: number, r: Record<string, unknown>) =>
             sum + (Number.parseFloat(String(r["Daily Required Hours"])) || 0),
           0,
         );
@@ -330,26 +330,10 @@ export default function UserCard({
         });
       }
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      worksheet["!cols"] = [
-        { wch: 24 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 12 },
-        { wch: 20 },
-      ];
-
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        user.user_name || "User",
-      );
-
-      const filename = `Daily_Report_${user.user_name || "User"}_${start || "all"}_${end || "all"}.xlsx`;
-      XLSX.writeFile(workbook, filename);
-      toast.success("Daily report exported!");
-    } catch {
+      const filename = `Daily_Report_${user.user_name || "User"}_${start || "all"}_${end || "all"}.csv`;
+      exportToCSV(exportData, filename);
+    } catch (error) {
+      console.error("UserCard export error:", error);
       toast.error("Failed to export daily report");
     }
   };

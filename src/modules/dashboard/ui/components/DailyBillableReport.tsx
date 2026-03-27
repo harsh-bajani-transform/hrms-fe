@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import { exportToCSV } from "../../../../lib/utils/exportUtils";
 import { toast } from "sonner";
 import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
@@ -130,7 +130,7 @@ const DailyBillableReport: React.FC = () => {
   }, [startDate, endDate, monthFilter, user, refreshTrigger]);
 
   // Export all users' daily data (filtered by team if set)
-  const handleExportAllUsers = () => {
+  const handleExportAllUsersCSV = () => {
     try {
       const exportRows = dailyData.filter((row) => {
         if (teamFilter && row.team_name !== teamFilter) return false;
@@ -150,7 +150,7 @@ const DailyBillableReport: React.FC = () => {
         return;
       }
 
-      const exportData = exportRows.map((row) => {
+      const exportData: Record<string, unknown>[] = exportRows.map((row) => {
         const workedHours =
           row.cumulative_billable_hours_till_day != null
             ? Number(row.cumulative_billable_hours_till_day).toFixed(2)
@@ -193,15 +193,15 @@ const DailyBillableReport: React.FC = () => {
 
       if (exportData.length > 0) {
         const totalWorked = exportData.reduce(
-          (sum, r) => sum + (Number.parseFloat(r["Worked Hours"]) || 0),
+          (sum, r) => sum + (Number.parseFloat(String(r["Worked Hours"])) || 0),
           0,
         );
         const totalQC = exportData.reduce(
-          (sum, r) => sum + (Number.parseFloat(r["QC Score"]) || 0),
+          (sum, r) => sum + (Number.parseFloat(String(r["QC Score"])) || 0),
           0,
         );
         const totalRequired = exportData.reduce(
-          (sum, r) => sum + (Number.parseFloat(r["Daily Required Hours"]) || 0),
+          (sum, r) => sum + (Number.parseFloat(String(r["Daily Required Hours"])) || 0),
           0,
         );
 
@@ -217,26 +217,15 @@ const DailyBillableReport: React.FC = () => {
         });
       }
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      worksheet["!cols"] = [
-        { wch: 18 },
-        { wch: 16 },
-        { wch: 24 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 12 },
-        { wch: 20 },
-      ];
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Daily_Report");
-      XLSX.writeFile(workbook, "All_Users_Daily_Report.xlsx");
-      toast.success("Exported all users daily report!");
-    } catch {
+      const filename = "All_Users_Daily_Report.csv";
+      exportToCSV(exportData, filename);
+    } catch (error) {
+      console.error("Export error:", error);
       toast.error("Failed to export all users");
     }
   };
 
-  const handleExportUserDaily = async (userObj: UserObj) => {
+  const handleExportUserDailyCSV = async (userObj: UserObj) => {
     try {
       const payload: Record<string, unknown> = { user_id: userObj.user_id };
       if (monthFilter) {
@@ -262,7 +251,7 @@ const DailyBillableReport: React.FC = () => {
       const trackers: TrackerRow[] = Array.isArray(res.data?.trackers)
         ? res.data.trackers
         : [];
-      const exportData = trackers.map((row) => {
+      const exportData: Record<string, unknown>[] = trackers.map((row) => {
         let formattedDateTime = "-";
         if (row.work_date) {
           const d = dayjs(row.work_date);
@@ -306,15 +295,15 @@ const DailyBillableReport: React.FC = () => {
         };
       });
       const totalWorked = exportData.reduce(
-        (sum, r) => sum + (Number(r["Worked Hours"]) || 0),
+        (sum, r) => sum + (Number(String(r["Worked Hours"])) || 0),
         0,
       );
       const totalRequired = exportData.reduce(
-        (sum, r) => sum + (Number(r["Daily Required Hours"]) || 0),
+        (sum, r) => sum + (Number(String(r["Daily Required Hours"])) || 0),
         0,
       );
       const qcScores = exportData
-        .map((r) => Number(r["QC score"]))
+        .map((r) => Number(String(r["QC score"]).replace("%", "")))
         .filter((v) => !isNaN(v));
       const avgQC =
         qcScores.length > 0
@@ -328,20 +317,11 @@ const DailyBillableReport: React.FC = () => {
         "Tracker Count": trackers.reduce((sum, r) => sum + (Number(r.trackers_count_day) || 0), 0),
         "Daily Required Hours": totalRequired.toFixed(2),
       });
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      worksheet["!cols"] = [
-        { wch: 20 },
-        { wch: 14 },
-        { wch: 14 },
-        { wch: 10 },
-        { wch: 20 },
-      ];
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "User Daily Report");
-      const filename = `User_Daily_Report_${userObj.user_name}.xlsx`;
-      XLSX.writeFile(workbook, filename);
-      toast.success("User daily report exported!");
-    } catch {
+
+      const filename = `User_Daily_Report_${userObj.user_name}.csv`;
+      exportToCSV(exportData, filename);
+    } catch (error) {
+      console.error("User export error:", error);
       toast.error("Failed to export user daily report");
     }
   };
@@ -420,7 +400,7 @@ const DailyBillableReport: React.FC = () => {
           <Button
             variant="default"
             className="bg-green-600 hover:bg-green-700 px-6"
-            onClick={handleExportAllUsers}
+            onClick={handleExportAllUsersCSV}
           >
             Export All Data
           </Button>
@@ -473,7 +453,7 @@ const DailyBillableReport: React.FC = () => {
                   user={userObj}
                   dailyData={userObj.dailyData}
                   defaultCollapsed={true}
-                  onExport={() => handleExportUserDaily(userObj)}
+                  onExport={() => handleExportUserDailyCSV(userObj)}
                   onRefresh={handleRefresh}
                 />
               ));

@@ -11,18 +11,11 @@ import {
   Clock,
 } from "lucide-react";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import { exportToCSV } from "../../../../lib/utils/exportUtils";
 import { format } from "date-fns";
 import api from "../../../../services/api";
 import { useAuth } from "../../../../context/AuthContext";
 import { log, logError } from "../../../../config/environment";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
@@ -208,7 +201,7 @@ const QATrackerReport: React.FC = () => {
     };
   }, [filteredTrackers]);
 
-  const handleExportToExcel = () => {
+  const handleExportToCSV = () => {
     if (filteredTrackers.length === 0) {
       toast.error("No data to export");
       return;
@@ -242,23 +235,16 @@ const QATrackerReport: React.FC = () => {
         Agent: "",
         Project: "",
         Task: "TOTALS",
-        "Per Hour Target": totals.tenureTarget.toFixed(2),
-        Production: totals.production.toFixed(2),
-        "Billable Hours": totals.billableHours.toFixed(2),
+        "Per Hour Target": totals.tenureTarget.toFixed(2) as any,
+        Production: totals.production.toFixed(2) as any,
+        "Billable Hours": totals.billableHours.toFixed(2) as any,
         "Has File": "",
       });
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Tracker Report");
-
-      const filename = `QA_Tracker_Report_${startDate}_to_${endDate}.xlsx`;
-
-      XLSX.writeFile(workbook, filename);
-      toast.success("Report exported successfully!");
-      log("[QATrackerReport] Excel export completed:", filename);
+      const filename = `QA_Tracker_Report_${startDate}_to_${endDate}.csv`;
+      exportToCSV(exportData, filename);
     } catch (error) {
-      logError("[QATrackerReport] Excel export error:", error);
+      logError("[QATrackerReport] CSV export error:", error);
       toast.error("Failed to export data");
     }
   };
@@ -288,7 +274,7 @@ const QATrackerReport: React.FC = () => {
             <Button
               variant="default"
               size="sm"
-              onClick={handleExportToExcel}
+              onClick={handleExportToCSV}
               disabled={loading || filteredTrackers.length === 0}
               className="bg-green-600 hover:bg-green-700 h-9 px-4 flex items-center gap-2"
             >

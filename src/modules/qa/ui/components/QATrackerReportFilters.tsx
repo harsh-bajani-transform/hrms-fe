@@ -1,6 +1,6 @@
 import React from "react";
 import { Filter } from "lucide-react";
-import type { UserRef } from "../../../dashboard/types";
+import type { UserRef, ProjectRef, TaskRef } from "../../../dashboard/types";
 
 interface QATrackerReportFiltersProps {
   startDate: string;
@@ -16,6 +16,9 @@ interface QATrackerReportFiltersProps {
   selectedTask: string;
   setSelectedTask: (taskId: string) => void;
   assignedAgents: UserRef[];
+  teams: string[];
+  projects: ProjectRef[];
+  tasks: TaskRef[];
   isLoadingAgents: boolean;
   onClearFilters: () => void;
 }
@@ -34,6 +37,9 @@ const QATrackerReportFilters: React.FC<QATrackerReportFiltersProps> = ({
   selectedTask,
   setSelectedTask,
   assignedAgents,
+  teams,
+  projects,
+  tasks,
   isLoadingAgents,
   onClearFilters,
 }) => {
@@ -56,7 +62,7 @@ const QATrackerReportFilters: React.FC<QATrackerReportFiltersProps> = ({
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full  px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
 
@@ -69,8 +75,27 @@ const QATrackerReportFilters: React.FC<QATrackerReportFiltersProps> = ({
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full  px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
+        </div>
+
+        {/* Team Dropdown */}
+        <div className="space-y-1.5">
+          <label className="block text-sm font-semibold text-gray-700">
+            Team
+          </label>
+          <select
+            value={selectedTeam}
+            onChange={(e) => setSelectedTeam(e.target.value)}
+            className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white"
+          >
+            <option value="">All Teams</option>
+            {teams.map((team) => (
+              <option key={team} value={team}>
+                {team}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Assigned Agent Dropdown */}
@@ -82,7 +107,7 @@ const QATrackerReportFilters: React.FC<QATrackerReportFiltersProps> = ({
             value={selectedAgent}
             onChange={(e) => setSelectedAgent(e.target.value)}
             disabled={isLoadingAgents}
-            className="w-full  px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
+            className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all bg-white"
           >
             <option value="">All Agents</option>
             {assignedAgents.map((agent) => (
@@ -98,49 +123,43 @@ const QATrackerReportFilters: React.FC<QATrackerReportFiltersProps> = ({
           )}
         </div>
 
-        {/* Team Dropdown */}
-        <div className="space-y-1.5">
-          <label className="block text-sm font-semibold text-gray-700">
-            Team
-          </label>
-          <select
-            value={selectedTeam}
-            onChange={(e) => setSelectedTeam(e.target.value)}
-            className="w-full  px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-          >
-            <option value="">All Teams</option>
-            {/* Populate teams from assignedAgents or additional prop */}
-            {Array.from(new Set(assignedAgents.map(a => a.team_name).filter(Boolean))).map(team => (
-              <option key={team} value={team!}>{team}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Project & Task placeholders - ideally these should be real dropdowns from API */}
+        {/* Project Dropdown */}
         <div className="space-y-1.5">
           <label className="block text-sm font-semibold text-gray-700">
             Project
           </label>
-          <input
-            type="text"
-            placeholder="Project ID..."
+          <select
             value={selectedProject}
             onChange={(e) => setSelectedProject(e.target.value)}
-            className="w-full  px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-          />
+            className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white"
+          >
+            <option value="">All Projects</option>
+            {projects.map((p) => (
+              <option key={p.project_id} value={p.project_id}>
+                {p.project_name}
+              </option>
+            ))}
+          </select>
         </div>
 
+        {/* Task Dropdown */}
         <div className="space-y-1.5">
           <label className="block text-sm font-semibold text-gray-700">
             Task
           </label>
-          <input
-            type="text"
-            placeholder="Task ID..."
+          <select
             value={selectedTask}
             onChange={(e) => setSelectedTask(e.target.value)}
-            className="w-full  px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-          />
+            disabled={!selectedProject}
+            className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all bg-white"
+          >
+            <option value="">All Tasks</option>
+            {tasks.map((t) => (
+              <option key={t.task_id} value={t.task_id}>
+                {t.task_name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
